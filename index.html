@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>禁煙ログモック</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#4CAF50">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="禁煙ログ">
+  <style>
+  </style>
+  <script src="common.js"></script>
+  <script src="config.js"></script>
+</head>
+<body>
+  <header>
+    <h1>禁煙ログモック</h1>
+    <div id="message"></div>
+  </header>
+
+  <!-- メイン画面 -->
+  <div id="main" class="tab active">
+    <h2>今日の本数</h2>
+    <div id="todayCountDisplay">0 / 10 本</div>
+    <div id="progress-bar"><div id="progress"></div></div>
+    <button class="large-btn" id="smokeBtn">吸った</button>
+    <div id="since">禁煙時間：0分</div>
+    <div id="interval">前回から：0分</div>
+  </div>
+
+  <!-- カレンダー画面 -->
+  <div id="calendar" class="tab">
+    <h2>カレンダー</h2>
+    <div class="calendar-header">
+      <button onclick="prevMonth()">◀</button>
+      <span id="calendarTitle"></span>
+      <button onclick="nextMonth()">▶</button>
+    </div>
+    <div id="calendarGrid" class="calendar-grid"></div>
+  </div>
+
+<!-- タイムライン（オーバーレイ） -->
+<div id="timelineOverlay" class="timeline-overlay hidden">
+  <header class="timeline-header">
+    <button onclick="closeTimeline()">← 戻る</button>
+    <span id="timelineTitle"></span>
+    <button class="edit-btn" onclick="openEdit()">修正</button>
+  </header>
+  <div id="timelineList" class="timeline-table"></div>
+</div>
+
+<!-- 修正画面（オーバーレイ） -->
+<div id="editOverlay" class="timeline-overlay hidden">
+  <header class="timeline-header">
+    <button onclick="closeEdit()">← 戻る</button>
+    <span id="editTitle"></span>
+    <button class="edit-btn" onclick="saveEdit()">保存</button>
+  </header>
+
+  <div class="edit-body">
+    <label>
+      日付：
+      <input type="date" id="editDate">
+    </label>
+
+    <label>
+      本数：
+      <input type="number" id="editCount" min="0">
+    </label>
+
+    <label>
+      時刻：
+      <div id="timeTags" class="time-tags"></div>
+      <button type="button" onclick="addTimeTag()">＋ 追加</button>
+    </label>
+
+  </div>
+</div>
+
+  <!-- 成果画面 
+  <div id="achievements" class="tab">
+    <h2>成果</h2>
+    <div id="streakDisplay">連続禁煙：0日</div>
+    <ul id="badges"></ul>
+  </div>
+  -->
+
+  <!-- バッジ画面 -->
+  <div id="badgeTab" class="tab">
+    <h2>取得済バッジ一覧</h2>
+    <div id="earnedBadges"></div>
+    <h2>バッジ一覧</h2>
+    <div id="allBadges"></div>
+  </div>
+
+  <!-- 履歴画面 -->
+  <div id="history" class="tab">
+    <h2>履歴（週表示）</h2>
+    <div id="historyGraph"></div>
+  </div>
+
+<!-- 設定画面 -->
+<div id="settings" class="tab">
+  <h2>設定</h2>
+
+  <h3>行動設定</h3>
+  <label>
+    1日の目標本数：
+    <input type="number" id="dailyTarget" class="setting-input" min="0">
+    本
+  </label>
+
+  <h3>参考情報</h3>
+  <label>
+    タール：
+    <input type="number" step="0.1" id="tar" class="setting-input"> mg
+  </label><br>
+  <label>
+    ニコチン：
+    <input type="number" step="0.1" id="nicotine" class="setting-input"> mg
+  </label>
+  <div style="font-size:12px;color:#666;margin-top:4px;">
+    ※ 将来の統計・健康目安に使用予定
+  </div>
+
+  <h3>カレンダー表示</h3>
+
+  <label>
+    <input type="radio" name="calendarEvaluation"
+          value="target">
+    目標本数を基準に評価する
+  </label><br>
+  <label>
+    <input type="radio" name="calendarEvaluation"
+          value="none">
+    評価しない（記録のみ表示）
+  </label><br>
+
+  <h3>利用プラン</h3>
+  <div id="planInfo" style="margin-bottom:10px;"></div>
+
+  <h3>データ管理</h3>
+  <button onclick="resetAll()" style="color:#c00;">
+    全データをリセット
+  </button>
+
+  <div style="font-size:12px;color:#666;margin-top:10px;">
+    このアプリは端末内にデータを保存します。<br>
+    ブラウザのデータを削除すると記録も消えます。
+  </div>
+</div>
+
+  <!-- 下部タブ -->
+  <nav>
+    <button onclick="showTab('main')">⌂</button>
+    <button onclick="showTab('calendar')">📅</button>
+    <!--<button onclick="showTab('timeline')">🕒</button>-->
+    <!--<button onclick="showTab('achievements')">★</button>-->
+    <button onclick="showTab('badgeTab')">🏅</button>
+    <!--<button onclick="showTab('history')">📊</button>-->
+    <button onclick="showTab('settings')">⚙</button>
+  </nav>
+  <script src="rendar.js"></script>
+  <script>
+
+    // ===== デバッグ用 =====
+    seedDummyLogs();      // ← 追加
+    // ===== デバッグ用 =====
+
+    // ===== 初期化 =====
+    updateMainDisplay();
+
+    // 秒単位で更新
+    setInterval(updateMainDisplay, 1000);
+  </script>
+  <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./service-worker.js");
+  }
+  </script>
+</body>
+</html>

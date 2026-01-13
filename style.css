@@ -1,0 +1,261 @@
+body { 
+  font-family: sans-serif;
+  margin:0; 
+  padding:0; 
+}
+
+header { 
+  text-align:center; 
+  padding:10px; 
+  background:#f2f2f2; 
+}
+
+nav { 
+  position: fixed; 
+  bottom:0; 
+  width:100%; 
+  display:flex; 
+  background:#eee; 
+  border-top:1px solid #ccc; 
+  z-index: 2000; /* ← timelineOverlay より大きく */
+}
+
+nav button {
+  flex:1; 
+  padding:10px; 
+  font-size:18px; 
+}
+
+.tab { 
+  display:none; 
+  padding:20px; 
+  margin-bottom:60px; 
+}
+
+.active { 
+  display:block; 
+}
+
+.large-btn { 
+  display:block; 
+  width:80%; 
+  margin:20px auto; 
+  padding:20px; 
+  font-size:24px; 
+  border-radius:50%; 
+  background:#4CAF50; 
+  color:white; 
+  border:none; 
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar-head {
+  font-weight: bold;
+  text-align: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #ccc;
+}
+
+.calendar-day {
+  height: 48px;            /* ← 固定 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 4px 2px;
+}
+
+.day-number {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.day-count {
+  min-height: 14px;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.calendar-day.gray { color: #aaa;}
+.calendar-day.red { color: #d33; }
+.calendar-day.blue { color: #36f; }
+
+.calendar-day.success { 
+  background: #f3faf5;
+  box-shadow: inset 0 0 0 1px #9fd3b8;
+}
+.calendar-day.success-strong {
+  background: #f3faf5;
+  box-shadow: inset 0 0 0 2px #4caf50;
+}
+.calendar-day.achieved { background: #e6f4ea;}
+.calendar-day.over { background: #fff3cd;}
+.calendar-day.just { 
+  background: #c8e6c9;
+  border: 2px solid #4CAF50;
+}
+.calendar-day.over .day-count {
+  color: #d33;
+  font-weight: bold;
+}
+.calendar-day.no-log { opacity: 0.4;}
+
+.progress-mark {
+  font-size: 18px;
+  line-height: 1;
+  text-align: center;
+  color: #6fbf73;
+  margin-top: 2px;
+}
+
+.timeline-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 50px); /* nav分を除外 */
+  background: #fff;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.timeline-overlay.hidden {
+  display: none;
+}
+
+.timeline-header {
+  position: sticky;
+  top: 0;
+  background: #f2f2f2;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+.timeline-table {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+}
+
+.timeline-row {
+  display: contents;
+}
+
+.timeline-hour {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+  background: #f9f9f9;
+  font-weight: bold;
+  white-space: nowrap;      /* ← 折り返し禁止 */
+  width: 90px;              /* ← 列幅固定 */
+  box-sizing: border-box;
+  font-size: 14px;
+
+}
+
+.timeline-log {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.timeline-log span {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 2px 6px;
+  background: #e6f4ea;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.edit-btn {
+  margin-left: auto;
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+}
+
+.edit-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.edit-body label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.edit-body input {
+  font-size: 16px;
+  padding: 6px;
+}
+
+.time-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.time-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #eef;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+.time-tag input {
+  border: none;
+  background: transparent;
+  width: 70px;
+  font-size: 14px;
+}
+
+.time-tag button {
+  border: none;
+  background: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+
+#progress-bar { 
+  height:20px; 
+  background:#ddd; 
+  border-radius:10px; 
+  margin-top:5px; 
+}
+
+#progress { 
+  height:100%; 
+  width:0%; 
+  background:#4CAF50; 
+  border-radius:10px; 
+}
+.progress-green { background:#a2d5a2; }
+.progress-yellow { background:#f9f4a0; }
+.progress-red { background:#f4a0a0; }
+
+.badge { display:inline-block; margin:3px; padding:5px; border:1px solid #ccc; border-radius:4px; }
+.locked { opacity:0.3; }
+
+#message { 
+  text-align:center; 
+  color:#007700; 
+  margin:10px 0; 
+  min-height:24px; 
+}
