@@ -1,3 +1,4 @@
+/*
 const CACHE_NAME = "smoking-log-v0.0.4";
 self.addEventListener("install", e => {
   self.skipWaiting();
@@ -11,9 +12,9 @@ self.addEventListener("activate", e => {
   );
   self.clients.claim();
 });
+*/
 
-
-/*
+const CACHE_NAME = "smoking-log-v0.0.5";
 const CACHE_FILES = [
   "./",
   "./index.html",
@@ -59,4 +60,3 @@ self.addEventListener("fetch", event => {
     })
   );
 });
-*/
