@@ -1,5 +1,6 @@
 let currentTimelineDate = null;
 let editTimes = [];
+let lastTodayKey = getTodayKey();
 
 // ===== タブ切替 =====
 function showTab(id) {
@@ -25,8 +26,11 @@ function showTab(id) {
 function updateMainDisplay() {
   const logs = loadLogs();
   const s = loadSettings();
-  const today = new Date().toISOString().slice(0,10);
+  const today = getTodayKey();
   const todayLogs = logs[today] || [];
+
+  // 今日の日付表示
+  document.getElementById("todayDisplay").textContent = getTodayKey();  
 
   // 今日の本数表示
   document.getElementById("todayCountDisplay").textContent = `${todayLogs.length} / ${s.dailyTarget} 本`;
@@ -49,9 +53,9 @@ function updateMainDisplay() {
 
     const hh = lastTime.getHours().toString().padStart(2,'0');
     const mm = lastTime.getMinutes().toString().padStart(2,'0');
-
+    const text =  diffMin < 60 ? `${diffMin}分`: `${diffHour}時間${diffMinute}分`;
     document.getElementById("since").textContent = 
-      `禁煙中：${hh}時${mm}分から${diffMin}分`;
+      `禁煙中：${hh}時${mm}分から${text}`;
   }
 
   // 前回間隔は非表示
@@ -63,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("smokeBtn").addEventListener("click", () => {
     const logs = loadLogs();
-    const today = new Date().toISOString().slice(0,10);
+    const today = getTodayKey();
     if (!logs[today]) logs[today] = [];
     logs[today].push(new Date().toISOString());
     saveLogs(logs);
@@ -71,6 +75,34 @@ document.addEventListener("DOMContentLoaded", () => {
     checkBadges(); // 簡易バッジ更新
     });
 });
+
+// ===== 日付またぎ監視 =====
+function checkDateRollover() {
+  const nowKey = getTodayKey();
+  if (nowKey !== lastTodayKey) {
+    console.log("[DATE ROLLOVER]", lastTodayKey, "→", nowKey);
+    lastTodayKey = nowKey;
+
+    // 日付が変わった時にやるべきこと
+    updateMainDisplay();
+    renderCalendar();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  // 初回表示
+  lastTodayKey = getTodayKey();
+
+  // 1分ごとに日付チェック
+  setInterval(checkDateRollover, 60 * 1000);
+
+  // iOS対策：復帰時にも必ず確認
+  window.addEventListener("focus", checkDateRollover);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) checkDateRollover();
+  });
+});
+
 
 // ===== メッセージ =====
 function showMessage(msg) {
@@ -122,6 +154,11 @@ function renderCalendar() {
     const dayObj = new Date(year, month, d);
     const dow = dayObj.getDay();
 
+    // 日付取得
+    const todayKey = getTodayKey();
+    const isPast = dateKey < todayKey;
+    const isToday = dateKey === todayKey;
+
     // 前日キー
     const prevDate = new Date(year, month, d - 1);
     const prevKey =
@@ -138,10 +175,9 @@ function renderCalendar() {
     // 祝日
     if (holidays[dateKey]) cell.classList.add("red");
 
-    // 日付表示
-    const todayKey = new Date().toISOString().slice(0,10);
-    const isPast = dateKey < todayKey;
-    const isToday = dateKey === todayKey;
+    // 本日の表示
+    if (isToday) cell.classList.add("today");
+    if (isPast) cell.classList.add("past");
 
     // 記録なし
     if (!logs.hasOwnProperty(dateKey)) {
@@ -174,9 +210,7 @@ function renderCalendar() {
       if (count > target) {
         cell.classList.add("over");
       }
-
       
-
     }
     // HTML構造で描画
     cell.innerHTML = `
@@ -335,6 +369,7 @@ function closeEdit() {
 }
 
 function saveEdit() {
+  const oldDate = currentTimelineDate;
   const dateInput = document.getElementById("editDate");
   if (!dateInput) {
     console.error("editDate not found");
@@ -358,6 +393,9 @@ function saveEdit() {
       return new Date(`${date}T${t}:00`).toISOString();
     });
 
+  // 古い日付と新しい日付が違えば古い日付を削除
+  if(oldDate !== date) delete logs[oldDate];    
+
   // 完全上書き
   logs[date] = newTimes;
   saveLogs(logs);
@@ -365,6 +403,7 @@ function saveEdit() {
   // 画面更新
   closeEdit();
   closeTimeline();
+  updateMainDisplay();
   renderCalendar();
   showMessage("修正しました");
 }
@@ -392,6 +431,12 @@ function renderTimeTags() {
       renderTimeTags();
     };
 
+    del.addEventListener("click", (e) => {
+      e.stopPropagation();
+      editTimes.splice(index, 1);
+      renderTimeTags();
+      });
+
     tag.appendChild(input);
     tag.appendChild(del);
     container.appendChild(tag);
@@ -399,10 +444,12 @@ function renderTimeTags() {
 }
 
 function addTimeTag() {
-  editTimes.push("12:00");
+  const now = new Date();
+  const hh = now.getHours().toString().padStart(2,'0');
+  const mm = now.getMinutes().toString().padStart(2,'0');
+  editTimes.push(`${hh}:${mm}`);
   renderTimeTags();
 }
-
 
 
 // バッジ管理画面の表示

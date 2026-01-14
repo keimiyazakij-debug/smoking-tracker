@@ -42,6 +42,18 @@ function saveBadges(badges) {
   localStorage.setItem("badges", JSON.stringify(badges));
 }
 
+function formatDate(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function getTodayKey() {
+  const now = new Date();
+  const tzOffset = now.getTimezoneOffset() * 60000; // 分→ミリ秒
+  const localISO = new Date(now - tzOffset).toISOString().slice(0,10);
+  return localISO;
+}
+
+/*
 // ------------------------------------------------
 // ===== 開発用ダミーデータ =====
 function seedDummyLogs() {
@@ -90,4 +102,4 @@ function seedDummyLogs() {
   localStorage.setItem("dailyLogs", JSON.stringify(logs));
   console.log("ダミーデータを投入しました");
 }
-// ------------------------------------------------
+// ------------------------------------------------ */

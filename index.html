@@ -14,6 +14,21 @@
   </style>
   <script src="common.js"></script>
   <script src="config.js"></script>
+  <script>
+//    const ENV = "dev"; // ← dev / prod を切り替える
+    const ENV = "prod"; // ← dev / prod を切り替える
+    if ('serviceWorker' in navigator) {
+    const sw = ENV === "prod"
+      ? "./service-worker.prod.js"
+      : "./service-worker.dev.js";
+
+    navigator.serviceWorker.register(sw)
+      .then(() => console.log("SW registered:", sw))
+      .catch(err => console.error("SW error", err));
+    }
+    const BUILD = "2026-01-14-01";
+    console.log("BUILD:", BUILD);
+  </script>
 </head>
 <body>
   <header>
@@ -23,6 +38,7 @@
 
   <!-- メイン画面 -->
   <div id="main" class="tab active">
+    <div id="todayDisplay"></div>
     <h2>今日の本数</h2>
     <div id="todayCountDisplay">0 / 10 本</div>
     <div id="progress-bar"><div id="progress"></div></div>
@@ -167,8 +183,9 @@
   <script>
 
     // ===== デバッグ用 =====
-    seedDummyLogs();      // ← 追加
+    // seedDummyLogs();      // ← 追加
     // ===== デバッグ用 =====
+
 
     // ===== 初期化 =====
     updateMainDisplay();
