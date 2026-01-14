@@ -1,3 +1,13 @@
+self.addEventListener("install", e => {
+  console.log("SW install");
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", e => {
+  console.log("SW activate");
+  self.clients.claim();
+});
+/*
 const CACHE_NAME = "smoking-log-v0.0.3";
 const CACHE_FILES = [
   "./",
@@ -36,3 +46,4 @@ self.addEventListener("fetch", event => {
     })
   );
 });
+*/
