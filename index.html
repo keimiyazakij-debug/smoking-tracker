@@ -12,11 +12,9 @@
   <meta name="apple-mobile-web-app-title" content="禁煙ログ">
   <style>
   </style>
-  <script src="common.js"></script>
-  <script src="config.js"></script>
   <script>
-//    const ENV = "dev"; // ← dev / prod を切り替える
-    const ENV = "prod"; // ← dev / prod を切り替える
+    const ENV = "dev"; // ← dev / prod を切り替える
+//    const ENV = "prod"; // ← dev / prod を切り替える
     if ('serviceWorker' in navigator) {
     const sw = ENV === "prod"
       ? "./service-worker.prod.js"
@@ -179,24 +177,20 @@
     <!--<button onclick="showTab('history')">📊</button>-->
     <button onclick="showTab('settings')">⚙</button>
   </nav>
-  <script src="rendar.js"></script>
+
+  <script src="config.js"></script>
+  <script src="common.js"></script>
+  <script src="badgeEngine.js"></script>
+  <script src="badgeView.js"></script>
+  <script src="cheerEngine.js"></script>
+  <script src="logAction.js"></script>
+  <script src="mainView.js"></script>
+  <script src="app.js"></script>
+
   <script>
-
-    // ===== デバッグ用 =====
-    // seedDummyLogs();      // ← 追加
-    // ===== デバッグ用 =====
-
-
-    // ===== 初期化 =====
-    updateMainDisplay();
-
-    // 秒単位で更新
-    setInterval(updateMainDisplay, 1000);
-  </script>
-  <script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./service-worker.prod.js");
-  }
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./service-worker.prod.js");
+    }
   </script>
 </body>
 </html>

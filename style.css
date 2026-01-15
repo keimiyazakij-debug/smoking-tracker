@@ -1,3 +1,4 @@
+/* メイン部分 */
 body { 
   font-family: sans-serif;
   margin:0; 
@@ -10,22 +11,7 @@ header {
   background:#f2f2f2; 
 }
 
-nav { 
-  position: fixed; 
-  bottom:0; 
-  width:100%; 
-  display:flex; 
-  background:#eee; 
-  border-top:1px solid #ccc; 
-  z-index: 2000; /* ← timelineOverlay より大きく */
-}
-
-nav button {
-  flex:1; 
-  padding:10px; 
-  font-size:18px; 
-}
-
+/* メイン画面 */
 .tab { 
   display:none; 
   padding:20px; 
@@ -47,7 +33,56 @@ nav button {
   color:white; 
   border:none; 
 }
+.progress-mark {
+  font-size: 18px;
+  line-height: 1;
+  text-align: center;
+  color: #6fbf73;
+  margin-top: 2px;
+}
 
+#progress-bar { 
+  height:20px; 
+  background:#ddd; 
+  border-radius:10px; 
+  margin-top:5px; 
+}
+
+#progress { 
+  height:100%; 
+  width:0%; 
+  background:#4CAF50; 
+  border-radius:10px; 
+}
+.progress-green { background:#a2d5a2; }
+.progress-yellow { background:#f9f4a0; }
+.progress-red { background:#f4a0a0; }
+
+#message { 
+  text-align:center; 
+  color:#007700; 
+  margin:10px 0; 
+  min-height:24px; 
+}
+
+/* ナビゲーション */
+nav { 
+  position: fixed; 
+  bottom:0; 
+  width:100%; 
+  display:flex; 
+  background:#eee; 
+  border-top:1px solid #ccc; 
+  z-index: 2000; /* ← timelineOverlay より大きく */
+}
+
+nav button {
+  flex:1; 
+  padding:10px; 
+  font-size:18px; 
+}
+
+/* カレンダー表示 */
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -111,14 +146,7 @@ nav button {
 }
 .calendar-day.no-log { opacity: 0.4;}
 
-.progress-mark {
-  font-size: 18px;
-  line-height: 1;
-  text-align: center;
-  color: #6fbf73;
-  margin-top: 2px;
-}
-
+/* タイムライン表示 */
 .timeline-overlay {
   position: fixed;
   top: 0;
@@ -163,7 +191,6 @@ nav button {
   width: 90px;              /* ← 列幅固定 */
   box-sizing: border-box;
   font-size: 14px;
-
 }
 
 .timeline-log {
@@ -189,6 +216,7 @@ nav button {
   background: #fff;
 }
 
+/* 記録の編集画面 */
 .edit-body {
   padding: 20px;
   display: flex;
@@ -238,30 +266,16 @@ nav button {
   cursor: pointer;
 }
 
-
-#progress-bar { 
-  height:20px; 
-  background:#ddd; 
-  border-radius:10px; 
-  margin-top:5px; 
-}
-
-#progress { 
-  height:100%; 
-  width:0%; 
-  background:#4CAF50; 
-  border-radius:10px; 
-}
-.progress-green { background:#a2d5a2; }
-.progress-yellow { background:#f9f4a0; }
-.progress-red { background:#f4a0a0; }
-
+/* バッジ管理画面 */
 .badge { display:inline-block; margin:3px; padding:5px; border:1px solid #ccc; border-radius:4px; }
+.badge.earned {
+  background: #e6f4ea;
+  border-color: #4caf50;
+  font-weight: bold;
+}
+
+.badge.locked {
+  opacity: 0.4;
+}
 .locked { opacity:0.3; }
 
-#message { 
-  text-align:center; 
-  color:#007700; 
-  margin:10px 0; 
-  min-height:24px; 
-}

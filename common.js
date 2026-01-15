@@ -1,9 +1,4 @@
-// ===== バッジ =====　（とりあえず配列）
-const badgeMaster = [
-  { key: "5min", label: "🌱 5分達成", condition: 5 },
-  { key: "30min", label: "⏳ 30分達成", condition: 30 },
-  { key: "1hour", label: "🏅 1時間達成", condition: 60 }
-];
+
 
 // ===== カレンダー用の変数宣言 =====
 const today = new Date();
@@ -24,6 +19,19 @@ function saveSettings(settings) {
   localStorage.setItem("settings", JSON.stringify(settings));
 }
 
+// 更新系のとりまとめ
+function afterLogChanged() {
+  updateBadges();
+  updateMainDisplay();
+  renderCalendar();
+}
+
+// 日付取得用の関数
+function getDateKey(date = new Date()) {
+  const tzOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date - tzOffset).toISOString().slice(0,10);
+}
+
 // 今日の喫煙データ
 function loadLogs() {
   return JSON.parse(localStorage.getItem("dailyLogs") || "{}");
@@ -32,6 +40,40 @@ function loadLogs() {
 function saveLogs(logs) {
   localStorage.setItem("dailyLogs", JSON.stringify(logs));
 }
+
+// 最新の喫煙データを取得
+function getLastSmokeTime(logs) {
+  let last = null;
+
+  Object.values(logs).forEach(times => {
+    times.forEach(t => {
+      const d = new Date(t);
+      if (!last || d > last) last = d;
+    });
+  });
+
+  return last; // Date or null
+}
+
+// メイン画面用の時間表示フォーマット
+function formatDurationFromMinutes(totalMin) {
+  if (totalMin < 60) {
+    return `${totalMin}分`;
+  }
+
+  const hours = Math.floor(totalMin / 60);
+  const minutes = totalMin % 60;
+
+  if (hours < 24) {
+    return `${hours}時間${minutes}分`;
+  }
+
+  const days = Math.floor(hours / 24);
+  const remainHours = hours % 24;
+
+  return `${days}日${remainHours}時間`;
+}
+
 
 // バッジ
 function loadBadges() {
@@ -42,16 +84,6 @@ function saveBadges(badges) {
   localStorage.setItem("badges", JSON.stringify(badges));
 }
 
-function formatDate(date) {
-  return date.toISOString().slice(0, 10);
-}
-
-function getTodayKey() {
-  const now = new Date();
-  const tzOffset = now.getTimezoneOffset() * 60000; // 分→ミリ秒
-  const localISO = new Date(now - tzOffset).toISOString().slice(0,10);
-  return localISO;
-}
 
 /*
 // ------------------------------------------------
