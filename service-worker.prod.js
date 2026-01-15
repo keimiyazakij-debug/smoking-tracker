@@ -19,17 +19,24 @@ const CACHE_FILES = [
   "./",
   "./index.html",
   "./style.css",
-  "./common.js",
+
   "./config.js",
-  "./rendar.js",
+  "./common.js",
+
+  "./app.js",
+  "./mainView.js",
+  "./logAction.js",
+
+  "./badgeEngine.js",
+  "./badgeView.js",
   "./cheerEngine.js",
+
   "./manifest.json"
 ];
-
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async cache => {
-      for (const url of URLS_TO_CACHE) {
+      for (const url of CACHE_FILES) {
         try {
           await cache.add(url);
         } catch (e) {
