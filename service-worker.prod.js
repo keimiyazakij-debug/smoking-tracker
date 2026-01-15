@@ -14,7 +14,7 @@ self.addEventListener("activate", e => {
 });
 */
 
-const CACHE_NAME = "smoking-log-v0.0.5";
+const CACHE_NAME = "smoking-log-v0.0.6";
 const CACHE_FILES = [
   "./",
   "./index.html",
