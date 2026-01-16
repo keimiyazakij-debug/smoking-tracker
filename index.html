@@ -13,8 +13,8 @@
   <style>
   </style>
   <script>
-    const ENV = "dev"; // ← dev / prod を切り替える
-//    const ENV = "prod"; // ← dev / prod を切り替える
+//    const ENV = "dev"; // ← dev / prod を切り替える
+    const ENV = "prod"; // ← dev / prod を切り替える
     if ('serviceWorker' in navigator) {
     const sw = ENV === "prod"
       ? "./service-worker.prod.js"
