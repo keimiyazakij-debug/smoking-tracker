@@ -1,20 +1,4 @@
-/*
-const CACHE_NAME = "smoking-log-v0.0.4";
-self.addEventListener("install", e => {
-  self.skipWaiting();
-});
-
-self.addEventListener("activate", e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.map(k => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
-});
-*/
-
-const CACHE_NAME = "smoking-log-v0.0.6";
+const CACHE_NAME = "smoking-log-v0.0.7";
 const CACHE_FILES = [
   "./",
   "./index.html",

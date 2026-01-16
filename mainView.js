@@ -40,6 +40,247 @@ function updateMainDisplay() {
   document.getElementById("interval").textContent = "";
 }
 
+
+// ===== カレンダー画面の描画 =====
+function renderCalendar() {
+  const grid = getCalendarGrid();
+  if (!grid) return;
+
+  clearCalendar(grid);
+
+  const ctx = buildCalendarContext();
+
+  renderWeekHeader(grid);
+  renderPrevMonth(grid, ctx);
+  renderCurrentMonth(grid, ctx);
+  renderNextMonth(grid, ctx);
+  updateCalendarTitle(ctx);
+}
+
+function getCalendarGrid() {
+  return document.getElementById("calendarGrid");
+}
+
+function clearCalendar(grid) {
+  grid.innerHTML = "";
+}
+
+// ===== カレンダー用のコンテキストの作成 =====
+function buildCalendarContext() {
+  const year = currentYear;
+  const month = currentMonth;
+
+  return {
+    year,
+    month,
+    logs: loadLogs(),
+    target: loadSettings().dailyTarget,
+    todayKey: getDateKey(),
+    firstDay: new Date(year, month, 1).getDay(),
+    lastDate: new Date(year, month + 1, 0).getDate(),
+    prevLastDate: new Date(year, month, 0).getDate(),
+    downStreak: 0
+  };
+}
+
+// カレンダーの曜日ヘッダーの作成
+function renderWeekHeader(grid) {
+  const week = ["日", "月", "火", "水", "木", "金", "土"];
+  week.forEach((w, i) => {
+    const h = document.createElement("div");
+    h.className = "calendar-head";
+    h.textContent = w;
+    if (i === 0) h.classList.add("red");
+    if (i === 6) h.classList.add("blue");
+    grid.appendChild(h);
+  });
+}
+
+// 今月に含まれる前月部分の作成
+function renderPrevMonth(grid, ctx) {
+  const { firstDay, prevLastDate } = ctx;
+
+  for (let i = firstDay - 1; i >= 0; i--) {
+    const cell = document.createElement("div");
+    cell.className = "calendar-day gray";
+    cell.textContent = prevLastDate - i;
+    grid.appendChild(cell);
+  }
+}
+
+// 今月に含まれる翌月部分の作成
+function renderNextMonth(grid, ctx) {
+  const { firstDay, lastDate } = ctx;
+  const total = firstDay + lastDate;
+  const remain = (7 - (total % 7)) % 7;
+
+  for (let i = 1; i <= remain; i++) {
+    const cell = document.createElement("div");
+    cell.className = "calendar-day gray";
+    cell.textContent = i;
+    grid.appendChild(cell);
+  }
+}
+
+// カレンダー１月分のセルを作成
+function renderCurrentMonth(grid, ctx) {
+  for (let d = 1; d <= ctx.lastDate; d++) {
+    const cell = createDayCell(d, ctx);
+    grid.appendChild(cell);
+  }
+}
+
+// カレンダーの１日分のセルを作成
+function createDayCell(d, ctx) {
+  const { year, month, logs, target, todayKey } = ctx;
+  const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+
+  const count = logs[dateKey]?.length ?? null;
+  const prevInfo = getPrevDayInfo(dateKey, logs);
+  const prevCount = prevInfo?.count ?? null;
+
+  const isPast = dateKey < todayKey;
+  const isToday = dateKey === todayKey;
+
+  const cell = document.createElement("div");
+  cell.className = "calendar-day";
+
+  decorateDayCell(cell, d, count, dateKey, ctx);
+  applyEvaluation(cell, count, prevCount, ctx);
+
+  attachDayEvents(cell, dateKey, logs);
+
+  return cell;
+}
+
+// カレンダーの１日分のセルを装飾
+function decorateDayCell(cell, d, count, dateKey, ctx) {
+  const { year, month, logs, todayKey } = ctx;
+
+  const dow = new Date(year, month, d).getDay();
+  const isPast = dateKey < todayKey;
+  const isToday = dateKey === todayKey;
+
+  // 曜日色
+  if (dow === 0) cell.classList.add("red");
+  if (dow === 6) cell.classList.add("blue");
+
+  // 今日・過去
+  if (isToday) cell.classList.add("today");
+  if (isPast) cell.classList.add("past");
+
+  // 記録なし
+  if (!logs.hasOwnProperty(dateKey)) {
+    cell.classList.add("no-log");
+  }
+
+  // 中身
+  cell.innerHTML = `
+    <div class="day-number">${d}</div>
+    <div class="day-count">${count !== null ? `${count}本` : ""}</div>
+  `;
+}
+
+// １日の評価を実行
+function applyEvaluation(cell, count, prevCount, ctx) {
+  const evalType = getDayEvaluation({
+    count,
+    prevCount,
+    target: ctx.target,
+    isPast: cell.classList.contains("past")
+  });
+
+  if (!evalType) return;
+
+  // 🔥 streak 管理（ここが重要）
+  if (evalType === "down") {
+    ctx.downStreak++;
+  } else if (evalType === "up") {
+    ctx.downStreak = 0;
+  }
+  // same / success は streak 維持
+
+  const diff =
+    prevCount !== null && count !== null ? count - prevCount : 0;
+
+  const mark = createEvaluationMark(evalType, ctx.downStreak, diff);
+  if (mark) cell.appendChild(mark);
+
+  // ✨ 3日以上減少ボーナス
+  if (ctx.downStreak >= 3 && evalType === "down") {
+    const bonus = document.createElement("div");
+    bonus.className = "calendar-sparkle";
+    bonus.textContent = "✨";
+
+    bonus.addEventListener("click", (e) => {
+        e.stopPropagation();
+        showMessage(`減少が${ctx.downStreak}日連続しています！`);
+      });
+    cell.appendChild(bonus);
+  }
+}
+
+// カレンダーの１日とイベントを紐づけ
+function attachDayEvents(cell, dateKey, logs) {
+  cell.addEventListener("click", () => {
+    if (logs[dateKey]) {
+      openTimeline(dateKey);
+    } else {
+      currentTimelineDate = dateKey;
+      openEdit();
+    }
+  });
+}
+
+// カレンダーに表示する評価系のアイコンの表示
+function createEvaluationMark(evalType, downStreak, diff) {
+  let markText = "";
+  let markClass = "";
+
+  if (evalType === "down") {
+    markText = downStreak >= 2 ? "★" : "☆";
+    markClass = "calendar-mark mark-down";
+  }
+
+  if (evalType === "success") {
+    markText = "🏆";
+    markClass = "calendar-mark mark-success";
+  }
+
+  if (evalType === "same") {
+    markText = "＝";
+    markClass = "calendar-mark mark-same";
+  }
+
+  if (evalType === "up") {
+    markText = "⚠";
+    markClass = "calendar-mark mark-up";
+  }
+
+  if (!markText) return null;
+
+  const mark = document.createElement("div");
+  mark.className = markClass;
+  mark.textContent = markText;
+
+  mark.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const msg = getEvaluationMessage(evalType, diff, downStreak);
+    if (msg) showMessage(msg);
+  });
+
+  return mark;
+}
+
+// カレンダーの先頭部にメッセージを表示
+function updateCalendarTitle(ctx) {
+  const title = document.getElementById("calendarTitle");
+  if (!title) return;
+
+  title.textContent = `${ctx.year}年 ${ctx.month + 1}月`;
+}
+
+/*
 // ===== カレンダー画面の描画 =====
 function renderCalendar() {
   const grid = document.getElementById("calendarGrid");
@@ -51,128 +292,131 @@ function renderCalendar() {
 
   const logs = loadLogs();
   const target = loadSettings().dailyTarget;
-  const firstDay = new Date(year, month, 1).getDay(); // 0=日
+
+  const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month + 1, 0).getDate();
   const prevLastDate = new Date(year, month, 0).getDate();
 
-  
-  /* ---------- 曜日ヘッダー ---------- */
+  const todayKey = getDateKey();
+  let downStreak = 0;
+
+  // ---------- 曜日ヘッダー ---------- 
   const week = ["日", "月", "火", "水", "木", "金", "土"];
   week.forEach((w, i) => {
     const h = document.createElement("div");
     h.className = "calendar-head";
     h.textContent = w;
-    if (i === 0) h.classList.add("calendar-day","red");
-    if (i === 6) h.classList.add("calendar-day","blue");
+    if (i === 0) h.classList.add("red");
+    if (i === 6) h.classList.add("blue");
     grid.appendChild(h);
   });
 
-  /* ---------- 前月グレー ---------- */
+  // ---------- 前月 ---------- 
   for (let i = firstDay - 1; i >= 0; i--) {
-    const d = prevLastDate - i;
     const cell = document.createElement("div");
     cell.className = "calendar-day gray";
-    cell.textContent = d;
+    cell.textContent = prevLastDate - i;
     grid.appendChild(cell);
   }
 
-  /* ---------- 今月 ---------- */
+  // ---------- 今月 ---------- 
   for (let d = 1; d <= lastDate; d++) {
     const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    const count = logs[dateKey]?.length || 0;
-    const dayObj = new Date(year, month, d);
-    const dow = dayObj.getDay();
+    const count = logs[dateKey]?.length ?? null;
 
-    // 日付取得
-    const todayKey = getDateKey();
+    const prevInfo = getPrevDayInfo(dateKey, logs);
+    const prevCount = prevInfo ? prevInfo.count : null;
+
     const isPast = dateKey < todayKey;
     const isToday = dateKey === todayKey;
 
-    // 前日キー
-    const prevDate = new Date(year, month, d - 1);
-    const prevKey =
-      `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}-${String(prevDate.getDate()).padStart(2, "0")}`; 
-    const prevCount = logs[prevKey]?.length ?? null;    
-
     const cell = document.createElement("div");
     cell.className = "calendar-day";
+    cell.style.position = "relative";
 
-    // 曜日色
+    const dow = new Date(year, month, d).getDay();
     if (dow === 0) cell.classList.add("red");
     if (dow === 6) cell.classList.add("blue");
 
-    // 祝日
-    if (holidays[dateKey]) cell.classList.add("red");
-
-    // 本日の表示
     if (isToday) cell.classList.add("today");
     if (isPast) cell.classList.add("past");
+    if (!logs.hasOwnProperty(dateKey)) cell.classList.add("no-log");
 
-    // 記録なし
-    if (!logs.hasOwnProperty(dateKey)) {
-      cell.classList.add("no-log");
-    }
-
-    let countText = "";
-
-    // ログが存在する日
-    const isProgress =
-      prevCount !== null &&
-      prevCount > 0 &&          // ← これを追加
-      count > 0 &&
-      count < prevCount &&
-      count <= target &&
-      !cell.classList.contains("success") &&
-      !cell.classList.contains("over");
-
-    if (logs[dateKey]) {
-      const count = logs[dateKey]?.length ?? null;
-
-      countText = `${count}本`;
-
-      // 過去日の禁煙成功
-      if (count === 0 && dateKey < todayKey) {
-        cell.classList.add("success");
-      }
-
-      // 目標超過
-      if (count > target) {
-        cell.classList.add("over");
-      }
-      
-    }
-    // HTML構造で描画
     cell.innerHTML = `
-      <div class="day-number">${d}${holidays[dateKey] ? " 🎌" : ""}</div>
-      <div class="day-count">${countText}</div>
+      <div class="day-number">${d}</div>
+      <div class="day-count">${count !== null ? `${count}本` : ""}</div>
     `;
 
-    if (isProgress) {
+    // ===== 評価判定 ===== 
+    const evalType = getDayEvaluation({
+      count,
+      prevCount,
+      target,
+      isPast
+    });
+
+    let markText = "";
+    let markClass = "";
+    let diff = prevCount !== null && count !== null ? count - prevCount : 0;
+
+    if (evalType === "down") {
+      downStreak++;
+      markText = downStreak >= 2 ? "★" : "☆";
+      markClass = "calendar-mark mark-down";
+    } else if (evalType !== null) {
+      downStreak = 0;
+    }
+
+    if (evalType === "success") {
+      markText = "🏆";
+      markClass = "calendar-mark mark-success";
+    }
+
+    if (evalType === "same") {
+      markText = "＝";
+      markClass = "calendar-mark mark-same";
+    }
+
+    if (evalType === "up") {
+      markText = "⚠";
+      markClass = "calendar-mark mark-up";
+    }
+
+    if (markText) {
       const mark = document.createElement("div");
-      mark.className = "progress-mark";
-      mark.textContent = "·";
+      mark.className = markClass;
+      mark.textContent = markText;
+
+      mark.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const msg = getEvaluationMessage(evalType, diff, downStreak);
+        if (msg) showMessage(msg);
+      });
       cell.appendChild(mark);
     }
 
-    cell.addEventListener("click", () => {
-      const logs = loadLogs();
+    // ===== ✨ ボーナス ===== 
+    if (downStreak >= 3) {
+      addCalendarMark(dayCell, "✨", {
+        type: "streak",
+        streak: downStreak
+      });
+    }
 
+    cell.addEventListener("click", () => {
       if (logs[dateKey]) {
-        // 入力済み → タイムライン
         openTimeline(dateKey);
       } else {
-        // 未入力 → 修正（新規入力）
         currentTimelineDate = dateKey;
         openEdit();
       }
     });
+
     grid.appendChild(cell);
   }
-  
-  /* ---------- 翌月グレー ---------- */
-  const totalCells = firstDay + lastDate;
-  const remain = (7 - (totalCells % 7)) % 7;
 
+  // ---------- 翌月 ---------- 
+  const remain = (7 - ((firstDay + lastDate) % 7)) % 7;
   for (let i = 1; i <= remain; i++) {
     const cell = document.createElement("div");
     cell.className = "calendar-day gray";
@@ -180,10 +424,81 @@ function renderCalendar() {
     grid.appendChild(cell);
   }
 
-  /* ---------- タイトル更新 ---------- */
   const title = document.getElementById("calendarTitle");
   if (title) title.textContent = `${year}年 ${month + 1}月`;
 }
+*/
+
+//　連続達成アイコンのコンテナ作成
+function addCalendarMark(cell, icon, meta) {
+  const mark = document.createElement("div");
+  mark.className = "calendar-mark";
+  mark.textContent = icon;
+
+  mark.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    const msg = getEvaluationMessage(
+      meta.type,
+      meta.diff,
+      meta.streak
+    );
+
+    if (msg) showToast(msg);
+  });
+
+  cell.appendChild(mark);
+}
+
+
+// カレンダー上の評価判定
+function getDayEvaluation({ count, prevCount, target, isPast }) {
+  if (!isPast || prevCount === null) return null;
+  if (count === 0) return "success";
+  if (count < prevCount) return "down";
+  if (count > prevCount) return "up";
+  return "same";
+}
+
+// カレンダー上の評価メッセージ
+function getEvaluationMessage(type, diff, streak) {
+  switch (type) {
+    case "success":
+      return "今日は禁煙達成です 🏆\nこの1日は確実な実績です。";
+    case "down":
+      if (streak >= 3) {
+        return "3日以上、減少が続いています ✨\n確実に習慣が変わっています。";
+      }
+      if (streak >= 2) {
+        return "減少が続いています ★\nこの流れ、とても良いです。";
+      }
+      return "前日より減りました ☆\n良い一歩です。";
+    case "same":
+      return "前日と同じ本数です。\n維持できています 👍";
+    case "up":
+      return `前日より +${diff}本。\nでもまた減らせます 👍`;
+    default:
+      return "";
+  }
+}
+
+// ===== 前日日付取得（月またぎ対応） =====
+function getPrevDayInfo(dateKey, logs) {
+  const date = new Date(dateKey);
+  date.setDate(date.getDate() - 1);
+  const prevKey = getDateKey(date);
+
+  if (!logs.hasOwnProperty(prevKey)) {
+    return null;
+  }
+
+  return {
+    key: prevKey,
+    count: logs[prevKey].length
+  };
+}
+
+
 
 // ===== タイムライン画面の描画 =====
 function renderTimelineForDate(dateKey) {

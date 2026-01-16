@@ -1,8 +1,7 @@
 // グローバル変数の宣言
 let currentTimelineDate = null;
 let lastTodayKey = getDateKey();
-let viewYear;
-let viewMonth;
+let editTimes = [];
 
 // イベント処理を集約する
 // 初期表示時のタイマー起動
@@ -11,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
   lastTodayKey = getDateKey();
 
    // ===== 初回描画 =====
-  initAppState();
   updateMainDisplay();
   renderCalendar();
   updateBadges();
@@ -30,12 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// ===== 初期化 =====
-function initAppState() {
-  const now = new Date();
-  viewYear = now.getFullYear();
-  viewMonth = now.getMonth();
-}
 
 // 更新系のとりまとめ
 function afterLogChanged() {
@@ -51,7 +43,10 @@ function showTab(id) {
   closeTimeline();
 
   //画面描画処理（navタグのonClickで起動）
-  if (id === "calendar") renderCalendar();
+  if (id === "calendar") {
+    resetCalendarToToday(); 
+    renderCalendar();
+  }
   if (id === "badgeTab") renderBadges();
   if (id === "settings") renderSettings();
 
@@ -81,8 +76,8 @@ function checkDateRollover() {
 function prevMonth() {
   currentMonth--;
   if (currentMonth < 0) {
-    viewMonth = 11;
-    viewYear--;
+    currentMonth = 11;
+    currentYear--;
   }
   renderCalendar();
 }
@@ -91,10 +86,17 @@ function prevMonth() {
 function nextMonth() {
   currentMonth++;
   if (currentMonth > 11) {
-    viewMonth = 0;
-    viewYear++;
+    currentMonth = 0;
+    currentYear++;
   }
   renderCalendar();
+}
+
+// ===== カレンダー画面を現在表示に戻す =====
+function resetCalendarToToday() {
+  const now = new Date();
+  currentYear = now.getFullYear();
+  currentMonth = now.getMonth();
 }
 
 // ===== タイムライン画面の表示 =====
