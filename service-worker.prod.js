@@ -1,22 +1,46 @@
-const CACHE_NAME = "smoking-log-v0.0.7";
+const CACHE_NAME = "smoking-log-v1.0.0";
+
 const CACHE_FILES = [
   "./",
   "./index.html",
   "./style.css",
+  "./manifest.json",
 
-  "./config.js",
-  "./common.js",
+  // ===== 定数・共通 =====
+  "./common/constant.js",
+  "./common/common.js",
 
-  "./app.js",
-  "./mainView.js",
-  "./logAction.js",
+  // ===== Model =====
+  "./model/logModel.js",
+  "./model/settingModel.js",
+  "./model/editModel.js",
+  "./model/dailyTaskModel.js",
+  "./model/badgeModel.js",
+  "./model/calendarModel.js",
+  "./model/cheerModel.js",
 
-  "./badgeEngine.js",
-  "./badgeView.js",
-  "./cheerEngine.js",
+  // ===== View =====
+  "./view/mainView.js",
+  "./view/calendarView.js",
+  "./view/timelineView.js",
+  "./view/editView.js",
+  "./view/dailyTaskView.js",
+  "./view/badgeView.js",
+  "./view/settingView.js",
+  "./view/messageView.js",
 
-  "./manifest.json"
+  // ===== Controller =====
+  "./controller/messageController.js",
+  "./controller/mainController.js",
+  "./controller/calendarController.js",
+  "./controller/timelineController.js",
+  "./controller/editController.js",
+  "./controller/dailyTaskController.js",
+  "./controller/badgeController.js",
+  "./controller/settingController.js",
+  "./controller/appController.js"
 ];
+
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async cache => {
@@ -46,8 +70,6 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
-    })
+    caches.match(event.request).then(res => res || fetch(event.request))
   );
 });

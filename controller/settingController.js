@@ -1,3 +1,5 @@
+(function () {
+
 const holidays = {};
 let settingsInputs = [];
 
@@ -35,3 +37,18 @@ function saveCurrentSettings() {
   settingsInputs.forEach(input => s[input.id] = Number(input.value));
   saveSettings(s);
 }
+
+// ===== 設定画面でのプランの判定 =====
+function isPremium() {
+  // 今は固定で false（将来ここを書き換える）
+  return false;
+}
+
+// ===== 設定画面でのデータ消去処理 =====
+function resetAll() {
+  if (!confirm("すべての記録と設定が削除されます。よろしいですか？")) return;
+  localStorage.clear();
+  location.reload();
+}
+
+})();

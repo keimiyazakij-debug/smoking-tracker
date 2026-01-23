@@ -11,7 +11,9 @@ header {
   background:#f2f2f2; 
 }
 
-/* メイン画面 */
+/* ------------------------------ */
+/* メイン画面                      */
+/* ------------------------------ */
 .tab { 
   display:none; 
   padding:20px; 
@@ -32,13 +34,6 @@ header {
   background:#4CAF50; 
   color:white; 
   border:none; 
-}
-.progress-mark {
-  font-size: 18px;
-  line-height: 1;
-  text-align: center;
-  color: #6fbf73;
-  margin-top: 2px;
 }
 
 #progress-bar { 
@@ -81,6 +76,10 @@ nav button {
   padding:10px; 
   font-size:18px; 
 }
+
+/* ------------------------------ */
+/* カレンダー画面                  */
+/* ------------------------------ */
 
 /* カレンダー表示 */
 .calendar-grid {
@@ -136,21 +135,10 @@ nav button {
   cursor: pointer;
   padding: 2px 4px;
 }
-.mark-success {
-  color: #f9a825; /* 金寄り */
-}
-
-.mark-down {
-  color: #2196F3;   /* 青 */
-}
-
-.mark-same {
-  color: #9e9e9e;   /* グレー */
-}
-
-.mark-up {
-  color: #FB8C00;   /* オレンジ（警告） */
-}
+.mark-success {color: #f9a825; }
+.mark-down { color: #2196F3; }
+.mark-same { color: #9e9e9e; }
+.mark-up { color: #FB8C00; }
 
 /* 連続減少ボーナス */
 .calendar-sparkle {
@@ -159,6 +147,10 @@ nav button {
   right: 4px;
   font-size: 12px;
 }
+
+/* ------------------------------ */
+/* タイムライン画面                */
+/* ------------------------------ */
 
 /* タイムライン表示 */
 .timeline-overlay {
@@ -230,6 +222,10 @@ nav button {
   background: #fff;
 }
 
+/* ------------------------------ */
+/* 記録編集画面 　　               */
+/* ------------------------------ */
+
 /* 記録の編集画面 */
 .edit-body {
   padding: 20px;
@@ -280,6 +276,10 @@ nav button {
   cursor: pointer;
 }
 
+/* ------------------------------ */
+/* バッジ一覧画面　　               */
+/* ------------------------------ */
+
 /* バッジ管理画面 */
 .badge { display:inline-block; margin:3px; padding:5px; border:1px solid #ccc; border-radius:4px; }
 .badge.earned {
@@ -293,3 +293,72 @@ nav button {
 }
 .locked { opacity:0.3; }
 
+/* ------------------------------ */
+/* デイリータスク画面　             */
+/* ------------------------------ */
+
+/* デイリータスク画面 */
+.daily-challenge .challenge-item {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.daily-challenge .challenge-item.done {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+/* ===== 今日のチャレンジ：オーバーレイ ===== */
+.overlay.daily-challenge {
+  position: fixed;
+  inset: 0;                /* top:0; right:0; bottom:0; left:0 */
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay.daily-challenge.hidden {
+  display: none;
+}
+
+/* 中身 */
+.daily-challenge .overlay-content {
+  background: #fff;
+  width: 90%;
+  max-width: 480px;
+  max-height: 85vh;
+
+  display: flex;
+  flex-direction: column;
+
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ヘッダー */
+.daily-challenge .overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  flex-shrink: 0;
+}
+
+/* リスト部分だけスクロール */
+.daily-challenge .challenge-list {
+  padding: 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* フッター */
+.daily-challenge .overlay-footer {
+  padding: 12px;
+  border-top: 1px solid #ddd;
+  flex-shrink: 0;
+}

@@ -13,8 +13,8 @@
   <style>
   </style>
   <script>
-//    const ENV = "dev"; // ← dev / prod を切り替える
-    const ENV = "prod"; // ← dev / prod を切り替える
+    const ENV = "dev"; // ← dev / prod を切り替える
+//  const ENV = "prod"; // ← dev / prod を切り替える
     if ('serviceWorker' in navigator) {
     const sw = ENV === "prod"
       ? "./service-worker.prod.js"
@@ -24,7 +24,7 @@
       .then(() => console.log("SW registered:", sw))
       .catch(err => console.error("SW error", err));
     }
-    const BUILD = "2026-01-14-01";
+    const BUILD = "2026-01-22-01";
     console.log("BUILD:", BUILD);
   </script>
 </head>
@@ -42,16 +42,20 @@
     <div id="progress-bar"><div id="progress"></div></div>
     <button class="large-btn" id="smokeBtn">吸った</button>
     <div id="since">禁煙時間：0分</div>
-    <div id="interval">前回から：0分</div>
+    <div class="daily-challenge-link">
+      <button id="dailyChallengeLink" class="text-link">
+        今日のチャレンジ
+      </button>
+    </div>
   </div>
 
   <!-- カレンダー画面 -->
   <div id="calendar" class="tab">
     <h2>カレンダー</h2>
     <div class="calendar-header">
-      <button onclick="prevMonth()">◀</button>
+      <button onclick="calendarController.prevMonth()">◀</button>
       <span id="calendarTitle"></span>
-      <button onclick="nextMonth()">▶</button>
+      <button onclick="calendarController.nextMonth()">▶</button>
     </div>
     <div id="calendarGrid" class="calendar-grid"></div>
   </div>
@@ -59,9 +63,9 @@
 <!-- タイムライン（オーバーレイ） -->
 <div id="timelineOverlay" class="timeline-overlay hidden">
   <header class="timeline-header">
-    <button onclick="closeTimeline()">← 戻る</button>
+    <button id="closeTimelineBtn">← 戻る</button>
     <span id="timelineTitle"></span>
-    <button class="edit-btn" onclick="openEdit()">修正</button>
+    <button class="edit-btn" id="openEditBtn">修正</button>
   </header>
   <div id="timelineList" class="timeline-table"></div>
 </div>
@@ -69,9 +73,9 @@
 <!-- 修正画面（オーバーレイ） -->
 <div id="editOverlay" class="timeline-overlay hidden">
   <header class="timeline-header">
-    <button onclick="closeEdit()">← 戻る</button>
+    <button id="closeEditBtn">← 戻る</button>
     <span id="editTitle"></span>
-    <button class="edit-btn" onclick="saveEdit()">保存</button>
+    <button class="edit-btn" id="saveEditBtn">保存</button>
   </header>
 
   <div class="edit-body">
@@ -88,7 +92,7 @@
     <label>
       時刻：
       <div id="timeTags" class="time-tags"></div>
-      <button type="button" onclick="addTimeTag()">＋ 追加</button>
+      <button type="button" id="addTimeTagBtn">＋ 追加</button>
     </label>
 
   </div>
@@ -178,19 +182,50 @@
     <button onclick="showTab('settings')">⚙</button>
   </nav>
 
-  <script src="config.js"></script>
-  <script src="common.js"></script>
-  <script src="badgeEngine.js"></script>
-  <script src="badgeView.js"></script>
-  <script src="cheerEngine.js"></script>
-  <script src="logAction.js"></script>
-  <script src="mainView.js"></script>
-  <script src="app.js"></script>
+<!-- ===== 定数・共通 ===== -->
+<script src="./common/constant.js"></script>
+<script src="./common/common.js"></script>
 
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./service-worker.prod.js");
-    }
-  </script>
+<!-- ===== Model ===== -->
+<script src="./model/logModel.js"></script>
+<script src="./model/settingModel.js"></script>
+<script src="./model/editModel.js"></script>
+<script src="./model/dailyTaskModel.js"></script>
+<script src="./model/badgeModel.js"></script>
+<script src="./model/calendarModel.js"></script>
+<script src="./model/cheerModel.js"></script>
+
+<!-- ===== View ===== -->
+<script src="./view/mainView.js"></script>
+<script src="./view/calendarView.js"></script>
+<script src="./view/timelineView.js"></script>
+<script src="./view/editView.js"></script>
+<script src="./view/dailyTaskView.js"></script>
+<script src="./view/badgeView.js"></script>
+<script src="./view/settingView.js"></script>
+<script src="./view/messageView.js"></script>
+
+<!-- ===== Controller ===== -->
+<script src="./controller/messageController.js"></script>
+<script src="./controller/mainController.js"></script>
+<script src="./controller/calendarController.js"></script>
+<script src="./controller/timelineController.js"></script>
+<script src="./controller/editController.js"></script>
+<script src="./controller/dailyTaskController.js"></script>
+<script src="./controller/badgeController.js"></script>
+<script src="./controller/settingController.js"></script>
+<script src="./controller/appController.js"></script>
+
+<!-- ===== 初期化 ===== -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    mainController.initMain();
+    calendarController.showCalendar();
+    onLogChanged();
+  });
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./service-worker.prod.js");
+  }
+</script>
 </body>
 </html>

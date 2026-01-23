@@ -31,14 +31,11 @@ const cheerMessages = [
 ];
 
 // ===== メイン関数 =====
-function checkCheerMessage(ctx) {
-  const today = formatDate(ctx.now);
-
+function evaluate(ctx) {
   const candidates = cheerMessages
-    .filter(m => checkCondition(m, ctx))
-    .filter(m => !m.oncePerDay || ctx.cheerHistory[m.key] !== today)
-    .sort((a, b) => b.priority - a.priority);
-
+      .filter(m => checkCondition(m, ctx))
+      .filter(m => !m.oncePerDay)
+      .sort((a, b) => b.priority - a.priority);
   return candidates[0] || null;
 }
 
@@ -69,11 +66,11 @@ function checkCount(cond, ctx) {
 }
 
 function checkDays(cond, ctx) {
-  return ctx.consecutiveDays >= cond.days;
+  return ctx.consecutiveNoSmokeDays >= cond.days;
 }
 
 function checkBadge(cond, ctx) {
-  if (cond.any) return ctx.badgesEarnedToday.length > 0;
   return false;
 }
 
+window.cheerModel = { evaluate }
