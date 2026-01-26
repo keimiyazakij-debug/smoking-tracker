@@ -22,7 +22,9 @@ function evaluateBadges(ctx) {
     if (done[badge.id]) return;
     if (!badge.check(ctx)) return;
 
-    done[badge.id] = true;
+    done[badge.id] = {
+      earnedAt: getDateKey()
+    };
     events.push({
       type: "badge",
       id: badge.id,
@@ -39,7 +41,7 @@ function evaluateBadges(ctx) {
 
 function loadEarnedBadges() {
   const done = loadBadgeDone();
-  return Object.keys(done).filter(k => done[k]);
+  return done; // { badgeId: { earnedAt } }
 }
 
 window.badgeModel = {

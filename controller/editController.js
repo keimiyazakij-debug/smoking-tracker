@@ -2,7 +2,10 @@
 
 // controller/editController.js
 
+let currentDateKey;
+
 function openEdit(dateKey) {
+  currentDateKey=dateKey;
   editModel.open(dateKey);
   editView.open(editModel.getState());
 }
@@ -33,7 +36,7 @@ function removeTime(index) {
 function saveEdit() {
   editModel.save();
   closeEdit();
-  onLogChanged();
+  onLogChanged(currentDateKey);
   messageController.enqueue({ type: "msg", text: "修正しました"});
 }
 

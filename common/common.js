@@ -84,6 +84,10 @@ function formatDate(date = new Date()) {
 
 function buildContext(now = new Date()) {
   const logs = loadLogs();
+  const settings = loadSettings();
+
+  const stats = calculateStats(logs, settings);
+
   const todayKey = getDateKey(now);
   const todayLogs = logs[todayKey] || [];
 
@@ -102,9 +106,9 @@ function buildContext(now = new Date()) {
     lastSmokeAt,
     minutesFromLastSmoke,
     consecutiveNoSmokeDays: calculateNoSmokeDays(logs),
-    openedToday: true,
     hasRecordToday: todayKey in logs,
-    badgesEarnedToday: [] // badgeController 側で注入
+    badgesEarnedToday: [],
+    ...stats
   };
 }
 
@@ -125,4 +129,52 @@ function calculateNoSmokeDays(logs) {
   return count;
 }
 
+function calculateStats(logs, settings) {
+  const dates = Object.keys(logs).sort(); // 昇順
+  let dailyStreak = 0, dailyTotal = 0;
+  let goalStreak = 0, goalTotal = 0;
+  let downStreak = 0, downTotal = 0;
+
+  let prevCount = null;
+
+  for (let i = dates.length - 1; i >= 0; i--) {
+    const date = dates[i];
+    const count = logs[date]?.length ?? null;
+
+    // daily
+    if (count !== null) {
+      dailyTotal++;
+      dailyStreak++;
+    } else {
+      dailyStreak = 0;
+    }
+
+    // goal
+    if (count !== null && count <= settings.dailyTarget) {
+      goalTotal++;
+      goalStreak++;
+    } else {
+      goalStreak = 0;
+    }
+
+    // down
+    if (prevCount !== null && count !== null && count < prevCount) {
+      downTotal++;
+      downStreak++;
+    } else {
+      downStreak = 0;
+    }
+
+    prevCount = count;
+  }
+
+  return {
+    dailyStreak,
+    dailyTotal,
+    goalStreak,
+    goalTotal,
+    downStreak,
+    downTotal
+  };
+}
 

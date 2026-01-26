@@ -17,18 +17,15 @@ function tryShow() {
   showing = true;
   const text = buildMessageText(event);
 
+  // ★ 追加：表示前に必ずリセット（Safari対策）
+  window.messageView.hideMessage();  
+
   window.messageView.showMessageWithAutoClose(text, () => {
+    // ★ 追加：非表示を明示
+    window.messageView.hideMessage();
     showing = false;
     tryShow();
   });
-}
-
-function tryShowNextMessage() {
-  if (showing) return;
-  if (queue.length === 0) return;
-
-  const next = queue.shift();
-  showMessage(next);
 }
 
 function showMessage(text) {

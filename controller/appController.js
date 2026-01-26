@@ -16,8 +16,11 @@ document.addEventListener("DOMContentLoaded", () => {
   mainController.initMain();
 });
 
-function onLogChanged() {
+function onLogChanged(date= null) {
+
   const ctx = buildContext();
+  const targetDate = date ?? ctx.todayKey;
+
   const calendar = calendarModel.buildCalendarData(ctx);
 
   const dailyEvents = dailyTaskController.evaluate(ctx);
@@ -25,12 +28,20 @@ function onLogChanged() {
 
   messageController.enqueue(dailyEvents, badgeEvents);
 
+  if (timelineController.isOpenTimeline() == true){
+    timelineController.closeTimeline();
+    timelineController.openTimeline(date);
+  }
   mainView.render(ctx);
   calendarView.render(calendar);
   badgeView.render();
 }
 
 function showTab(tabId) {
+  if (timelineController.isOpenTimeline() == true){
+    timelineController.closeTimeline();
+  }
+
   document.querySelectorAll('.tab').forEach(el => {
     el.style.display = 'none';
   });

@@ -1,4 +1,5 @@
 (function () {
+const messageArea = document.getElementById("message");
 
 function showMessageWithAutoClose(text, onClose) {
   const m = document.getElementById("message");
@@ -10,8 +11,14 @@ function showMessageWithAutoClose(text, onClose) {
   }, 3000);
 }
 
+function hideMessage() {
+  messageArea.classList.remove("is-visible");
+  void messageArea.offsetHeight; // Safari再描画トリガ
+}
+
 window.messageView = {
-  showMessageWithAutoClose
+  showMessageWithAutoClose,
+  hideMessage
 };
 
 })();

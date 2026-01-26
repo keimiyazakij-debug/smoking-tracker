@@ -38,8 +38,37 @@ function getLastSmokeTime() {
   return last;
 }
 
+function getConsecutiveLogDays() {
+  const logs = loadLogs();
+
+  // ログが1件以上ある日だけを抽出
+  const dates = Object.keys(logs)
+    .filter(k => Array.isArray(logs[k]) && logs[k].length > 0)
+    .sort(); // YYYY-MM-DD 前提
+
+  if (dates.length === 0) return 0;
+
+  let streak = 1;
+  let max = 1;
+
+  for (let i = 1; i < dates.length; i++) {
+    const prev = new Date(dates[i - 1]);
+    prev.setDate(prev.getDate() + 1);
+
+    if (getDateKey(prev) === dates[i]) {
+      streak++;
+      max = Math.max(max, streak);
+    } else {
+      streak = 1;
+    }
+  }
+
+  return max;
+}
+
 window.logModel = {
   addSmoke,
   getLogs,
-  getLastSmokeTime
+  getLastSmokeTime,
+  getConsecutiveLogDays
 };

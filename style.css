@@ -60,6 +60,27 @@ header {
   min-height:24px; 
 }
 
+.message-area {
+  line-height: 1.4;
+  max-height: calc(1.4em * 2); /* 2行分 */
+  overflow: hidden;
+  word-break: break-word;
+}
+.message-area.is-visible {
+  display: block;
+  border-bottom: 1px solid #ccc;
+}
+
+.message-area::after {
+  content: "";
+  display: none;
+}
+
+.message-area.is-visible::after {
+  display: block;
+}
+
+
 /* ナビゲーション */
 nav { 
   position: fixed; 
@@ -281,17 +302,66 @@ nav button {
 /* ------------------------------ */
 
 /* バッジ管理画面 */
-.badge { display:inline-block; margin:3px; padding:5px; border:1px solid #ccc; border-radius:4px; }
-.badge.earned {
-  background: #e6f4ea;
-  border-color: #4caf50;
-  font-weight: bold;
+.badge-category { margin-bottom: 24px; }
+.badge-list { display: block;}
+
+/* 共通 */
+.badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 8px;
 }
 
-.badge.locked {
-  opacity: 0.4;
+/* 取得済（共通） */
+.badge.earned {
+  background: #eef9f0;
 }
-.locked { opacity:0.3; }
+
+/* カテゴリ別の“控えめ枠色” */
+.badge.earned.time {
+  border-color: #9fd3c7;   /* 淡いグリーン */
+}
+
+.badge.earned.nosmoke {
+  border-color: #9fd3c7;   /* 淡いグリーン */
+}
+
+.badge.earned.daily_streak {
+  border-color: #f6c177;   /* 淡いオレンジ */
+}
+
+.badge.earned.daily_hist {
+  border-color: #f6c177;   /* 淡いオレンジ */
+}
+
+.badge.earned.goal_streak {
+  border-color: #a7c7e7;   /* 淡いブルー */
+}
+
+.badge.earned.goal_total {
+  border-color: #a7c7e7;   /* 淡いブルー */
+}
+
+.badge.earned.down_streak {
+  border-color: #c3aed6;   /* 淡いパープル */
+}
+
+.badge.earned.down_total {
+  border-color: #c3aed6;   /* 淡いパープル */
+}
+
+/* 未取得は枠線なし（差を明確に） */
+.badge.locked {
+  border: 1px dashed #ddd;
+  background: #f8f8f8;
+}
+
+.badge-date {
+  font-size: 12px;
+  color: #666;
+}
 
 /* ------------------------------ */
 /* デイリータスク画面　             */
@@ -347,6 +417,10 @@ nav button {
   padding: 12px;
   border-bottom: 1px solid #ddd;
   flex-shrink: 0;
+
+  /* Safari対策 ここから */
+  line-height: 1.4;
+  min-height: calc(1.4em * 2 + 24px); /* 2行分 + padding */
 }
 
 /* リスト部分だけスクロール */

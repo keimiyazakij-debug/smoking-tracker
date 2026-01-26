@@ -13,11 +13,19 @@ function openTimeline(dateKey) {
   timelineView.render(dateKey);
 }
 
+// ===== タイムライン画面の再表示 =====
+function refreshTimeline(dateKey) {
+  document.getElementById("timelineTitle").textContent =
+    `${dateKey} のタイムライン`;
+
+  timelineView.render(dateKey);
+}
+
+
 // ===== 編集画面を開く =====
 function openEditFromTimeline() {
     if (!currentDateKey) return;
-    editModel.open(currentDateKey);
-    editView.open(editModel.getState());
+    editController.openEdit(currentDateKey);
 }
 
 // ===== タイムライン画面の非表示 =====
@@ -28,13 +36,23 @@ function closeTimeline() {
   }
 }
 
-window.openTimeline = openTimeline;
-window.closeTimeline = closeTimeline;
-window.openEditFromTimeline = openEditFromTimeline;
+// ===== タイムライン画面の表示状態取得 =====
+function isOpenTimeline(){
+  const overlay = document.getElementById("timelineOverlay");
+  if (overlay && !overlay.classList.contains("hidden")) {
+    return true;
+  }else{
+    return false;
+  }
+}
+
+
 window.timelineController = { 
   openTimeline,
   closeTimeline,
-  openEditFromTimeline
+  openEditFromTimeline,
+  refreshTimeline,
+  isOpenTimeline
  };
 
  })();

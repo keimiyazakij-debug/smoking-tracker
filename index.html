@@ -13,8 +13,8 @@
   <style>
   </style>
   <script>
-    const ENV = "dev"; // ← dev / prod を切り替える
-//  const ENV = "prod"; // ← dev / prod を切り替える
+//    const ENV = "dev"; // ← dev / prod を切り替える
+  const ENV = "prod"; // ← dev / prod を切り替える
     if ('serviceWorker' in navigator) {
     const sw = ENV === "prod"
       ? "./service-worker.prod.js"
@@ -24,7 +24,7 @@
       .then(() => console.log("SW registered:", sw))
       .catch(err => console.error("SW error", err));
     }
-    const BUILD = "2026-01-22-01";
+    const BUILD = "2026-01-26-v1.1.1";
     console.log("BUILD:", BUILD);
   </script>
 </head>
@@ -41,6 +41,7 @@
     <div id="todayCountDisplay">0 / 10 本</div>
     <div id="progress-bar"><div id="progress"></div></div>
     <button class="large-btn" id="smokeBtn">吸った</button>
+    <div id="statusLine" class="status-line"></div>
     <div id="since">禁煙時間：0分</div>
     <div class="daily-challenge-link">
       <button id="dailyChallengeLink" class="text-link">
@@ -108,8 +109,6 @@
 
   <!-- バッジ画面 -->
   <div id="badgeTab" class="tab">
-    <h2>取得済バッジ一覧</h2>
-    <div id="earnedBadges"></div>
     <h2>バッジ一覧</h2>
     <div id="allBadges"></div>
   </div>
