@@ -10,7 +10,7 @@ function openTimeline(dateKey) {
   document.getElementById("timelineTitle").textContent =
     `${dateKey} のタイムライン`;
 
-  timelineView.render(dateKey);
+  window.timelineView.render(dateKey);
 }
 
 // ===== タイムライン画面の再表示 =====
@@ -18,14 +18,14 @@ function refreshTimeline(dateKey) {
   document.getElementById("timelineTitle").textContent =
     `${dateKey} のタイムライン`;
 
-  timelineView.render(dateKey);
+  window.timelineView.render(dateKey);
 }
 
 
 // ===== 編集画面を開く =====
 function openEditFromTimeline() {
     if (!currentDateKey) return;
-    editController.openEdit(currentDateKey);
+    window.editController.openEdit(currentDateKey);
 }
 
 // ===== タイムライン画面の非表示 =====

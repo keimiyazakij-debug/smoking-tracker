@@ -11,7 +11,7 @@ function initMain() {
 }
 
 function addSmoke() {
-  logModel.addSmoke(new Date());
+  window.logModel.addSmoke(new Date());
   onLogChanged();
 }
 

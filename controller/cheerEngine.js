@@ -34,7 +34,7 @@ const cheerMessages = [
 
 // ===== メイン関数 =====
 function checkCheerMessage(ctx) {
-  const today = formatDate(ctx.now);
+  const today = window.common.formatDate(ctx.now);
 
   const candidates = cheerMessages
     .filter(m => checkCondition(m, ctx))

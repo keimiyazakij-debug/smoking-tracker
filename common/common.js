@@ -1,16 +1,9 @@
-// グローバル変数の宣言
+window.common = window.common || {};
+
 // ===== カレンダー用の変数宣言 =====
 const today = new Date();
 let currentYear = today.getFullYear();
 let currentMonth = today.getMonth();
-
-
-// 更新系のとりまとめ
-function afterLogChanged() {
-  updateBadges();
-  updateMainDisplay();
-  renderCalendar();
-}
 
 // 日付取得用の関数
 function getDateKey(date = new Date()) {
@@ -65,116 +58,149 @@ function formatDurationFromMinutes(totalMin) {
 }
 
 
-// バッジ
-function loadBadges() {
-  try {
-    return JSON.parse(localStorage.getItem("badges") || "[]");
-  } catch {
-    return [];
-  }
-}
-function saveBadges(badges) {
-  localStorage.setItem("badges", JSON.stringify(badges));
-}
-
-
 function formatDate(date = new Date()) {
   return getDateKey(date);
 }
 
-function buildContext(now = new Date()) {
-  const logs = loadLogs();
-  const settings = loadSettings();
-
-  const stats = calculateStats(logs, settings);
-
+// common.js
+function buildContext({
+  now = new Date(),
+  logs = {},
+  settings,
+  badgesEarnedToday = []
+}) {
   const todayKey = getDateKey(now);
+
   const todayLogs = logs[todayKey] || [];
+  const yesterdayKey = getDateKey(
+    new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  );
+  const yesterdayLogs = logs[yesterdayKey];
 
   const lastSmokeAt = getLastSmokeTime(logs);
-  const minutesFromLastSmoke =
-    lastSmokeAt ? Math.floor((now - lastSmokeAt) / 60000) : null;
+  const minutesFromLastSmoke = lastSmokeAt
+    ? Math.floor((now - lastSmokeAt) / 60000)
+    : null;
 
-  const yesterdayKey = getDateKey(new Date(now.getTime() - 86400000));
-  const yesterdayCount = logs[yesterdayKey]?.length ?? null;
+  const stats = calculateStats(groupLogsByDate(logs), settings);
 
   return {
     now,
     todayKey,
     todayCount: todayLogs.length,
-    yesterdayCount,
+    yesterdayCount: yesterdayLogs ? yesterdayLogs.length : null,
     lastSmokeAt,
     minutesFromLastSmoke,
-    consecutiveNoSmokeDays: calculateNoSmokeDays(logs),
-    hasRecordToday: todayKey in logs,
-    badgesEarnedToday: [],
-    ...stats
+    openedToday: true,
+    hasRecordToday: todayLogs.length > 0,
+    badgesEarnedToday,
+    stats,
+    settings
   };
 }
 
-function calculateNoSmokeDays(logs) {
-  // 喫煙記録がない場合は 0 日
-  if (!logs || Object.keys(logs).length === 0) return 0;
+function calculateStats(days, setting) {
+  const goalPerDay = setting.goalPerDay;
+  const todayKey = getDateKey(new Date());
 
-  // 日付キーを降順に並べる
-  const dates = Object.keys(logs).sort().reverse();
+  let dailyTotal = 0;
+  let goalTotal  = 0;
+  let downTotal  = 0;
 
-  let count = 0;
-  for (const date of dates) {
-    // その日に1本でも吸っていれば終了
-    if (logs[date] && logs[date].length > 0) break;
-    count++;
-  }
+  let dailyCur = 0, dailyMax = 0;
+  let goalCur  = 0, goalMax  = 0;
+  let downCur  = 0, downMax  = 0;
 
-  return count;
-}
+  let prevSmoke = null;
 
-function calculateStats(logs, settings) {
-  const dates = Object.keys(logs).sort(); // 昇順
-  let dailyStreak = 0, dailyTotal = 0;
-  let goalStreak = 0, goalTotal = 0;
-  let downStreak = 0, downTotal = 0;
+  for (const d of days) {
+    const isToday = d.date === todayKey;
 
-  let prevCount = null;
-
-  for (let i = dates.length - 1; i >= 0; i--) {
-    const date = dates[i];
-    const count = logs[date]?.length ?? null;
-
-    // daily
-    if (count !== null) {
+    // ===== daily =====
+    if (d.logged) {
       dailyTotal++;
-      dailyStreak++;
-    } else {
-      dailyStreak = 0;
+      dailyCur++;
+      dailyMax = Math.max(dailyMax, dailyCur);
+    } else if (!isToday) {
+      dailyCur = 0;
     }
 
-    // goal
-    if (count !== null && count <= settings.dailyTarget) {
+    // ===== goal =====
+    if (!isToday && d.smoke <= goalPerDay) {
       goalTotal++;
-      goalStreak++;
-    } else {
-      goalStreak = 0;
+      goalCur++;
+      goalMax = Math.max(goalMax, goalCur);
+    } else if (!isToday) {
+      goalCur = 0;
     }
 
-    // down
-    if (prevCount !== null && count !== null && count < prevCount) {
+    // ===== down =====
+    if (!isToday && prevSmoke !== null && d.smoke < prevSmoke) {
       downTotal++;
-      downStreak++;
-    } else {
-      downStreak = 0;
+      downCur++;
+      downMax = Math.max(downMax, downCur);
+    } else if(!isToday){
+      downCur = 0;
     }
 
-    prevCount = count;
+    prevSmoke = d.smoke;
   }
 
   return {
-    dailyStreak,
     dailyTotal,
-    goalStreak,
+    dailyStreak: dailyCur,
+    dailyStreakMax: dailyMax,
     goalTotal,
-    downStreak,
-    downTotal
+    goalStreak: goalCur,
+    goalStreakMax: goalMax,
+    downTotal,
+    downStreak: downCur,
+    downStreakMax: downMax
   };
 }
 
+// ===== private helper =====
+function isNextDay(dateKey, nextKey) {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const dt = new Date(y, m - 1, d + 1);
+  const y2 = dt.getFullYear();
+  const m2 = String(dt.getMonth() + 1).padStart(2, '0');
+  const d2 = String(dt.getDate()).padStart(2, '0');
+  return `${y2}-${m2}-${d2}` === nextKey;
+}
+
+function groupLogsByDate(logs) {
+  const dates = Object.keys(logs);
+  if (dates.length === 0) return [];
+
+  const start = new Date(dates.sort()[0]);
+  const end = new Date(); // 今日
+
+
+  const result = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const key = getDateKey(d);
+    const times = logs[key] || [];
+
+    result.push({
+      date: key,
+      smoke: times.length,
+      logged: times.length > 0
+    });
+  }  return result;
+}
+
+// 日付・表示系
+window.common.getDateKey = getDateKey;
+window.common.formatDate = formatDate;
+window.common.formatDurationFromMinutes = formatDurationFromMinutes;
+
+// ログ関連
+window.common.loadLogs = loadLogs;
+window.common.saveLogs = saveLogs;
+window.common.getLastSmokeTime = getLastSmokeTime;
+
+// 集計・文脈
+window.common.groupLogsByDate = groupLogsByDate;
+window.common.calculateStats = calculateStats;
+window.common.buildContext = buildContext;

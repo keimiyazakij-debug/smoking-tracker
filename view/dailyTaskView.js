@@ -40,7 +40,7 @@ function create() {
 
 function render(dateKey, tasks) {
   document.getElementById("dcTitle").textContent =
-    dateKey === getDateKey()
+    dateKey === window.common.getDateKey()
       ? "今日のチャレンジ"
       : `${dateKey} のチャレンジ`;
 
@@ -57,7 +57,7 @@ function render(dateKey, tasks) {
   // ▼ 追加：未来日なら Next を隠す
   const nextBtn = document.getElementById("dcNext");
   nextBtn.style.visibility =
-    dateKey >= getDateKey() ? "hidden" : "visible";}
+    dateKey >= window.common.getDateKey() ? "hidden" : "visible";}
 
 window.dailyTaskView = { open, close };
 

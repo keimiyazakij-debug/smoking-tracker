@@ -17,7 +17,6 @@ const CACHE_FILES = [
   "./model/dailyTaskModel.js",
   "./model/badgeModel.js",
   "./model/calendarModel.js",
-  "./model/cheerModel.js",
 
   // ===== View =====
   "./view/mainView.js",

@@ -5,6 +5,10 @@
 document.addEventListener("DOMContentLoaded", () => {
   mainController.initMain();
 
+  // ★ 追加：保存済みバッジを即表示
+  const earned = badgeModel.loadEarnedBadges();
+  badgeView.render(earned);
+    
   // ★ 追加：時間経過による再描画
   setInterval(() => {
     onLogChanged();
@@ -17,29 +21,35 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function onLogChanged(date= null) {
+  const logs = window.logModel.getLogs();
+  const settings = window.settingModel.loadSettings();
 
-  const ctx = buildContext();
+  const ctx = window.common.buildContext({
+    now: new Date(),
+    logs,
+    settings
+  });
   const targetDate = date ?? ctx.todayKey;
 
-  const calendar = calendarModel.buildCalendarData(ctx);
+  const calendar = window.calendarModel.buildCalendarData(ctx);
 
-  const dailyEvents = dailyTaskController.evaluate(ctx);
-  const badgeEvents = badgeController.updateBadges(ctx);
+  const dailyEvents = window.dailyTaskController.evaluate(ctx);
+  const badgeEvents = window.badgeController.updateBadges(ctx);
 
-  messageController.enqueue(dailyEvents, badgeEvents);
+  window.messageController.enqueue(dailyEvents, badgeEvents);
 
-  if (timelineController.isOpenTimeline() == true){
-    timelineController.closeTimeline();
-    timelineController.openTimeline(date);
+  if (window.timelineController.isOpenTimeline() == true){
+    window.timelineController.closeTimeline();
+    window.timelineController.openTimeline(date);
   }
-  mainView.render(ctx);
-  calendarView.render(calendar);
-  badgeView.render();
+  window.mainView.render(ctx);
+  window.calendarView.render(calendar);
+  window.badgeView.render();
 }
 
 function showTab(tabId) {
-  if (timelineController.isOpenTimeline() == true){
-    timelineController.closeTimeline();
+  if (window.timelineController.isOpenTimeline() == true){
+    window.timelineController.closeTimeline();
   }
 
   document.querySelectorAll('.tab').forEach(el => {

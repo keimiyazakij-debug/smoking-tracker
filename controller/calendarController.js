@@ -3,25 +3,25 @@
 // controller/calendarController.js
 
 function showCalendar() {
-  calendarModel.resetToToday();
-  calendarView.render(calendarModel.buildCalendarData());
+  window.calendarModel.resetToToday();
+  window.calendarView.render(window.calendarModel.buildCalendarData());
 }
 
 function prevMonth() {
-  calendarModel.prevMonth();
-  calendarView.render(calendarModel.buildCalendarData());
+  window.calendarModel.prevMonth();
+  window.calendarView.render(window.calendarModel.buildCalendarData());
 }
 
 function nextMonth() {
-  calendarModel.nextMonth();
-  calendarView.render(calendarModel.buildCalendarData());
+  window.calendarModel.nextMonth();
+  window.calendarView.render(window.calendarModel.buildCalendarData());
 }
 
 function onDayClick(dateKey, hasLog) {
   if (hasLog) {
-    timelineController.openTimeline (dateKey);
+    window.timelineController.openTimeline (dateKey);
   } else {
-    editController.openEdit(dateKey);
+    window.editController.openEdit(dateKey);
   }
 }
 

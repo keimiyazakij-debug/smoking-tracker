@@ -11,3 +11,8 @@ function loadSettings() {
 function saveSettings(settings) {
   localStorage.setItem("settings", JSON.stringify(settings));
 }
+
+window.settingModel = {
+  loadSettings,
+  saveSettings
+};

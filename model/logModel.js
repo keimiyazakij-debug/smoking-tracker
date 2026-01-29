@@ -12,7 +12,7 @@ function saveLogs(logs) {
 
 function addSmoke(date = new Date()) {
   const logs = loadLogs();
-  const key = getDateKey(date);
+  const key = window.common.getDateKey(date);
 
   if (!logs[key]) logs[key] = [];
   logs[key].push(date.toISOString());
@@ -39,7 +39,7 @@ function getLastSmokeTime() {
 }
 
 function getConsecutiveLogDays() {
-  const logs = loadLogs();
+  const logs = window.common.loadLogs();
 
   // ログが1件以上ある日だけを抽出
   const dates = Object.keys(logs)
@@ -55,7 +55,7 @@ function getConsecutiveLogDays() {
     const prev = new Date(dates[i - 1]);
     prev.setDate(prev.getDate() + 1);
 
-    if (getDateKey(prev) === dates[i]) {
+    if (window.common.getDateKey(prev) === dates[i]) {
       streak++;
       max = Math.max(max, streak);
     } else {

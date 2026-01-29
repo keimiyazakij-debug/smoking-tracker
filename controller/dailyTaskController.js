@@ -2,30 +2,30 @@
 
 // controller/dailyTaskController.js
 
-let currentDateKey = getDateKey();
+let currentDateKey = window.common.getDateKey();
 
 function openToday() {
-  currentDateKey = getDateKey();
+  currentDateKey = window.common.getDateKey();
   open(currentDateKey);
 }
 
 function open(dateKey) {
   currentDateKey = dateKey;
-  const tasks = dailyTaskModel.getTasksForDate(dateKey);
-  dailyTaskView.open(dateKey, tasks);
+  const tasks = window.dailyTaskModel.getTasksForDate(dateKey);
+  window.dailyTaskView.open(dateKey, tasks);
 }
 
 function move(diff) {
   const d = new Date(currentDateKey);
   d.setDate(d.getDate() + diff);
-  const nextKey = getDateKey(d);
-  if (nextKey > getDateKey()) return;
+  const nextKey = window.common.getDateKey(d);
+  if (nextKey > window.common.getDateKey()) return;
 
   open(nextKey);
 }
 
 function evaluate(ctx) {
-  return dailyTaskModel.evaluate(ctx);
+  return window.dailyTaskModel.evaluate(ctx);
 }
 
 window.dailyTaskController = {

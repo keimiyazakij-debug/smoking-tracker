@@ -8,7 +8,7 @@ const editState = {
 function open(dateKey) {
   editState.dateKey = dateKey;
 
-  const logs = loadLogs();
+  const logs = window.common.loadLogs();
   const times = logs[dateKey] || [];
 
   editState.times = times.map(t => {
@@ -35,7 +35,7 @@ function removeTime(index) {
 }
 
 function save() {
-  const logs = loadLogs();
+  const logs = window.common.loadLogs();
   const date = editState.dateKey;
 
   const newTimes = editState.times
@@ -44,7 +44,7 @@ function save() {
     .map(t => new Date(`${date}T${t}:00`).toISOString());
 
   logs[date] = newTimes;
-  saveLogs(logs);
+  window.common.saveLogs(logs);
 }
 
 function getState() {

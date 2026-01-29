@@ -1,8 +1,12 @@
 // model/badgeModel.js
-
 const BADGE_DONE_KEY = "badgeDone";
 
+function hasLocalStorage() {
+  return typeof localStorage !== 'undefined';
+}
+
 function loadBadgeDone() {
+  if (!hasLocalStorage()) return {};
   try {
     return JSON.parse(localStorage.getItem(BADGE_DONE_KEY)) || {};
   } catch {
@@ -11,6 +15,7 @@ function loadBadgeDone() {
 }
 
 function saveBadgeDone(done) {
+  if (!hasLocalStorage()) return {};
   localStorage.setItem(BADGE_DONE_KEY, JSON.stringify(done));
 }
 
@@ -18,12 +23,12 @@ function evaluateBadges(ctx) {
   const done = loadBadgeDone();
   const events = [];
 
-  BADGES.forEach(badge => {
+  window.BADGES.forEach(badge => {
     if (done[badge.id]) return;
     if (!badge.check(ctx)) return;
 
     done[badge.id] = {
-      earnedAt: getDateKey()
+      earnedAt: window.common.getDateKey()
     };
     events.push({
       type: "badge",
@@ -40,8 +45,7 @@ function evaluateBadges(ctx) {
 }
 
 function loadEarnedBadges() {
-  const done = loadBadgeDone();
-  return done; // { badgeId: { earnedAt } }
+  return loadBadgeDone();
 }
 
 window.badgeModel = {

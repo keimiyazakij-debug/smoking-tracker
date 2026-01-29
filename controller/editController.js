@@ -7,12 +7,12 @@ let currentDateKey;
 function openEdit(dateKey) {
   currentDateKey=dateKey;
   editModel.open(dateKey);
-  editView.open(editModel.getState());
+  editView.open(window.editModel.getState());
 }
 
 function closeEdit() {
-  editModel.close();
-  editView.close();
+  window.editModel.close();
+  window.editView.close();
 }
 
 function addTimeTag() {
@@ -20,24 +20,24 @@ function addTimeTag() {
   const hh = now.getHours().toString().padStart(2,"0");
   const mm = now.getMinutes().toString().padStart(2,"0");
 
-  editModel.addTime(`${hh}:${mm}`);
-  editView.render(editModel.getState());
+  window.editModel.addTime(`${hh}:${mm}`);
+  window.editView.render(window.editModel.getState());
 }
 
 function updateTime(index, value) {
-  editModel.updateTime(index, value);
+  window.editModel.updateTime(index, value);
 }
 
 function removeTime(index) {
-  editModel.removeTime(index);
-  editView.render(editModel.getState());
+  window.editModel.removeTime(index);
+  window.editView.render(window.editModel.getState());
 }
 
 function saveEdit() {
-  editModel.save();
+  window.editModel.save();
   closeEdit();
   onLogChanged(currentDateKey);
-  messageController.enqueue({ type: "msg", text: "修正しました"});
+  window.messageController.enqueue({ type: "msg", text: "修正しました"});
 }
 
 window.editController = {

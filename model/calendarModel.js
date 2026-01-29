@@ -28,9 +28,9 @@ function resetToToday() {
 
 
 function buildCalendarData(ctx) {
-  const logs = loadLogs();
-  const target = loadSettings().dailyTarget;
-  const todayKey = getDateKey();
+  const logs = window.common.loadLogs();
+  const target = window.settingModel.loadSettings().dailyTarget;
+  const todayKey = window.common.getDateKey();
 
   const firstDay = new Date(state.year, state.month, 1).getDay();
   const lastDate = new Date(state.year, state.month + 1, 0).getDate();
@@ -60,7 +60,7 @@ function evaluateDay({ count, prevCount, target, isPast }) {
 function getPrevDayInfo(dateKey, logs) {
   const d = new Date(dateKey);
   d.setDate(d.getDate() - 1);
-  const prevKey = getDateKey(d);
+  const prevKey = window.common.getDateKey(d);
   if (!logs.hasOwnProperty(prevKey)) return null;
   return { key: prevKey, count: logs[prevKey].length };
 }
