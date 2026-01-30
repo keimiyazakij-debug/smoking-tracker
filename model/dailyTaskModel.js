@@ -25,7 +25,7 @@ function evaluate(ctx) {
 
   const events = [];
 
-  DAILY_TASKS.forEach(task => {
+  window.DAILY_TASKS.forEach(task => {
     if (done[dateKey][task.id]) return;
     if (!task.check(ctx)) return;
 
@@ -45,7 +45,7 @@ function getTasksForDate(dateKey) {
   const done = loadDone();
   ensureDate(done, dateKey);
 
-  return DAILY_TASKS.map(t => ({
+  return window.DAILY_TASKS.map(t => ({
     id: t.id,
     label: t.label,
     done: !!done[dateKey][t.id]

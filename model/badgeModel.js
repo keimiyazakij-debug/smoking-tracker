@@ -20,6 +20,7 @@ function saveBadgeDone(done) {
 }
 
 function evaluateBadges(ctx) {
+  if (!ctx) return [];
   const done = loadBadgeDone();
   const events = [];
 

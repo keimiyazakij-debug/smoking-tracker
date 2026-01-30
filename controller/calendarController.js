@@ -2,19 +2,34 @@
 
 // controller/calendarController.js
 
+function renderCalendar() {
+  const state = window.calendarModel.buildCalendarState();
+
+  const calendarData =
+    window.calendarModel.buildCalendarData(
+      state.logs,
+      state.todayKey
+    );
+
+  window.calendarView.render({
+    ...state,
+    calendarData
+  });
+}
+
 function showCalendar() {
   window.calendarModel.resetToToday();
-  window.calendarView.render(window.calendarModel.buildCalendarData());
+  renderCalendar();
 }
 
 function prevMonth() {
   window.calendarModel.prevMonth();
-  window.calendarView.render(window.calendarModel.buildCalendarData());
+  renderCalendar();
 }
 
 function nextMonth() {
   window.calendarModel.nextMonth();
-  window.calendarView.render(window.calendarModel.buildCalendarData());
+  renderCalendar();
 }
 
 function onDayClick(dateKey, hasLog) {

@@ -26,8 +26,39 @@ function resetToToday() {
   state.month = now.getMonth();
 }
 
+function buildCalendarData(logs, todayKey) {
+  if (!Array.isArray(logs) || logs.length === 0) return {};
 
-function buildCalendarData(ctx) {
+  const map = {};
+  logs.forEach(l => {
+    map[l.date] = { count: l.count };
+  });
+
+  const keys = Object.keys(map).sort();
+  const start = new Date(keys[0]);
+  const end = new Date(todayKey || keys[keys.length - 1]);
+
+  for (
+    let d = new Date(start);
+    d <= end;
+    d.setDate(d.getDate() + 1)
+  ) {
+    const key = window.common.getDateKey(d);
+    if (!map[key]) {
+      map[key] = { count: 0 };
+    }
+  }
+
+  return Object.keys(map)
+    .sort()
+    .reduce((acc, k) => {
+      acc[k] = map[k];
+      return acc;
+    }, {});
+}
+
+
+function buildCalendarState(ctx) {
   const logs = window.common.loadLogs();
   const target = window.settingModel.loadSettings().dailyTarget;
   const todayKey = window.common.getDateKey();
@@ -57,12 +88,18 @@ function evaluateDay({ count, prevCount, target, isPast }) {
   return "same";
 }
 
-function getPrevDayInfo(dateKey, logs) {
+// 前日の件数を取得（純粋関数）
+function getPrevDayInfo(dateKey, calendarData) {
+  if (!calendarData || !calendarData.hasOwnProperty(dateKey)) return null;
   const d = new Date(dateKey);
   d.setDate(d.getDate() - 1);
-  const prevKey = window.common.getDateKey(d);
-  if (!logs.hasOwnProperty(prevKey)) return null;
-  return { key: prevKey, count: logs[prevKey].length };
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const prevKey = `${y}-${m}-${day}`;
+
+  if (!calendarData.hasOwnProperty(prevKey)) return null;
+  return { key: prevKey, count: calendarData[prevKey].count };
 }
 
 window.calendarModel = {
@@ -72,6 +109,7 @@ window.calendarModel = {
   nextMonth,
   resetToToday,
   buildCalendarData,
+  buildCalendarState,
   evaluateDay,
   getPrevDayInfo
 };

@@ -2,8 +2,14 @@
 
 // controller/badgeController.js
 
+function evaluateAndGrant(stats) {
+  const events = window.badgeModel.evaluateBadges(stats);
+  events.forEach(e => window.badgeView.grant(e));
+  return events;
+}
+
 function updateBadges(ctx) {
-  const events = window.badgeModel.evaluateBadges(ctx);
+  const events = evaluateAndGrant(ctx);
 
   if (events.length > 0) {
     ctx.badgesEarnedToday = events.map(e => e.id);
@@ -16,6 +22,7 @@ function updateBadges(ctx) {
 }
 
 window.badgeController = {
+  evaluateAndGrant,
   updateBadges
 };
 

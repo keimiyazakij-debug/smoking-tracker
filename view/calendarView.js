@@ -56,8 +56,8 @@ function renderCurrentMonth(grid, ctx) {
 
   for (let d=1; d<=ctx.lastDate; d++) {
     const dateKey = `${ctx.year}-${String(ctx.month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-    const count = ctx.logs[dateKey]?.length ?? null;
-    const prev = calendarModel.getPrevDayInfo(dateKey, ctx.logs);
+    const count = ctx.calendarData[dateKey]?.count ?? null;
+    const prev = calendarModel.getPrevDayInfo(dateKey, ctx.calendarData);
     const isPast = dateKey < ctx.todayKey;
 
     const evalType = calendarModel.evaluateDay({
@@ -75,7 +75,10 @@ function renderCurrentMonth(grid, ctx) {
     decorate(cell, d, dateKey, count, ctx);
     applyMark(cell, evalType, downStreak, count, prev?.count);
 
-    cell.onclick = ()=> calendarController.onDayClick(dateKey, !!ctx.logs[dateKey]);
+    cell.onclick = ()=> calendarController.onDayClick(
+      dateKey,
+      ctx.calendarData.hasOwnProperty(dateKey)
+    );
     grid.appendChild(cell);
   }
 }
@@ -86,7 +89,7 @@ function decorate(cell, d, dateKey, count, ctx) {
   if (dow===6) cell.classList.add("blue");
   if (dateKey===ctx.todayKey) cell.classList.add("today");
   if (dateKey<ctx.todayKey) cell.classList.add("past");
-  if (!ctx.logs.hasOwnProperty(dateKey)) cell.classList.add("no-log");
+  if (!ctx.calendarData.hasOwnProperty(dateKey)) cell.classList.add("no-log");
   cell.innerHTML = `<div class="day-number">${d}</div><div class="day-count">${count!=null?`${count}本`:""}</div>`;
 }
 
