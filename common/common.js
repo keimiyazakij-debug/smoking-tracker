@@ -67,9 +67,10 @@ function buildContext({
   now = new Date(),
   logs = {},
   settings,
-  badgesEarnedToday = []
+  badgesEarnedToday = [],
+  dateKey
 }) {
-  const todayKey = getDateKey(now);
+  const todayKey = dateKey ?? getDateKey(now);
 
   const todayLogs = logs[todayKey] || [];
   const yesterdayKey = getDateKey(
@@ -84,6 +85,14 @@ function buildContext({
 
   const stats = calculateStats(groupLogsByDate(logs), settings);
 
+  // 時間帯ごとの喫煙本数カウント
+  function countBetween(from, to) {
+    return todayLogs.filter(t => {
+      const h = new Date(t).getHours();
+      return h >= from && h < to;
+    }).length;
+  }
+    
   return {
     now,
     todayKey,
@@ -95,8 +104,11 @@ function buildContext({
     hasRecordToday: todayLogs.length > 0,
     badgesEarnedToday,
     stats,
-    settings
-  };
+    settings,
+    isToday: dateKey ? dateKey === todayKey : true,
+    nowHour: now.getHours() ,
+    countBetween
+   };
 }
 
 function calculateStats(days, setting) {
@@ -159,6 +171,11 @@ function calculateStats(days, setting) {
   };
 }
 
+function parseDateKey(dateKey) {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
 // ===== private helper =====
 function isNextDay(dateKey, nextKey) {
   const [y, m, d] = dateKey.split('-').map(Number);
@@ -194,6 +211,7 @@ function groupLogsByDate(logs) {
 window.common.getDateKey = getDateKey;
 window.common.formatDate = formatDate;
 window.common.formatDurationFromMinutes = formatDurationFromMinutes;
+window.common.parseDateKey = parseDateKey;
 
 // ログ関連
 window.common.loadLogs = loadLogs;

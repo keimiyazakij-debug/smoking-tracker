@@ -28,15 +28,18 @@ function resetToToday() {
 
 function buildCalendarData(logs, todayKey) {
   if (!Array.isArray(logs) || logs.length === 0) return {};
-
   const map = {};
   logs.forEach(l => {
     map[l.date] = { count: l.count };
   });
 
   const keys = Object.keys(map).sort();
-  const start = new Date(keys[0]);
-  const end = new Date(todayKey || keys[keys.length - 1]);
+  if (keys.length === 0) return {};
+  
+  const start = window.common.parseDateKey(keys[0]);
+  const end = window.common.parseDateKey(
+    todayKey || keys[keys.length - 1]
+  );
 
   for (
     let d = new Date(start);
@@ -91,7 +94,7 @@ function evaluateDay({ count, prevCount, target, isPast }) {
 // 前日の件数を取得（純粋関数）
 function getPrevDayInfo(dateKey, calendarData) {
   if (!calendarData || !calendarData.hasOwnProperty(dateKey)) return null;
-  const d = new Date(dateKey);
+  const d = window.common.parseDateKey(dateKey);
   d.setDate(d.getDate() - 1);
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");

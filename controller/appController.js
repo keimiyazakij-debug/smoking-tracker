@@ -8,7 +8,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // ★ 追加：保存済みバッジを即表示
   const earned = badgeModel.loadEarnedBadges();
   badgeView.render(earned);
-    
+  calendarController.showCalendar();
+
+   // ★ 初期描画はここで1回だけ
+  onLogChanged();
+
   // ★ 追加：時間経過による再描画
   setInterval(() => {
     onLogChanged();
@@ -22,16 +26,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function onLogChanged(date= null) {
   const logs = window.logModel.getLogs();
+  const dateKey = window.common.getDateKey(new Date());
   const settings = window.settingModel.loadSettings();
 
   const ctx = window.common.buildContext({
     now: new Date(),
     logs,
-    settings
+    settings,
+    dateKey
   });
   const targetDate = date ?? ctx.todayKey;
-
-  const calendar = window.calendarModel.buildCalendarData(ctx);
+  const grouped = window.common.groupLogsByDate(logs);
+  const logsForCalendar = grouped.map(d => ({
+    date: d.date,
+    count: d.smoke
+  }));
+//  const calendar = window.calendarModel.buildCalendarData( logsForCalendar, dateKey);
 
   const dailyEvents = window.dailyTaskController.evaluate(ctx);
   const badgeEvents = window.badgeController.updateBadges(ctx);
@@ -43,7 +53,7 @@ function onLogChanged(date= null) {
     window.timelineController.openTimeline(date);
   }
   window.mainView.render(ctx);
-  window.calendarView.render(calendar);
+  window.calendarController.refresh();
   window.badgeView.render();
 }
 

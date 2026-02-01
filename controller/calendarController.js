@@ -4,10 +4,15 @@
 
 function renderCalendar() {
   const state = window.calendarModel.buildCalendarState();
+  const grouped = window.common.groupLogsByDate(state.logs);
+  const logsForCalendar = grouped.map(d => ({
+    date: d.date,
+    count: d.smoke
+  }));
 
   const calendarData =
     window.calendarModel.buildCalendarData(
-      state.logs,
+      logsForCalendar,
       state.todayKey
     );
 
@@ -32,6 +37,10 @@ function nextMonth() {
   renderCalendar();
 }
 
+function refresh() {
+  renderCalendar();
+}
+
 function onDayClick(dateKey, hasLog) {
   if (hasLog) {
     window.timelineController.openTimeline (dateKey);
@@ -44,7 +53,8 @@ window.calendarController = {
   showCalendar,
   prevMonth,
   nextMonth,
-  onDayClick
+  onDayClick,
+  refresh
 };
 
 })();

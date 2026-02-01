@@ -300,7 +300,7 @@ window.DAILY_TASKS = [
     id: "recorded_today",
     label: "今日の喫煙回数を更新した",
     category: "record",
-    check: (ctx) => ctx.hasRecordToday === true
+    rule: "record"
   },
 
   /* =========================
@@ -311,18 +311,16 @@ window.DAILY_TASKS = [
     id: "long_interval_3h",
     label: "3時間以上、間隔を空けられた",
     category: "process",
-    check: (ctx) =>
-      typeof ctx.longestIntervalToday === "number" &&
-      ctx.longestIntervalToday >= 180
+    rule: "minInterval",
+    minutes: 180
   },
 
   {
     id: "long_interval_5h",
     label: "5時間以上、間隔を空けられた",
     category: "process",
-    check: (ctx) =>
-      typeof ctx.longestIntervalToday === "number" &&
-      ctx.longestIntervalToday >= 300
+    rule: "minInterval",
+    minutes: 300
   },
 
   /* =========================
@@ -333,45 +331,45 @@ window.DAILY_TASKS = [
     id: "first_smoke_after_9",
     label: "9:00まで吸わなかった（起床後）",
     category: "timeband",
-    check: (ctx) =>
-      typeof ctx.firstSmokeHour === "number" &&
-      ctx.firstSmokeHour >= 9
+    rule: "timeband",
+    from: 0,
+    to: 9
   },
 
   {
     id: "no_smoke_lunch",
     label: "12:00〜14:00に吸わなかった（昼食後）",
     category: "timeband",
-    check: (ctx) =>
-      ctx.countBetween &&
-      ctx.countBetween(12, 14) === 0
+    rule: "timeband",
+    from: 12,
+    to: 14
   },
 
   {
     id: "no_smoke_afternoon",
     label: "15:00〜17:00に吸わなかった（午後）",
     category: "timeband",
-    check: (ctx) =>
-      ctx.countBetween &&
-      ctx.countBetween(15, 17) === 0
+    rule: "timeband",
+    from: 15,
+    to: 17
   },
 
   {
     id: "no_smoke_evening",
     label: "18:00〜20:00に吸わなかった（夕方〜夜前）",
     category: "timeband",
-    check: (ctx) =>
-      ctx.countBetween &&
-      ctx.countBetween(18, 20) === 0
+    rule: "timeband",
+    from: 18,
+    to: 20
   },
 
   {
     id: "no_smoke_night",
     label: "21:00以降に吸わなかった（寝る前）",
     category: "timeband",
-    check: (ctx) =>
-      ctx.countBetween &&
-      ctx.countBetween(21, 24) === 0
+    rule: "timeband",
+    from: 21,
+    to: 24
   }
 
 ];

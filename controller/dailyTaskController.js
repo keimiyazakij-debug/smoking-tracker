@@ -11,6 +11,15 @@ function openToday() {
 
 function open(dateKey) {
   currentDateKey = dateKey;
+  const logs = window.common.loadLogs();
+  const settings = window.appSettings || {}; 
+  const ctx = window.common.buildContext({
+    now: window.common.parseDateKey(dateKey),
+    logs,
+    settings,
+    dateKey
+  });
+  evaluate(ctx);  
   const tasks = window.dailyTaskModel.getTasksForDate(dateKey);
   window.dailyTaskView.open(dateKey, tasks);
 }
