@@ -6,81 +6,61 @@ const DAILY_DONE_KEY = "dailyDone";
 const evaluators = {
   record(ctx) { return ctx.hasRecordToday === true;},
   minInterval(ctx, task) {
-    return (
-      typeof ctx.longestIntervalToday === "number" &&
-      ctx.longestIntervalToday >= task.minutes
-    );
+    const logsForDay = ctx.logs?.[ctx.todayKey] || [];
+    const longest = calcLongestInterval(logsForDay);
+    return typeof longest === "number" && longest >= task.minutes;
   },
-  timeband(ctx, task) { 
-    if (!ctx.countBetween) return false;
+  timeband(ctx, task) {
+    const smokeCount = ctx.countBetween(task.from, task.to);
 
-    const count = ctx.countBetween(task.from, task.to);
-    const smokeCount = typeof count === "number" ? count : 0;
+    // 時間帯が終了しているか
+    const finished =
+      !ctx.isToday || ctx.nowHour >= task.to;
 
-    // 過去日
-    if (!ctx.isToday) { return smokeCount === 0; }
-
-    // 当日：判定可能時刻に未到達
-    if (typeof ctx.nowHour !== "number" || ctx.nowHour < task.to) { return false; }
+    if (!finished) return false;
 
     return smokeCount === 0;
-  }    
+  }
 };
 
-function loadDone() {
-  try {
-    return JSON.parse(localStorage.getItem(DAILY_DONE_KEY)) || {};
-  } catch {
-    return {};
+function calcLongestInterval(logsForDay) {
+  if (!Array.isArray(logsForDay) || logsForDay.length < 2) return null;
+
+  let max = 0;
+  for (let i = 1; i < logsForDay.length; i++) {
+    const diff =
+      (new Date(logsForDay[i]) - new Date(logsForDay[i - 1])) / 60000;
+    if (diff > max) max = diff;
   }
+  return Math.floor(max);
 }
 
-function saveDone(done) {
-  localStorage.setItem(DAILY_DONE_KEY, JSON.stringify(done));
-}
+function evaluateTasks(ctx) {
+  return window.DAILY_TASKS.map(task => {
+    const evaluator = evaluators[task.rule];
+    const done = evaluator ? evaluator(ctx, task) === true : false;
 
-function ensureDate(done, dateKey) {
-  if (!done[dateKey]) done[dateKey] = {};
+    return {
+      id: task.id,
+      label: task.label,
+      done
+    };
+  });
 }
 
 function evaluate(ctx) {
-  const done = loadDone();
   const dateKey = ctx.todayKey;
-  ensureDate(done, dateKey);
 
-  const events = [];
-
-  window.DAILY_TASKS.forEach(task => {
-    if (done[dateKey][task.id]) return;
-
-    const evaluator = evaluators[task.rule];
-    if (!evaluator) return;
-    if (!evaluator(ctx, task)) return;
-
-    done[dateKey][task.id] = true;
-    events.push({
+  return evaluateTasks(ctx)
+    .filter(t => t.done)
+    .map(t => ({
       type: "daily",
       dateKey,
-      taskId: task.id
-    });
-  });
-
-  if (events.length) saveDone(done);
-  return events;
-}
-
-function getTasksForDate(dateKey) {
-  const done = loadDone();
-  ensureDate(done, dateKey);
-
-  return window.DAILY_TASKS.map(t => ({
-    id: t.id,
-    label: t.label,
-    done: !!done[dateKey][t.id]
-  }));
+      taskId: t.id
+    }));
 }
 
 window.dailyTaskModel = {
   evaluate,
-  getTasksForDate
+  evaluateTasks
 };

@@ -170,16 +170,37 @@
   </div>
 </div>
 
-  <!-- 下部タブ -->
-  <nav>
-    <button onclick="showTab('main')">⌂</button>
-    <button onclick="showTab('calendar')">📅</button>
-    <!--<button onclick="showTab('timeline')">🕒</button>-->
-    <!--<button onclick="showTab('achievements')">★</button>-->
-    <button onclick="showTab('badgeTab')">🏅</button>
-    <!--<button onclick="showTab('history')">📊</button>-->
-    <button onclick="showTab('settings')">⚙</button>
-  </nav>
+<!-- 統計情報画面 -->
+<div id="stats" class="tab" style="display:none;">
+  <div id="stats-header">
+  <div id="stats-title"></div>
+    <button id="stats-prev">◀</button>
+    <span id="stats-label"></span>
+    <button id="stats-next">▶</button>
+  </div>
+
+  <div id="stats-tabs">
+    <button id="range-week">週</button>
+    <button id="range-month">月</button>
+    <button id="graph-daily">日別</button>
+    <button id="graph-hourly">時間帯</button>
+  </div>
+
+  <div id="stats-chart-wrap">
+    <canvas id="stats-chart"></canvas>
+  </div>
+</div>
+
+<!-- 下部タブ -->
+<nav>
+  <button onclick="showTab('main')">⌂</button>
+  <button onclick="showTab('calendar')">📅</button>
+  <!--<button onclick="showTab('timeline')">🕒</button>-->
+  <!--<button onclick="showTab('achievements')">★</button>-->
+  <button onclick="showTab('badgeTab')">🏅</button>
+  <button onclick="showTab('stats')">📊</button>
+  <button onclick="showTab('settings')">⚙</button>
+</nav>
 
 <!-- ===== 定数・共通 ===== -->
 <script src="./common/constant.js"></script>
@@ -192,16 +213,7 @@
 <script src="./model/dailyTaskModel.js"></script>
 <script src="./model/badgeModel.js"></script>
 <script src="./model/calendarModel.js"></script>
-
-<!-- ===== View ===== -->
-<script src="./view/mainView.js"></script>
-<script src="./view/calendarView.js"></script>
-<script src="./view/timelineView.js"></script>
-<script src="./view/editView.js"></script>
-<script src="./view/dailyTaskView.js"></script>
-<script src="./view/badgeView.js"></script>
-<script src="./view/settingView.js"></script>
-<script src="./view/messageView.js"></script>
+<script src="./model/statsModel.js"></script>
 
 <!-- ===== Controller ===== -->
 <script src="./controller/messageController.js"></script>
@@ -212,7 +224,23 @@
 <script src="./controller/dailyTaskController.js"></script>
 <script src="./controller/badgeController.js"></script>
 <script src="./controller/settingController.js"></script>
+<script src="./controller/statsController.js"></script>
 <script src="./controller/appController.js"></script>
+
+<!-- ===== View ===== -->
+<script src="./view/mainView.js"></script>
+<script src="./view/calendarView.js"></script>
+<script src="./view/timelineView.js"></script>
+<script src="./view/editView.js"></script>
+<script src="./view/dailyTaskView.js"></script>
+<script src="./view/badgeView.js"></script>
+<script src="./view/settingView.js"></script>
+<script src="./view/messageView.js"></script>
+<script src="./view/statsView.js"></script>
+
+<!-- ===== chart.js ===== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
 <!-- ===== 初期化 ===== -->
 <script>

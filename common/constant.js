@@ -304,25 +304,27 @@ window.DAILY_TASKS = [
   },
 
   /* =========================
-   * 時間間隔（我慢）
-   * ========================= */
+  * 朝からの禁煙継続
+  * ========================= */
 
   {
-    id: "long_interval_3h",
-    label: "3時間以上、間隔を空けられた",
-    category: "process",
-    rule: "minInterval",
-    minutes: 180
+    id: "no_smoke_morning",
+    label: "午前中を禁煙で過ごせた",
+    category: "timeband",
+    rule: "timeband",
+    from: 0,
+    to: 12
   },
 
   {
-    id: "long_interval_5h",
-    label: "5時間以上、間隔を空けられた",
-    category: "process",
-    rule: "minInterval",
-    minutes: 300
+    id: "no_smoke_until_evening",
+    label: "夕方まで禁煙を続けられた",
+    category: "timeband",
+    rule: "timeband",
+    from: 0,
+    to: 18
   },
-
+  
   /* =========================
    * 起床後・時間帯ピーク
    * ========================= */

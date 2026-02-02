@@ -1,4 +1,4 @@
-const CACHE_NAME = "smoking-log-v1.1.1";
+const CACHE_NAME = "smoking-log-v1.2.1";
 ""
 const CACHE_FILES = [
   "./",
@@ -17,6 +17,7 @@ const CACHE_FILES = [
   "./model/dailyTaskModel.js",
   "./model/badgeModel.js",
   "./model/calendarModel.js",
+  "./model/statsModel.js",
 
   // ===== View =====
   "./view/mainView.js",
@@ -27,6 +28,7 @@ const CACHE_FILES = [
   "./view/badgeView.js",
   "./view/settingView.js",
   "./view/messageView.js",
+  "./view/statsView.js",
 
   // ===== Controller =====
   "./controller/messageController.js",
@@ -37,6 +39,7 @@ const CACHE_FILES = [
   "./controller/dailyTaskController.js",
   "./controller/badgeController.js",
   "./controller/settingController.js",
+  "./controller/statsController.js",
   "./controller/appController.js"
 ];
 

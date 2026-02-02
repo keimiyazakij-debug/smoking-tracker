@@ -71,7 +71,7 @@ function buildContext({
   dateKey
 }) {
   const todayKey = dateKey ?? getDateKey(now);
-
+  const realTodayKey = getDateKey(new Date());
   const todayLogs = logs[todayKey] || [];
   const yesterdayKey = getDateKey(
     new Date(now.getTime() - 24 * 60 * 60 * 1000)
@@ -105,7 +105,7 @@ function buildContext({
     badgesEarnedToday,
     stats,
     settings,
-    isToday: dateKey ? dateKey === todayKey : true,
+    isToday: todayKey === realTodayKey,
     nowHour: now.getHours() ,
     countBetween
    };

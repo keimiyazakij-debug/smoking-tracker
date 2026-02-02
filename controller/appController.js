@@ -2,22 +2,20 @@
 
 // controller/appController.js
 
-document.addEventListener("DOMContentLoaded", () => {
+function bootstrap() {
   mainController.initMain();
 
-  // ★ 追加：保存済みバッジを即表示
   const earned = badgeModel.loadEarnedBadges();
   badgeView.render(earned);
-  calendarController.showCalendar();
 
-   // ★ 初期描画はここで1回だけ
+  calendarController.showCalendar();
   onLogChanged();
 
-  // ★ 追加：時間経過による再描画
   setInterval(() => {
     onLogChanged();
-  }, 60 * 1000); // 1分ごと
-});
+  }, 60 * 1000);
+}
+document.addEventListener("DOMContentLoaded", bootstrap);
 
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -44,6 +42,10 @@ function onLogChanged(date= null) {
 //  const calendar = window.calendarModel.buildCalendarData( logsForCalendar, dateKey);
 
   const dailyEvents = window.dailyTaskController.evaluate(ctx);
+  // 定期更新・初期描画では開かない
+  if (!date) {
+    dailyEvents.length = 0;
+  }
   const badgeEvents = window.badgeController.updateBadges(ctx);
 
   window.messageController.enqueue(dailyEvents, badgeEvents);
@@ -67,9 +69,21 @@ function showTab(tabId) {
   });
 
   document.getElementById(tabId).style.display = 'block';
+
+  // ===== 統計タブ専用 =====
+  if (tabId === 'stats') {
+    if (!window._statsInitialized) {
+      window.statsView.bind(statsController);
+      window.statsController.init();
+      window._statsInitialized = true;
+    }
+  }
 }
 
 window.showTab = showTab;
 window.onLogChanged = onLogChanged;
+
+// ★ テスト用に公開
+window.appController = { bootstrap,};
 
 })();
