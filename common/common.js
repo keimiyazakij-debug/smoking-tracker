@@ -222,3 +222,7 @@ window.common.getLastSmokeTime = getLastSmokeTime;
 window.common.groupLogsByDate = groupLogsByDate;
 window.common.calculateStats = calculateStats;
 window.common.buildContext = buildContext;
+
+window.appState = {
+  todayKey: null
+};

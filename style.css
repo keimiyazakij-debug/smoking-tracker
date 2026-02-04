@@ -438,6 +438,29 @@ nav button {
 }
 
 /* 統計情報画面 */
+.stats-section-title {
+  font-size: 0.85em;
+  color: #666;
+  margin-bottom: 4px;
+}
+.stats-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.stats-label {
+  font-size: 0.85em;
+  color: #666;
+  min-width: 4.5em; /* ラベル幅を固定して揃える */
+}
+
+.stats-range-buttons button,
+.stats-graph-buttons button {
+  margin-right: 4px;
+}
+
 #stats-chart {
   width: 100%;
   height: 280px;
@@ -451,4 +474,22 @@ nav button {
 #stats-chart {
   width: 100%;
   height: 100%;
+}
+
+/* Safari のみ適用 */
+@supports (-webkit-touch-callout: none) {
+  .time-reset-btn {
+    display: none;
+  }
+ /* 左の時間帯ラベル */
+  .timeline-time {
+    min-width: 3.5em;     /* 時刻表示の横幅を保証 */
+    text-align: right;
+    line-height: 1.4;
+  }
+
+  /* 右の喫煙ログ本文 */
+  .timeline-item {
+    padding-left: 0.5em;  /* ラベルとの間隔を確保 */
+  }
 }

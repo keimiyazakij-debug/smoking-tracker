@@ -1,3 +1,5 @@
+const Y_AXIS_MARGIN = 10;
+
 window.statsView = {
   chart: null,
 
@@ -18,10 +20,13 @@ window.statsView = {
       meta.graphType === 'daily' ? d.x.slice(5) : `${d.x}時`
     );
     const values = data.map(d => d.y);
+    const target = meta.target ?? 0;
+    const maxValue = Math.max(0, ...values);
+    const yMax = Math.max(maxValue, target) + Y_AXIS_MARGIN;
 
     if (!this.chart) {
       const ctx = document.getElementById('stats-chart').getContext('2d');
-      this.chart = new Chart(ctx, {
+      this.chart = new window.Chart(ctx, {
         type: 'bar',
         data: { labels, datasets: [{ data: values }] },
         options: {
@@ -29,7 +34,13 @@ window.statsView = {
           maintainAspectRatio: false,
           animation: false,
           plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: yMax,
+              ticks: { precision: 0 }
+            }
+          }
         }
       });
       return;
@@ -37,6 +48,7 @@ window.statsView = {
 
     this.chart.data.labels = labels;
     this.chart.data.datasets[0].data = values;
+    this.chart.options.scales.y.max = yMax;
     this.chart.update('none');
   }
 };

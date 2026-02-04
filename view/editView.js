@@ -33,6 +33,14 @@ function render(state) {
   const container = document.getElementById("timeTags");
   container.innerHTML = "";
 
+  if (state.times.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "time-empty";
+    empty.textContent = "";
+    container.appendChild(empty);
+    return;
+  }
+
   state.times.forEach((time, index) => {
     const tag = document.createElement("div");
     tag.className = "time-tag";
@@ -46,9 +54,11 @@ function render(state) {
     const del = document.createElement("button");
     del.type = "button";
     del.textContent = "✕";
-    del.onclick = () =>
+    del.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       editController.removeTime(index);
-
+    };
     tag.appendChild(input);
     tag.appendChild(del);
     container.appendChild(tag);

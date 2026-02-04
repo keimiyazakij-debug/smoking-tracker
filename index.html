@@ -179,13 +179,23 @@
     <button id="stats-next">▶</button>
   </div>
 
-  <div id="stats-tabs">
+<!-- 集計期間 -->
+<div class="stats-section stats-row">
+  <span class="stats-label">集計期間:</span>
+  <div class="stats-range-buttons">
     <button id="range-week">週</button>
     <button id="range-month">月</button>
-    <button id="graph-daily">日別</button>
-    <button id="graph-hourly">時間帯</button>
   </div>
+</div>
 
+<!-- 集計内容 -->
+<div class="stats-section stats-row">
+  <span class="stats-label">集計内容:</span>
+  <div class="stats-graph-buttons">
+    <button id="graph-daily">日別本数</button>
+    <button id="graph-hourly">時間帯別平均本数</button>
+  </div>
+</div>
   <div id="stats-chart-wrap">
     <canvas id="stats-chart"></canvas>
   </div>

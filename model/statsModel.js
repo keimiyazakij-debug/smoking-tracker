@@ -1,28 +1,36 @@
 window.statsModel = {
-  aggregate({ from, to, unit }) {
-    const logsByDate = logModel.getLogs(); // ← 修正点
-    const result = {};
+  // 日別：dateKey ベース
+  aggregateDailyByDateKeys(dateKeys) {
+    const logs = window.common.loadLogs();
+    return dateKeys.map(key => ({
+      x: key,
+      y: (logs[key] || []).length
+    }));
+  },
 
-    Object.values(logsByDate).forEach(times => {
-      if (!Array.isArray(times)) return;
+  // 時間帯別：対象期間(dateKeys)のログを hour 集計し、1日あたり平均を返す
+  aggregateHourlyByDateKeys(dateKeys) {
+    const logs = window.common.loadLogs();
 
-      times.forEach(t => {
-        const d = new Date(t);
-        if (d < from || d > to) return;
+    // 分母：Controller で未来日除外済み
+    const days = Math.max(1, dateKeys.length);
 
-        let key;
-        if (unit === 'day') {
-          key = d.toISOString().slice(0, 10); // YYYY-MM-DD
-        } else {
-          key = d.getHours(); // 0–23
-        }
+    // 0–23 時のバケツ
+    const hours = Array.from({ length: 24 }, (_, h) => ({ x: h, y: 0 }));
 
-        result[key] = (result[key] || 0) + 1;
+    // dateKeys に含まれるログだけを hour 集計
+    for (const key of dateKeys) {
+      (logs[key] || []).forEach(iso => {
+        const h = new Date(iso).getHours();
+        hours[h].y++;
       });
-    });
+    }
 
-    return Object.keys(result)
-      .sort((a, b) => (unit === 'hour' ? a - b : a.localeCompare(b)))
-      .map(k => ({ x: k, y: result[k] }));
+    // 1日あたり平均（小数1桁）
+    for (const o of hours) {
+      o.y = Math.round((o.y / days) * 10) / 10;
+    }
+
+    return hours;
   }
 };

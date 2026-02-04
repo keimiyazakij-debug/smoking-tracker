@@ -1,4 +1,6 @@
 window.statsController = {
+  _initialized: false,
+
   state: {
     rangeType: 'week',      // week | month
     graphType: 'daily',     // daily | hourly
@@ -6,6 +8,8 @@ window.statsController = {
   },
 
   init() {
+    if (this._initialized) return;
+    this._initialized = true;
     this.render();
   },
 
@@ -28,65 +32,80 @@ window.statsController = {
     this.state.baseDate = moveBaseDate(this.state.baseDate, this.state.rangeType, 1);
     this.render();
   },
+
   render() {
     const { rangeType, graphType, baseDate } = this.state;
-    const range =
+
+
+    // 期間の dateKeys を作る（ここは既存実装）
+    const dateKeys =
       rangeType === 'week'
-        ? getWeekRange(baseDate)
-        : getMonthRange(baseDate);
+        ? getWeekDateKeys(baseDate)
+        : getMonthDateKeys(baseDate);
 
-    const raw = statsModel.aggregate({
-      from: range.from,
-      to: range.to,
-      unit: graphType === 'daily' ? 'day' : 'hour'
-    });
+    const todayKey = window.common.getDateKey(new Date());
 
-    const data =
-      graphType === 'daily'
-        ? fillDaily(range.from, range.to, raw)
-        : fillHourly(raw);
+    let data;
 
+
+    if (graphType === 'daily') {
+      // ★ 日別：future を含めてそのまま表示（0 本）
+      data = window.statsModel.aggregateDailyByDateKeys(dateKeys);
+    } else {
+
+      // ★ 時間帯別平均：future を除外
+      const effectiveDateKeys = dateKeys.filter(k => k <= todayKey);
+      data = window.statsModel.aggregateHourlyByDateKeys(effectiveDateKeys);
+    }
+    
     const title =
-      (graphType === 'daily' ? '日別本数' : '時間帯別本数') +
-      '（' +
-      (rangeType === 'week' ? '1週間' : '1か月') +
-      '）';  
+      graphType === 'daily'
+        ? '日別本数'
+        : '時間帯別平均本数';
 
-    statsView.render(data, {
+    const label =
+      rangeType === 'week'
+        ? `${dateKeys[0]} – ${dateKeys[dateKeys.length - 1]}`
+        : dateKeys[0].slice(0, 7);
+
+    window.statsView.render(data, {
       title,
-      label: buildLabel(rangeType, range),
+      label,
       rangeType,
-      graphType
+      graphType,
+      target: window.settingModel.loadSettings().dailyTarget
     });
   }
-};
+};  
 
 /* ===== helper ===== */
-
-function getWeekRange(baseDate) {
+function getWeekDateKeys(baseDate) {
   const d = new Date(baseDate);
-  const day = d.getDay();
-  const diff = (day === 0 ? -6 : 1) - day;
+  const day = d.getDay(); // 0=日, 1=月, ...
+  const diff = -day;      // 日曜始まり
 
-  const from = new Date(d);
-  from.setDate(d.getDate() + diff);
-  from.setHours(0, 0, 0, 0);
+  const start = new Date(d);
+  start.setDate(d.getDate() + diff);
 
-  const to = new Date(from);
-  to.setDate(from.getDate() + 6);
-  to.setHours(23, 59, 59, 999);
-
-  return { from, to };
+  const keys = [];
+  for (let i = 0; i < 7; i++) {
+    const cur = new Date(start);
+    cur.setDate(start.getDate() + i);
+    keys.push(window.common.getDateKey(cur));
+  }
+  return keys;
 }
 
-function getMonthRange(baseDate) {
+function getMonthDateKeys(baseDate) {
   const y = baseDate.getFullYear();
   const m = baseDate.getMonth();
-
-  return {
-    from: new Date(y, m, 1, 0, 0, 0, 0),
-    to:   new Date(y, m + 1, 0, 23, 59, 59, 999)
-  };
+  const keys = [];
+  const d = new Date(y, m, 1);
+  while (d.getMonth() === m) {
+    keys.push(window.common.getDateKey(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return keys;
 }
 
 function moveBaseDate(baseDate, rangeType, dir) {

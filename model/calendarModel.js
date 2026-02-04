@@ -64,7 +64,7 @@ function buildCalendarData(logs, todayKey) {
 function buildCalendarState(ctx) {
   const logs = window.common.loadLogs();
   const target = window.settingModel.loadSettings().dailyTarget;
-  const todayKey = window.common.getDateKey();
+  const todayKey = window.appState.todayKey;
 
   const firstDay = new Date(state.year, state.month, 1).getDay();
   const lastDate = new Date(state.year, state.month + 1, 0).getDate();

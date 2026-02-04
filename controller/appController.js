@@ -2,7 +2,9 @@
 
 // controller/appController.js
 
+// 初期化処理
 function bootstrap() {
+  window.appState.todayKey = window.common.getDateKey(new Date());
   mainController.initMain();
 
   const earned = badgeModel.loadEarnedBadges();
@@ -22,16 +24,22 @@ document.addEventListener("DOMContentLoaded", () => {
   mainController.initMain();
 });
 
+// ログ更新時処理
 function onLogChanged(date= null) {
   const logs = window.logModel.getLogs();
-  const dateKey = window.common.getDateKey(new Date());
+  const nowKey = window.common.getDateKey(new Date());
   const settings = window.settingModel.loadSettings();
+
+  if (window.appState.todayKey !== nowKey) {
+    window.appState.todayKey = nowKey;
+    window.calendarModel.resetToToday();
+  }  
 
   const ctx = window.common.buildContext({
     now: new Date(),
     logs,
     settings,
-    dateKey
+    dateKey: window.appState.todayKey
   });
   const targetDate = date ?? ctx.todayKey;
   const grouped = window.common.groupLogsByDate(logs);
@@ -50,13 +58,20 @@ function onLogChanged(date= null) {
 
   window.messageController.enqueue(dailyEvents, badgeEvents);
 
-  if (window.timelineController.isOpenTimeline() == true){
+  if (window.timelineController.isOpenTimeline() === true && date) {
     window.timelineController.closeTimeline();
     window.timelineController.openTimeline(date);
   }
-  window.mainView.render(ctx);
+  if (!window.timelineController.isOpenTimeline()) {
+    window.mainView.render(ctx);
+  }
   window.calendarController.refresh();
   window.badgeView.render();
+
+  if (date && window._statsInitialized && window.statsController) {
+    window.statsController.state.baseDate = new Date(date);
+    window.statsController.render();
+  }  
 }
 
 function showTab(tabId) {
@@ -79,6 +94,18 @@ function showTab(tabId) {
     }
   }
 }
+
+// iOS対策
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    const nowKey = window.common.getDateKey(new Date());
+    if (window.appState.todayKey !== nowKey) {
+      window.appState.todayKey = nowKey;
+      window.calendarModel.resetToToday();
+      window.calendarController.refresh();
+    }
+  }
+});
 
 window.showTab = showTab;
 window.onLogChanged = onLogChanged;
