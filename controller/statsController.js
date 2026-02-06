@@ -67,14 +67,15 @@ window.statsController = {
       rangeType === 'week'
         ? `${dateKeys[0]} – ${dateKeys[dateKeys.length - 1]}`
         : dateKeys[0].slice(0, 7);
-
-    window.statsView.render(data, {
+    const viewState = buildStatsViewState({
+      data,
+      graphType,
       title,
       label,
-      rangeType,
-      graphType,
       target: window.settingModel.loadSettings().dailyTarget
     });
+
+    window.statsView.render(viewState);
   }
 };  
 
@@ -141,4 +142,21 @@ function buildLabel(rangeType, range) {
   const f = range.from.toISOString().slice(0, 10);
   const t = range.to.toISOString().slice(0, 10);
   return rangeType === 'week' ? `${f} – ${t}` : f.slice(0, 7);
+}
+
+function buildStatsViewState({ data, graphType, title, label, target }) {
+  const labels = data.map(d =>
+    graphType === 'daily' ? d.x.slice(5) : `${d.x}時`
+  );
+  const values = data.map(d => d.y);
+  const maxValue = Math.max(0, ...values);
+  const yMax = Math.max(maxValue, target ?? 0) + 10;
+
+  return {
+    title,
+    label,
+    labels,
+    values,
+    yMax
+  };
 }

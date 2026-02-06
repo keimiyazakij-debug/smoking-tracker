@@ -25,7 +25,9 @@ function openToday() {
 function open(dateKey) {
   currentDateKey = dateKey;
   const logs = window.common.loadLogs();
-  const settings = window.appSettings || {}; 
+  const settings = window.settingModel?.loadSettings
+    ? window.settingModel.loadSettings()
+    : (window.appSettings || {});
   const isToday = dateKey === window.common.getDateKey(new Date());
 
   const ctx = window.common.buildContext({
@@ -35,7 +37,8 @@ function open(dateKey) {
     dateKey
   });
   const tasks = window.dailyTaskModel.evaluateTasks(ctx);
-  window.dailyTaskView.open(dateKey, tasks);
+  const viewState = buildDailyTaskViewState(dateKey, tasks, isToday);
+  window.dailyTaskView.open(viewState);
 }
 
 function move(diff) {
@@ -66,9 +69,27 @@ function checkAchievement(ctx) {
   if (!achieved || lastAchievedDateKey === ctx.todayKey) return;
 
   const tasks = window.dailyTaskModel.evaluateTasks(ctx);
-  window.dailyTaskView.open(ctx.todayKey, tasks);
+  const viewState =
+    buildDailyTaskViewState(ctx.todayKey, tasks, ctx.isToday);
+  window.dailyTaskView.open(viewState);
 
   lastAchievedDateKey = ctx.todayKey;
+}
+
+function refreshCurrentIfOpen() {
+  if (!window.dailyTaskView.isOpen || !window.dailyTaskView.isOpen()) return;
+  if (!currentDateKey) return;
+  open(currentDateKey);
+}
+
+function buildDailyTaskViewState(dateKey, tasks, isToday) {
+  const todayKey = window.common.getDateKey();
+  return {
+    dateKey,
+    title: isToday ? "今日のチャレンジ" : `${dateKey} のチャレンジ`,
+    tasks,
+    canNext: dateKey < todayKey
+  };
 }
 
 window.dailyTaskController = {
@@ -76,7 +97,8 @@ window.dailyTaskController = {
   open,
   move,
   evaluate,
-  checkAchievement
+  checkAchievement,
+  refreshCurrentIfOpen
 };
 
 })();

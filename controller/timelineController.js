@@ -10,7 +10,8 @@ function openTimeline(dateKey) {
   document.getElementById("timelineTitle").textContent =
     `${dateKey} のタイムライン`;
 
-  window.timelineView.render(dateKey);
+  const map = buildTimelineMap(dateKey);
+  window.timelineView.render(map);
 }
 
 // ===== タイムライン画面の再表示 =====
@@ -18,7 +19,32 @@ function refreshTimeline(dateKey) {
   document.getElementById("timelineTitle").textContent =
     `${dateKey} のタイムライン`;
 
-  window.timelineView.render(dateKey);
+  const map = buildTimelineMap(dateKey);
+  window.timelineView.render(map);
+}
+
+function refreshCurrent() {
+  if (!currentDateKey) return;
+  refreshTimeline(currentDateKey);
+}
+
+function buildTimelineMap(dateKey) {
+  const logs = window.common.loadLogs();
+  const times = logs[dateKey] || [];
+  const map = {};
+
+  times.forEach(t => {
+    const d = new Date(t);
+    if (window.common.getDateKey(d) !== dateKey) return;
+    const h = d.getHours();
+    const mm = d.getMinutes().toString().padStart(2,"0");
+    const hh = h.toString().padStart(2,"0");
+    if (!map[h]) map[h] = [];
+    map[h].push(`${hh}:${mm}`);
+  });
+
+  Object.keys(map).forEach(h => map[h].sort());
+  return map;
 }
 
 
@@ -52,6 +78,7 @@ window.timelineController = {
   closeTimeline,
   openEditFromTimeline,
   refreshTimeline,
+  refreshCurrent,
   isOpenTimeline
  };
 

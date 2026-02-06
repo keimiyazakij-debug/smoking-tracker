@@ -16,9 +16,12 @@ function renderCalendar() {
       state.todayKey
     );
 
+  const days = buildCalendarDays(state, calendarData);
+
   window.calendarView.render({
     ...state,
-    calendarData
+    calendarData,
+    days
   });
 }
 
@@ -39,6 +42,40 @@ function nextMonth() {
 
 function refresh() {
   renderCalendar();
+}
+
+function buildCalendarDays(state, calendarData) {
+  let downStreak = 0;
+  const days = [];
+
+  for (let d = 1; d <= state.lastDate; d++) {
+    const dateKey = `${state.year}-${String(state.month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const count = calendarData[dateKey]?.count ?? null;
+    const prev = calendarModel.getPrevDayInfo(dateKey, calendarData);
+    const isPast = dateKey < state.todayKey;
+
+    const evalType = calendarModel.evaluateDay({
+      count,
+      prevCount: prev?.count ?? null,
+      target: state.target,
+      isPast
+    });
+
+    if (evalType === "down") downStreak++;
+    else if (evalType === "up") downStreak = 0;
+
+    days.push({
+      day: d,
+      dateKey,
+      count,
+      evalType,
+      downStreak,
+      prevCount: prev?.count ?? null,
+      hasLog: Object.prototype.hasOwnProperty.call(calendarData, dateKey)
+    });
+  }
+
+  return days;
 }
 
 function onDayClick(dateKey, hasLog) {

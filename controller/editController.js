@@ -7,7 +7,7 @@ let currentDateKey;
 function openEdit(dateKey) {
   currentDateKey=dateKey;
   editModel.open(dateKey);
-  editView.open(window.editModel.getState());
+  editView.open(buildEditViewState());
 }
 
 function closeEdit() {
@@ -21,7 +21,7 @@ function addTimeTag() {
   const mm = now.getMinutes().toString().padStart(2,"0");
 
   window.editModel.addTime(`${hh}:${mm}`);
-  window.editView.render(window.editModel.getState());
+  window.editView.render(buildEditViewState());
 }
 
 function updateTime(index, value) {
@@ -30,14 +30,33 @@ function updateTime(index, value) {
 
 function removeTime(index) {
   window.editModel.removeTime(index);
-  window.editView.render(window.editModel.getState());
+  window.editView.render(buildEditViewState());
 }
 
 function saveEdit() {
   window.editModel.save();
   closeEdit();
   onLogChanged(currentDateKey);
-  window.messageController.enqueue({ type: "msg", text: "修正しました"});
+  window.messageController.enqueue({ type: "msg", text: "修正しました", priority: -1});
+}
+
+function refreshFromStorage() {
+  if (!currentDateKey) return;
+  window.editModel.open(currentDateKey);
+  window.editView.render(buildEditViewState());
+}
+
+function isOpenEdit() {
+  return window.editView.isOpen && window.editView.isOpen();
+}
+
+function buildEditViewState() {
+  const state = window.editModel.getState();
+  return {
+    dateKey: state.dateKey,
+    title: `${state.dateKey} を修正`,
+    times: [...state.times]
+  };
 }
 
 window.editController = {
@@ -46,7 +65,9 @@ window.editController = {
   addTimeTag,
   updateTime,
   removeTime,
-  saveEdit
+  saveEdit,
+  refreshFromStorage,
+  isOpenEdit
 };
 
 })();

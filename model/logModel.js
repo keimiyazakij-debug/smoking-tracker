@@ -8,6 +8,9 @@ function loadLogs() {
 
 function saveLogs(logs) {
   localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+  if (typeof window !== "undefined" && typeof Event !== "undefined") {
+    window.dispatchEvent(new Event("logs-changed"));
+  }
 }
 
 function addSmoke(date = new Date()) {

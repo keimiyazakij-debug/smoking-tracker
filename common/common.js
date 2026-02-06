@@ -22,6 +22,9 @@ function loadLogs() {
 
 function saveLogs(logs) {
   localStorage.setItem("dailyLogs", JSON.stringify(logs));
+  if (typeof window !== "undefined" && typeof Event !== "undefined") {
+    window.dispatchEvent(new Event("logs-changed"));
+  }
 }
 
 // 最新の喫煙データを取得
@@ -84,6 +87,7 @@ function buildContext({
     : null;
 
   const stats = calculateStats(groupLogsByDate(logs), settings);
+  const consecutiveNoSmokeDays = getConsecutiveNoSmokeDays(logs, todayKey);
 
   // 時間帯ごとの喫煙本数カウント
   function countBetween(from, to) {
@@ -107,12 +111,13 @@ function buildContext({
     settings,
     isToday: todayKey === realTodayKey,
     nowHour: now.getHours() ,
-    countBetween
+    countBetween,
+    consecutiveNoSmokeDays
    };
 }
 
 function calculateStats(days, setting) {
-  const goalPerDay = setting.goalPerDay;
+  const goalPerDay = setting?.dailyTarget ?? 0;
   const todayKey = getDateKey(new Date());
 
   let dailyTotal = 0;
@@ -205,6 +210,26 @@ function groupLogsByDate(logs) {
       logged: times.length > 0
     });
   }  return result;
+}
+
+function getConsecutiveNoSmokeDays(logs, todayKey) {
+  const keys = Object.keys(logs || {});
+  if (keys.length === 0) return 0;
+
+  const earliestKey = keys.sort()[0];
+  const earliestDate = parseDateKey(earliestKey);
+  let d = parseDateKey(todayKey);
+  let count = 0;
+
+  while (d >= earliestDate) {
+    const key = getDateKey(d);
+    const times = logs[key] || [];
+    if (times.length > 0) break;
+    count++;
+    d.setDate(d.getDate() - 1);
+  }
+
+  return count;
 }
 
 // 日付・表示系

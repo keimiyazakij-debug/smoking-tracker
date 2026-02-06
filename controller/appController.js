@@ -58,11 +58,13 @@ function onLogChanged(date= null) {
 
   window.messageController.enqueue(dailyEvents, badgeEvents);
 
-  if (window.timelineController.isOpenTimeline() === true && date) {
-    window.timelineController.closeTimeline();
-    window.timelineController.openTimeline(date);
-  }
-  if (!window.timelineController.isOpenTimeline()) {
+  if (window.timelineController.isOpenTimeline() === true) {
+    if (date) {
+      window.timelineController.openTimeline(date);
+    } else {
+      window.timelineController.refreshCurrent();
+    }
+  } else {
     window.mainView.render(ctx);
   }
   window.calendarController.refresh();
@@ -70,8 +72,17 @@ function onLogChanged(date= null) {
 
   if (date && window._statsInitialized && window.statsController) {
     window.statsController.state.baseDate = new Date(date);
+  }
+  if (window._statsInitialized && window.statsController) {
     window.statsController.render();
-  }  
+  }
+
+  if (window.editController?.isOpenEdit && window.editController.isOpenEdit()) {
+    window.editController.refreshFromStorage();
+  }
+  if (window.dailyTaskController?.refreshCurrentIfOpen) {
+    window.dailyTaskController.refreshCurrentIfOpen();
+  }
 }
 
 function showTab(tabId) {
@@ -109,6 +120,11 @@ document.addEventListener('visibilitychange', () => {
 
 window.showTab = showTab;
 window.onLogChanged = onLogChanged;
+
+window.addEventListener("logs-changed", () => onLogChanged());
+window.addEventListener("storage", (e) => {
+  if (e && e.key === "dailyLogs") onLogChanged();
+});
 
 // ★ テスト用に公開
 window.appController = { bootstrap,};

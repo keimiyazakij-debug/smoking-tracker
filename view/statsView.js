@@ -1,5 +1,3 @@
-const Y_AXIS_MARGIN = 10;
-
 window.statsView = {
   chart: null,
 
@@ -12,23 +10,20 @@ window.statsView = {
     document.getElementById('graph-hourly').onclick = () => controller.changeGraph('hourly');
   },
 
-  render(data, meta) {
-    document.getElementById('stats-title').textContent = meta.title;
-    document.getElementById('stats-label').textContent = meta.label;
+  render(state) {
+    const titleEl = document.getElementById('stats-title');
+    const labelEl = document.getElementById('stats-label');
+    const canvasEl = document.getElementById('stats-chart');
+    if (!titleEl || !labelEl || !canvasEl) return;
 
-    const labels = data.map(d =>
-      meta.graphType === 'daily' ? d.x.slice(5) : `${d.x}時`
-    );
-    const values = data.map(d => d.y);
-    const target = meta.target ?? 0;
-    const maxValue = Math.max(0, ...values);
-    const yMax = Math.max(maxValue, target) + Y_AXIS_MARGIN;
+    titleEl.textContent = state.title;
+    labelEl.textContent = state.label;
 
     if (!this.chart) {
-      const ctx = document.getElementById('stats-chart').getContext('2d');
+      const ctx = canvasEl.getContext('2d');
       this.chart = new window.Chart(ctx, {
         type: 'bar',
-        data: { labels, datasets: [{ data: values }] },
+        data: { labels: state.labels, datasets: [{ data: state.values }] },
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -37,7 +32,7 @@ window.statsView = {
           scales: {
             y: {
               beginAtZero: true,
-              max: yMax,
+              max: state.yMax,
               ticks: { precision: 0 }
             }
           }
@@ -46,9 +41,9 @@ window.statsView = {
       return;
     }
 
-    this.chart.data.labels = labels;
-    this.chart.data.datasets[0].data = values;
-    this.chart.options.scales.y.max = yMax;
+    this.chart.data.labels = state.labels;
+    this.chart.data.datasets[0].data = state.values;
+    this.chart.options.scales.y.max = state.yMax;
     this.chart.update('none');
   }
 };

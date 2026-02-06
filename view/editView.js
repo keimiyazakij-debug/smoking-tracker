@@ -17,8 +17,7 @@ document.getElementById("closeEditBtn").addEventListener("click", () => {
 
 function open(state) {
   document.getElementById("editOverlay").classList.remove("hidden");
-  document.getElementById("editTitle").textContent =
-    `${state.dateKey} を修正`;
+  document.getElementById("editTitle").textContent = state.title;
 
   document.getElementById("editDate").value = state.dateKey;
   render(state);
@@ -27,6 +26,11 @@ function open(state) {
 function close() {
   document.getElementById("editOverlay").classList.add("hidden");
   document.getElementById("timeTags").innerHTML = "";
+}
+
+function isOpen() {
+  const overlay = document.getElementById("editOverlay");
+  return overlay && !overlay.classList.contains("hidden");
 }
 
 function render(state) {
@@ -65,6 +69,6 @@ function render(state) {
   });
 }
 
-window.editView = { open, close, render };
+window.editView = { open, close, render, isOpen };
 
 })();

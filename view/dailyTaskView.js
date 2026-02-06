@@ -3,14 +3,18 @@
 
 let overlay = null;
 
-function open(dateKey, tasks) {
+function open(state) {
   if (!overlay) overlay = create();
-  render(dateKey, tasks);
+  render(state);
   overlay.classList.remove("hidden");
 }
 
 function close() {
   if (overlay) overlay.classList.add("hidden");
+}
+
+function isOpen() {
+  return !!overlay && !overlay.classList.contains("hidden");
 }
 
 function create() {
@@ -38,16 +42,13 @@ function create() {
   return o;
 }
 
-function render(dateKey, tasks) {
-  document.getElementById("dcTitle").textContent =
-    dateKey === window.common.getDateKey()
-      ? "今日のチャレンジ"
-      : `${dateKey} のチャレンジ`;
+function render(state) {
+  document.getElementById("dcTitle").textContent = state.title;
 
   const list = document.getElementById("dcList");
   list.innerHTML = "";
 
-  tasks.forEach(t => {
+  state.tasks.forEach(t => {
     const div = document.createElement("div");
     div.className = "challenge-item" + (t.done ? " done" : "");
     div.textContent = t.label;
@@ -56,9 +57,9 @@ function render(dateKey, tasks) {
 
   // ▼ 追加：未来日なら Next を隠す
   const nextBtn = document.getElementById("dcNext");
-  nextBtn.style.visibility =
-    dateKey >= window.common.getDateKey() ? "hidden" : "visible";}
+  nextBtn.style.visibility = state.canNext ? "visible" : "hidden";
+}
 
-window.dailyTaskView = { open, close };
+window.dailyTaskView = { open, close, isOpen };
 
 })();

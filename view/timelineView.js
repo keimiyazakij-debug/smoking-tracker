@@ -1,10 +1,7 @@
 (function () {
 
-let currentDateKey = null;
-
 // DOMの書き換え
 document.getElementById("openEditBtn").addEventListener("click", () => {
-  if (!currentDateKey) return;
   window.timelineController.openEditFromTimeline();
 });
 
@@ -13,23 +10,9 @@ document.getElementById("closeTimelineBtn").addEventListener("click", () => {
 });
 
   // ===== タイムライン画面の描画 =====
-function renderTimelineForDate(dateKey) {
-  currentDateKey = dateKey;
+function renderTimelineForDate(map) {
   const container = document.getElementById("timelineList");
   container.innerHTML = "";
-
-  const logs = loadLogs();
-  const times = (logs[dateKey] || []).map(t => new Date(t));
-
-  // 時間帯ごとに整理
-  const map = {};
-  times.forEach(t => {
-    const h = t.getHours();
-    const mm = t.getMinutes().toString().padStart(2,'0');
-    const hh = h.toString().padStart(2,'0');
-    if (!map[h]) map[h] = [];
-    map[h].push(`${hh}:${mm}`);
-  });
 
   // 0〜23時を必ず描画
   for (let h = 0; h < 24; h++) {

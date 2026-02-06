@@ -52,52 +52,36 @@ function renderNextMonth(grid, ctx) {
 }
 
 function renderCurrentMonth(grid, ctx) {
-  let downStreak = 0;
-
-  for (let d=1; d<=ctx.lastDate; d++) {
-    const dateKey = `${ctx.year}-${String(ctx.month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-    const count = ctx.calendarData[dateKey]?.count ?? null;
-    const prev = calendarModel.getPrevDayInfo(dateKey, ctx.calendarData);
-    const isPast = dateKey < ctx.todayKey;
-
-    const evalType = calendarModel.evaluateDay({
-      count,
-      prevCount: prev?.count ?? null,
-      target: ctx.target,
-      isPast
-    });
-
-    if (evalType === "down") downStreak++;
-    else if (evalType === "up") downStreak = 0;
-
+  ctx.days.forEach(day => {
     const cell = document.createElement("div");
     cell.className="calendar-day";
-    decorate(cell, d, dateKey, count, ctx);
-    applyMark(cell, evalType, downStreak, count, prev?.count);
+    decorate(cell, day, ctx);
+    applyMark(cell, day);
 
     cell.onclick = ()=> calendarController.onDayClick(
-      dateKey,
-      ctx.calendarData.hasOwnProperty(dateKey)
+      day.dateKey,
+      day.hasLog
     );
     grid.appendChild(cell);
-  }
+  });
 }
 
-function decorate(cell, d, dateKey, count, ctx) {
-  const dow = new Date(ctx.year, ctx.month, d).getDay();
+function decorate(cell, day, ctx) {
+  const dow = new Date(ctx.year, ctx.month, day.day).getDay();
   if (dow===0) cell.classList.add("red");
   if (dow===6) cell.classList.add("blue");
-  if (dateKey===ctx.todayKey) cell.classList.add("today");
-  if (dateKey<ctx.todayKey) cell.classList.add("past");
-  if (!ctx.calendarData.hasOwnProperty(dateKey)) cell.classList.add("no-log");
-  cell.innerHTML = `<div class="day-number">${d}</div><div class="day-count">${count!=null?`${count}本`:""}</div>`;
+  if (day.dateKey===ctx.todayKey) cell.classList.add("today");
+  if (day.dateKey<ctx.todayKey) cell.classList.add("past");
+  if (!day.hasLog) cell.classList.add("no-log");
+  cell.innerHTML = `<div class="day-number">${day.day}</div><div class="day-count">${day.count!=null?`${day.count}本`:""}</div>`;
 }
 
-function applyMark(cell, type, streak, count, prevCount) {
+function applyMark(cell, day) {
+  const type = day.evalType;
   if (!type) return;
   let text="", cls="";
   if (type==="success"){ text="🏆"; cls="calendar-mark mark-success"; }
-  if (type==="down"){ text=streak>=2?"★":"☆"; cls="calendar-mark mark-down"; }
+  if (type==="down"){ text=day.downStreak>=2?"★":"☆"; cls="calendar-mark mark-down"; }
   if (type==="same"){ text="＝"; cls="calendar-mark mark-same"; }
   if (type==="up"){ text="⚠"; cls="calendar-mark mark-up"; }
   if (!text) return;
@@ -108,7 +92,8 @@ function applyMark(cell, type, streak, count, prevCount) {
     e.stopPropagation(); 
     window.messageController.enqueue(
       {type: "msg",
-       text: getMsg(type, (count??0)-(prevCount??0), streak)}
+       text: getMsg(type, (day.count??0)-(day.prevCount??0), day.downStreak),
+       priority: -1}
     );
    };
   cell.appendChild(m);
