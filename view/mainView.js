@@ -15,6 +15,19 @@ function render(ctx) {
   const pct = Math.min(100, count / s.dailyTarget * 100);
   document.getElementById("progress").style.width = pct + "%";
 
+  // 戻すリンクの表示制御
+  const undoWrap = document.getElementById("undoSmokeWrap");
+  const undoBtn = document.getElementById("undoSmokeBtn");
+  if (undoWrap && undoBtn) {
+    if (count > 0) {
+      undoWrap.style.display = "block";
+      undoBtn.disabled = false;
+    } else {
+      undoWrap.style.display = "none";
+      undoBtn.disabled = true;
+    }
+  }
+
   /* ===== ステータス行（意味づけ） ===== */
   const statusEl = document.getElementById("statusLine");
   if (statusEl && window.logModel?.getConsecutiveLogDays) {

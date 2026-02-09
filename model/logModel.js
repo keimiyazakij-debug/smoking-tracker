@@ -23,6 +23,18 @@ function addSmoke(date = new Date()) {
   saveLogs(logs);
 }
 
+function removeLastSmoke(dateKey = window.common.getDateKey(new Date())) {
+  const logs = loadLogs();
+  const times = logs[dateKey];
+  if (!Array.isArray(times) || times.length === 0) return false;
+
+  times.pop();
+  if (times.length === 0) delete logs[dateKey];
+
+  saveLogs(logs);
+  return true;
+}
+
 function getLogs() {
   return loadLogs();
 }
@@ -71,6 +83,7 @@ function getConsecutiveLogDays() {
 
 window.logModel = {
   addSmoke,
+  removeLastSmoke,
   getLogs,
   getLastSmokeTime,
   getConsecutiveLogDays

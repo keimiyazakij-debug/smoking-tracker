@@ -3,9 +3,11 @@
 // controller/editController.js
 
 let currentDateKey;
+let returnToMainOnSave = false;
 
-function openEdit(dateKey) {
+function openEdit(dateKey, options = {}) {
   currentDateKey=dateKey;
+  returnToMainOnSave = !!options.returnToMainOnSave;
   editModel.open(dateKey);
   editView.open(buildEditViewState());
 }
@@ -13,6 +15,7 @@ function openEdit(dateKey) {
 function closeEdit() {
   window.editModel.close();
   window.editView.close();
+  returnToMainOnSave = false;
 }
 
 function addTimeTag() {
@@ -35,7 +38,16 @@ function removeTime(index) {
 
 function saveEdit() {
   window.editModel.save();
+  const shouldReturnToMain = returnToMainOnSave;
   closeEdit();
+  if (shouldReturnToMain) {
+    if (window.timelineController?.closeTimeline) {
+      window.timelineController.closeTimeline();
+    }
+    if (typeof window.showTab === "function") {
+      window.showTab("main");
+    }
+  }
   onLogChanged(currentDateKey);
   window.messageController.enqueue({ type: "msg", text: "修正しました", priority: -1});
 }

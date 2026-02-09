@@ -19,7 +19,7 @@ function open(state) {
   document.getElementById("editOverlay").classList.remove("hidden");
   document.getElementById("editTitle").textContent = state.title;
 
-  document.getElementById("editDate").value = state.dateKey;
+  document.getElementById("editDate").textContent = state.dateKey;
   render(state);
 }
 

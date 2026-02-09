@@ -41,11 +41,19 @@
     <div id="todayCountDisplay">0 / 10 本</div>
     <div id="progress-bar"><div id="progress"></div></div>
     <button class="large-btn" id="smokeBtn">吸った</button>
+    <div id="undoSmokeWrap" style="margin-top:8px;">
+      <button id="undoSmokeBtn" class="text-link">戻す</button>
+    </div>
     <div id="statusLine" class="status-line"></div>
     <div id="since">禁煙時間：0分</div>
     <div class="daily-challenge-link">
       <button id="dailyChallengeLink" class="text-link">
         今日のチャレンジ
+      </button>
+    </div>
+    <div class="daily-challenge-link">
+      <button id="todayTimelineLink" class="text-link">
+        今日の履歴
       </button>
     </div>
   </div>
@@ -82,7 +90,7 @@
   <div class="edit-body">
     <label>
       日付：
-      <input type="date" id="editDate">
+      <span id="editDate"></span>
     </label>
 
     <label>

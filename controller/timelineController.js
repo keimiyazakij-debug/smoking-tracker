@@ -1,9 +1,11 @@
 (function () {
 let currentDateKey = null;
+let returnToMainOnSave = false;
 
 // ===== タイムライン画面の表示 =====
-function openTimeline(dateKey) {
+function openTimeline(dateKey, options = {}) {
   currentDateKey = dateKey;   // ★ 追加
+  returnToMainOnSave = !!options.returnToMainOnSave;
   const overlay = document.getElementById("timelineOverlay");
   overlay.classList.remove("hidden");
 
@@ -51,7 +53,9 @@ function buildTimelineMap(dateKey) {
 // ===== 編集画面を開く =====
 function openEditFromTimeline() {
     if (!currentDateKey) return;
-    window.editController.openEdit(currentDateKey);
+    window.editController.openEdit(currentDateKey, {
+      returnToMainOnSave
+    });
 }
 
 // ===== タイムライン画面の非表示 =====
