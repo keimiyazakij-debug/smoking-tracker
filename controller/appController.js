@@ -106,9 +106,14 @@ function showTab(tabId) {
 
   document.querySelectorAll('.tab').forEach(el => {
     el.style.display = 'none';
+    el.classList.remove('active');
   });
 
-  document.getElementById(tabId).style.display = 'block';
+  const target = document.getElementById(tabId);
+  if (target) {
+    target.style.display = 'block';
+    target.classList.add('active');
+  }
 
   // ===== 統計タブ専用 =====
   if (tabId === 'stats') {

@@ -1,8 +1,10 @@
 /* メイン部分 */
 body { 
   font-family: sans-serif;
+  font-size: 14px;
   margin:0; 
   padding:0; 
+  background: #eef3e9; /* unified soft background */
 }
 
 :root {
@@ -13,13 +15,13 @@ body {
 header { 
   text-align:center; 
   padding:0; 
-  background:#f2f2f2; 
+  background:#eef3e9; 
 }
 
 .title-bar {
-  background: #f2f2f2;
+  background: #eef3e9;
   color: #333;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #e3e8da;
   text-align: left;
 }
 
@@ -37,6 +39,12 @@ header {
   font-size: 11px;
   letter-spacing: 0.08em;
   opacity: 0.7;
+}
+
+h2,
+h3 {
+  font-size: 18px;
+  font-weight: 600;
 }
 
 /* ------------------------------ */
@@ -94,7 +102,7 @@ header {
   border: 1px solid #e3e8da;
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .today-status-header {
@@ -106,7 +114,7 @@ header {
 }
 
 .today-label {
-  font-size: 14px;
+  font-size: 12px;
   color: #4c5a4c;
   letter-spacing: 0.04em;
 }
@@ -119,7 +127,7 @@ header {
 .since-text {
   color: #4a5b4a;
   margin-bottom: 12px;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .today-count-row {
@@ -136,8 +144,13 @@ header {
   color: #2f3d2f;
 }
 
+.timeline-count,
+.day-number {
+  font-weight: 600;
+}
+
 .yesterday-diff {
-  font-size: 13px;
+  font-size: 12px;
   color: #6a7a6a;
 }
 
@@ -169,7 +182,7 @@ header {
 }
 
 .smoke-help {
-  font-size: 13px;
+  font-size: 12px;
   color: #6a7a6a;
   text-align: center;
   min-height: 1.4em;
@@ -260,6 +273,21 @@ header {
   flex-wrap: wrap;
 }
 
+.timeline-card,
+.calendar-card {
+  margin-top: 0;
+}
+
+.calendar-card {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 12px;
+  align-self: stretch;
+  height: 100%;
+}
+
 
 /* ナビゲーション */
 nav { 
@@ -283,8 +311,9 @@ nav button {
 /* ------------------------------ */
 
 #calendar {
-  padding: 10px 12px 60px;
+  padding: 10px 12px 16px;
   height: calc(100dvh - var(--nav-height, 50px) - var(--header-height, 0px));
+  min-height: calc(100dvh - var(--nav-height, 50px) - var(--header-height, 0px));
   box-sizing: border-box;
   margin-bottom: 0;
 }
@@ -292,6 +321,8 @@ nav button {
 #calendar.active {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
 }
 
 .calendar-header {
@@ -299,7 +330,8 @@ nav button {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 0;
+  flex: 0 0 auto;
 }
 
 /* カレンダー表示 */
@@ -309,6 +341,11 @@ nav button {
   grid-template-rows: auto repeat(var(--calendar-rows, 6), minmax(0, 1fr));
   flex: 1;
   height: 100%;
+  min-height: 0;
+  background: transparent;
+  border-radius: 0;
+  gap: 4px 2px;
+  align-content: stretch;
 }
 
 .calendar-head {
@@ -400,13 +437,14 @@ nav button {
 /* タイムライン表示 */
 .timeline-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
-  height: calc(100% - 50px); /* nav分を除外 */
-  background: #fff;
-  z-index: 1000;
+  height: 100dvh;
+  background: #eef3e9;
+  z-index: 2100;
   overflow-y: auto;
+  padding: 16px 12px calc(var(--nav-height, 50px) + 16px);
+  box-sizing: border-box;
 }
 
 .timeline-overlay.hidden {
@@ -416,12 +454,14 @@ nav button {
 .timeline-header {
   position: sticky;
   top: 0;
-  background: #f2f2f2;
-  padding: 10px;
+  background: #f6f8f2;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #e3e8da;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .timeline-header-top {
@@ -472,20 +512,20 @@ nav button {
 .timeline-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  padding: 16px;
+  gap: 12px;
+  padding: 0;
 }
 
 .timeline-cell {
-  background: #f3f3f3;
-  border: 1px solid #e3e3e3;
-  border-radius: 12px;
-  padding: 10px;
+  background: #f3f6ef;
+  border: 1px solid #e3e8da;
+  border-radius: 14px;
+  padding: 12px;
   min-height: 72px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 6px;
+  gap: 12px;
   text-align: left;
 }
 
@@ -545,11 +585,11 @@ nav button {
 }
 
 .modal-card {
-  background: #fff;
+  background: #f6f8f2;
   border-radius: 16px;
   width: min(90vw, 360px);
-  padding: 16px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .modal-header {

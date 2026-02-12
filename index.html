@@ -87,7 +87,10 @@
       <span id="calendarTitle"></span>
       <button onclick="calendarController.nextMonth()">▶</button>
     </div>
-    <div id="calendarGrid" class="calendar-grid"></div>
+    <!-- card: calendar -->
+    <div class="card calendar-card">
+      <div id="calendarGrid" class="calendar-grid"></div>
+    </div>
   </div>
 
 <!-- タイムライン（オーバーレイ） -->
@@ -104,8 +107,11 @@
     </div>
     <div id="timelineSummary" class="timeline-title-sub"></div>
   </header>
-  <!-- ヒートグリッド表示 -->
-  <div id="timelineList" class="timeline-grid"></div>
+  <!-- card: timeline -->
+  <div class="card timeline-card">
+    <!-- ヒートグリッド表示 -->
+    <div id="timelineList" class="timeline-grid"></div>
+  </div>
 </div>
 
 <!-- タイムライン詳細モーダル -->
@@ -127,7 +133,8 @@
     <button class="edit-btn" id="saveEditBtn">保存</button>
   </header>
 
-  <div class="edit-body">
+  <!-- card: edit -->
+  <div class="card edit-body">
     <label>
       日付：
       <span id="editDate"></span>
