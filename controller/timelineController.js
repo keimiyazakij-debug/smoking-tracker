@@ -9,19 +9,15 @@ function openTimeline(dateKey, options = {}) {
   const overlay = document.getElementById("timelineOverlay");
   overlay.classList.remove("hidden");
 
-  document.getElementById("timelineTitle").textContent =
-    `${dateKey} のタイムライン`;
-
   const map = buildTimelineMap(dateKey);
+  updateTimelineHeader(dateKey, map);
   window.timelineView.render(map);
 }
 
 // ===== タイムライン画面の再表示 =====
 function refreshTimeline(dateKey) {
-  document.getElementById("timelineTitle").textContent =
-    `${dateKey} のタイムライン`;
-
   const map = buildTimelineMap(dateKey);
+  updateTimelineHeader(dateKey, map);
   window.timelineView.render(map);
 }
 
@@ -47,6 +43,43 @@ function buildTimelineMap(dateKey) {
 
   Object.keys(map).forEach(h => map[h].sort());
   return map;
+}
+
+function updateTimelineHeader(dateKey, map) {
+  const title = document.getElementById("timelineTitle");
+  const summary = document.getElementById("timelineSummary");
+  const nextBtn = document.getElementById("nextTimelineDay");
+  if (title) {
+    title.textContent = `${dateKey.replaceAll("-", "/")}`;
+  }
+  if (summary) {
+    const total = Object.values(map).reduce((sum, arr) => sum + arr.length, 0);
+    summary.textContent = `合計 ${total}本`;
+  }
+  if (nextBtn) {
+    const todayKey = window.common.getDateKey(new Date());
+    nextBtn.style.visibility = dateKey >= todayKey ? "hidden" : "visible";
+  }
+}
+
+function goPrevDay() {
+  if (!currentDateKey) return;
+  const d = window.common.parseDateKey(currentDateKey);
+  d.setDate(d.getDate() - 1);
+  const prevKey = window.common.getDateKey(d);
+  currentDateKey = prevKey;
+  refreshTimeline(prevKey);
+}
+
+function goNextDay() {
+  if (!currentDateKey) return;
+  const d = window.common.parseDateKey(currentDateKey);
+  d.setDate(d.getDate() + 1);
+  const nextKey = window.common.getDateKey(d);
+  const todayKey = window.common.getDateKey(new Date());
+  if (nextKey > todayKey) return;
+  currentDateKey = nextKey;
+  refreshTimeline(nextKey);
 }
 
 
@@ -83,7 +116,9 @@ window.timelineController = {
   openEditFromTimeline,
   refreshTimeline,
   refreshCurrent,
-  isOpenTimeline
+  isOpenTimeline,
+  goPrevDay,
+  goNextDay
  };
 
  })();

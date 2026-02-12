@@ -37,7 +37,6 @@
     <div class="title-bar">
       <h1>SmokinTracker <span id="appVersion" class="title-version"></span></h1>
     </div>
-    <div id="message"></div>
   </header>
 
   <!-- メイン画面 -->
@@ -63,7 +62,7 @@
         <div id="smokeHelp" class="smoke-help"></div>
         <div class="undo-row">
           <div id="undoSmokeWrap" class="undo-center">
-            <button id="undoSmokeBtn" class="text-link">戻す</button>
+            <button id="undoSmokeBtn" class="text-link">直前の記録を戻す</button>
           </div>
         </div>
       </section>
@@ -94,11 +93,30 @@
 <!-- タイムライン（オーバーレイ） -->
 <div id="timelineOverlay" class="timeline-overlay hidden">
   <header class="timeline-header">
-    <button id="closeTimelineBtn">← 戻る</button>
-    <span id="timelineTitle"></span>
-    <button class="edit-btn" id="openEditBtn">修正</button>
+    <div class="timeline-header-top">
+      <button id="closeTimelineBtn">←</button>
+      <button class="edit-btn" id="openEditBtn">編集</button>
+    </div>
+    <div class="timeline-header-date">
+      <button id="prevTimelineDay" class="timeline-nav">◀</button>
+      <div id="timelineTitle" class="timeline-title-main"></div>
+      <button id="nextTimelineDay" class="timeline-nav">▶</button>
+    </div>
+    <div id="timelineSummary" class="timeline-title-sub"></div>
   </header>
-  <div id="timelineList" class="timeline-table"></div>
+  <!-- ヒートグリッド表示 -->
+  <div id="timelineList" class="timeline-grid"></div>
+</div>
+
+<!-- タイムライン詳細モーダル -->
+<div id="timelineDetailModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div id="timelineDetailTitle" class="modal-title"></div>
+      <button id="closeTimelineDetailBtn" class="modal-close">閉じる</button>
+    </div>
+    <div id="timelineDetailList" class="modal-body"></div>
+  </div>
 </div>
 
 <!-- 修正画面（オーバーレイ） -->

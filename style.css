@@ -219,54 +219,30 @@ header {
 #progress.progress-yellow { background:#f2d152; }
 #progress.progress-red { background:#f4a0a0; }
 
-#message { 
-  text-align:left; 
-  color:#007700; 
-  margin:10px 0; 
-  min-height: calc(1.3em * 3 + 4px * 2); 
-  padding: 10px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.message-line {
-  display: flex;
-  justify-content: flex-start;
-  gap: 8px;
-  line-height: 1.3;
-}
-.message-time {
-  color: #666;
-  font-size: 14px;
-  font-variant-numeric: tabular-nums;
-}
-.message-text {
-  color: #007700;
-  font-size: 14px;
-}
-
-.calendar-toast {
+/* イベント通知（トースト） */
+.app-toast {
   position: fixed;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(6px);
   bottom: calc(var(--nav-height, 50px) + 12px);
   max-width: calc(100% - 32px);
   padding: 8px 12px;
-  background: rgba(40, 40, 40, 0.9);
-  color: #fff;
-  border-radius: 10px;
+  background: #e8f2e2;
+  color: #2f3d2f;
+  border: 1px solid #d6e4cf;
+  border-radius: 12px;
   font-size: 13px;
   line-height: 1.3;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease;
+  transition: opacity 180ms ease-out, transform 180ms ease-out;
   z-index: 2100;
   text-align: center;
 }
 
-.calendar-toast.is-visible {
+.app-toast.is-visible {
   opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 .daily-challenge-link {
@@ -443,9 +419,167 @@ nav button {
   background: #f2f2f2;
   padding: 10px;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 6px;
   border-bottom: 1px solid #ccc;
+}
+
+.timeline-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.timeline-header-date {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.timeline-nav {
+  border: none;
+  background: #e8f2e2;
+  color: #2f3d2f;
+  border-radius: 10px;
+  padding: 4px 8px;
+  font-size: 14px;
+}
+
+.timeline-title-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  margin: 0 8px;
+}
+
+.timeline-title-main {
+  font-size: 14px;
+  color: #2f3d2f;
+}
+
+.timeline-title-sub {
+  font-size: 12px;
+  color: #6a7a6a;
+  text-align: center;
+}
+
+/* ------------------------------ */
+/* 24時間ヒートグリッド            */
+/* ------------------------------ */
+.timeline-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 16px;
+}
+
+.timeline-cell {
+  background: #f3f3f3;
+  border: 1px solid #e3e3e3;
+  border-radius: 12px;
+  padding: 10px;
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  text-align: left;
+}
+
+.timeline-hour {
+  font-size: 12px;
+  color: #5f6b5f;
+}
+
+.timeline-count {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2f3d2f;
+}
+
+.timeline-count.empty {
+  font-size: 12px;
+  color: #8a8a8a;
+  min-height: 1em;
+}
+
+.timeline-cell.count-1 { background: #e7f3e7; border-color: #d9ead9; }
+.timeline-cell.count-2 { background: #d7edd8; border-color: #c9e1cb; }
+.timeline-cell.count-3 { background: #c6e2c8; border-color: #b8d7ba; }
+.timeline-cell.count-4 { background: #b5d7b9; border-color: #a7ccab; }
+
+.timeline-cell button {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+}
+
+.timeline-cell:active {
+  transform: scale(0.98);
+  transition: transform 120ms ease-out;
+}
+
+/* ------------------------------ */
+/* 詳細モーダル                    */
+/* ------------------------------ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2200;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: 16px;
+  width: min(90vw, 360px);
+  padding: 16px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.modal-title {
+  font-size: 14px;
+  color: #2f3d2f;
+}
+
+.modal-close {
+  border: none;
+  background: #e8f2e2;
+  color: #2f3d2f;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #2f3d2f;
+  font-size: 13px;
 }
 
 .timeline-table {
