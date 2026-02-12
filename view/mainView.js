@@ -28,18 +28,11 @@ function render(ctx) {
     }
   }
 
-  /* ===== ステータス行（意味づけ） ===== */
-  const statusEl = document.getElementById("statusLine");
-  if (statusEl && window.logModel?.getConsecutiveLogDays) {
-    const logDays = logModel.getConsecutiveLogDays();
-
-    if (logDays > 0) {
-      statusEl.textContent = `📝 連続ログ記録：${logDays}日`;
-    } else if (ctx.consecutiveNoSmokeDays >= 1) {
-      statusEl.textContent = `🌱 禁煙${ctx.consecutiveNoSmokeDays}日継続中`;
-    } else {
-      statusEl.textContent = "";
-    }
+  // ステータス行（連続ログ日数）
+  const statusLine = document.getElementById("statusLine");
+  if (statusLine && window.logModel?.getConsecutiveLogDays) {
+    const streak = window.logModel.getConsecutiveLogDays();
+    statusLine.textContent = `📝 連続ログ記録：${streak}日`;
   }
 
   /* ===== since（事実表示） ===== */

@@ -13,9 +13,12 @@
   <style>
   </style>
   <script>
-//  const ENV = "dev"; // ← dev / prod を切り替える
-  const ENV = "prod"; // ← dev / prod を切り替える
-    if ('serviceWorker' in navigator) {
+  const ENV = (location.hostname === "localhost" ||
+               location.hostname === "127.0.0.1" ||
+               location.hostname === "::1")
+    ? "dev"
+    : "prod";
+  if ("serviceWorker" in navigator) {
     const sw = ENV === "prod"
       ? "./service-worker.prod.js"
       : "./service-worker.dev.js";
@@ -23,7 +26,7 @@
     navigator.serviceWorker.register(sw)
       .then(() => console.log("SW registered:", sw))
       .catch(err => console.error("SW error", err));
-    }
+  }
   const BUILD = "2026-02-09-v0.0.3";
   console.log("BUILD:", BUILD);
   window.APP_BUILD = BUILD;
@@ -60,12 +63,10 @@
         今日のチャレンジ
       </button>
     </div>
-    <div id="statusLine" class="status-line"></div>
   </div>
 
   <!-- カレンダー画面 -->
   <div id="calendar" class="tab">
-    <h2>カレンダー</h2>
     <div class="calendar-header">
       <button onclick="calendarController.prevMonth()">◀</button>
       <span id="calendarTitle"></span>
@@ -249,9 +250,6 @@
 
 <!-- ===== 初期化 ===== -->
 <script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./service-worker.prod.js");
-  }
   const versionEl = document.getElementById("appVersion");
   if (versionEl && window.APP_BUILD) {
     versionEl.textContent = `v${window.APP_BUILD}`;

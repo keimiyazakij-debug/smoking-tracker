@@ -1,16 +1,13 @@
 (function () {
 // view/calendarView.js
 
-const prevBtn = document.getElementById("calendarPrev");
-const nextBtn = document.getElementById("calendarNext");
-
-if (prevBtn) prevBtn.onclick = calendarController.prevMonth;
-if (nextBtn) nextBtn.onclick = calendarController.nextMonth;
-
-
 function render(ctx) {
   const grid = document.getElementById("calendarGrid");
   if (!grid) return;
+  const total = ctx.firstDay + ctx.lastDate;
+  const remain = (7 - (total % 7)) % 7;
+  const weeks = Math.ceil((total + remain) / 7);
+  grid.style.setProperty("--calendar-rows", String(weeks));
   grid.innerHTML = "";
 
   renderWeekHeader(grid);
@@ -35,7 +32,7 @@ function renderPrevMonth(grid, ctx) {
   for (let i = ctx.firstDay - 1; i >= 0; i--) {
     const c = document.createElement("div");
     c.className = "calendar-day gray";
-    c.textContent = ctx.prevLastDate - i;
+    c.innerHTML = `<div class="day-number">${ctx.prevLastDate - i}</div><div class="day-count"></div>`;
     grid.appendChild(c);
   }
 }
@@ -46,7 +43,7 @@ function renderNextMonth(grid, ctx) {
   for (let i=1;i<=remain;i++){
     const c=document.createElement("div");
     c.className="calendar-day gray";
-    c.textContent=i;
+    c.innerHTML = `<div class="day-number">${i}</div><div class="day-count"></div>`;
     grid.appendChild(c);
   }
 }
@@ -74,6 +71,16 @@ function decorate(cell, day, ctx) {
   if (day.dateKey<ctx.todayKey) cell.classList.add("past");
   if (!day.hasLog) cell.classList.add("no-log");
   cell.innerHTML = `<div class="day-number">${day.day}</div><div class="day-count">${day.count!=null?`${day.count}本`:""}</div>`;
+  const countEl = cell.querySelector(".day-count");
+  if (countEl && day.count != null && ctx.target != null) {
+    if (day.count <= ctx.target) {
+      countEl.classList.add("count-ok");
+    } else if (day.count <= ctx.target + 3) {
+      countEl.classList.add("count-warn");
+    } else {
+      countEl.classList.add("count-bad");
+    }
+  }
 }
 
 function applyMark(cell, day) {

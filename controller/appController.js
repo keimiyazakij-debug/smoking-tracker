@@ -6,6 +6,7 @@
 function bootstrap() {
   window.appState.todayKey = window.common.getDateKey(new Date());
   mainController.initMain();
+  updateLayoutHeights();
 
   const earned = badgeModel.loadEarnedBadges();
   badgeView.render(earned);
@@ -19,10 +20,20 @@ function bootstrap() {
 }
 document.addEventListener("DOMContentLoaded", bootstrap);
 
+function updateLayoutHeights() {
+  const root = document.documentElement;
+  const header = document.querySelector("header");
+  const nav = document.querySelector("nav");
+  if (header) {
+    root.style.setProperty("--header-height", `${header.offsetHeight}px`);
+  }
+  if (nav) {
+    root.style.setProperty("--nav-height", `${nav.offsetHeight}px`);
+  }
+}
 
-document.addEventListener("DOMContentLoaded", () => {
-  mainController.initMain();
-});
+window.addEventListener("resize", updateLayoutHeights);
+window.updateLayoutHeights = updateLayoutHeights;
 
 // ログ更新時処理
 function onLogChanged(date= null) {
@@ -56,7 +67,10 @@ function onLogChanged(date= null) {
   }
   const badgeEvents = window.badgeController.updateBadges(ctx);
 
-  window.messageController.enqueue(dailyEvents, badgeEvents);
+  // 過去日編集時はメッセージキューに入れない
+  if (!date) {
+    window.messageController.enqueue(dailyEvents, badgeEvents);
+  }
 
   if (window.timelineController.isOpenTimeline() === true) {
     if (date) {
