@@ -11,9 +11,36 @@ function render(ctx) {
   const count = Number.isInteger(ctx.todayCount) ? ctx.todayCount : 0;
   document.getElementById("todayCountDisplay").textContent = `${count} / ${s.dailyTarget} 本`;
 
+  // 昨日との差分
+  const diffEl = document.getElementById("yesterdayDiff");
+  if (diffEl) {
+    diffEl.classList.remove("diff-positive", "diff-negative");
+    if (ctx.yesterdayCount == null) {
+      diffEl.textContent = "昨日の記録なし";
+    } else {
+      const diff = count - ctx.yesterdayCount;
+      if (diff > 0) {
+        diffEl.textContent = `昨日より +${diff}本`;
+        diffEl.classList.add("diff-positive");
+      } else if (diff < 0) {
+        diffEl.textContent = `昨日より ${diff}本`;
+        diffEl.classList.add("diff-negative");
+      } else {
+        diffEl.textContent = "昨日と同じ";
+      }
+    }
+  }
+
   // プログレスバーを更新
   const pct = Math.min(100, count / s.dailyTarget * 100);
-  document.getElementById("progress").style.width = pct + "%";
+  const progressEl = document.getElementById("progress");
+  progressEl.style.width = pct + "%";
+  progressEl.classList.remove("progress-green", "progress-yellow");
+  if (count > s.dailyTarget) {
+    progressEl.classList.add("progress-yellow");
+  } else {
+    progressEl.classList.add("progress-green");
+  }
 
   // 戻すリンクの表示制御
   const undoWrap = document.getElementById("undoSmokeWrap");

@@ -54,14 +54,135 @@ header {
 
 .large-btn { 
   display:block; 
-  width:80%; 
-  margin:20px auto; 
-  padding:20px; 
-  font-size:24px; 
-  border-radius:50%; 
-  background:#4CAF50; 
+  width:78%; 
+  height:60px;
+  margin:6px auto 0; 
+  padding:0; 
+  font-size:22px; 
+  font-weight:600;
+  border-radius:28px; 
+  background:#2E7D32; 
   color:white; 
   border:none; 
+  box-shadow: 0 10px 20px rgba(46, 125, 50, 0.2);
+  transition: transform 150ms ease-out, background 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+.large-btn:hover {
+  background: #3b8f3f;
+}
+
+.large-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 6px 12px rgba(46, 125, 50, 0.18);
+}
+
+.large-btn:disabled {
+  opacity: 0.75;
+  transform: none;
+  cursor: not-allowed;
+}
+
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.card {
+  background: #f6f8f2;
+  border: 1px solid #e3e8da;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+}
+
+.today-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.today-label {
+  font-size: 14px;
+  color: #4c5a4c;
+  letter-spacing: 0.04em;
+}
+
+.today-date {
+  font-size: 12px;
+  color: #6a7a6a;
+}
+
+.since-text {
+  color: #4a5b4a;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.today-count-row {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.today-count {
+  font-size: 54px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #2f3d2f;
+}
+
+.yesterday-diff {
+  font-size: 13px;
+  color: #6a7a6a;
+}
+
+.yesterday-diff.diff-positive {
+  color: #2f7a4a;
+}
+
+.yesterday-diff.diff-negative {
+  color: #5f6b5f;
+}
+
+.progress-bar {
+  height: 12px;
+  background: #e3eadc;
+  border-radius: 10px;
+  margin-top: 12px;
+}
+
+.smoke-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.smoke-action .undo-row {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.smoke-help {
+  font-size: 13px;
+  color: #6a7a6a;
+  text-align: center;
+  min-height: 1.4em;
+}
+
+@keyframes countPulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+.today-count.count-pulse {
+  animation: countPulse 220ms ease-out;
 }
 
 .undo-row {
@@ -82,10 +203,10 @@ header {
 }
 
 #progress-bar { 
-  height:20px; 
-  background:#ddd; 
+  height:12px; 
+  background:#e3eadc; 
   border-radius:10px; 
-  margin-top:5px; 
+  margin-top:12px; 
 }
 
 #progress { 
@@ -94,9 +215,9 @@ header {
   background:#4CAF50; 
   border-radius:10px; 
 }
-.progress-green { background:#a2d5a2; }
-.progress-yellow { background:#f9f4a0; }
-.progress-red { background:#f4a0a0; }
+#progress.progress-green { background:#6fbd74; }
+#progress.progress-yellow { background:#f2d152; }
+#progress.progress-red { background:#f4a0a0; }
 
 #message { 
   text-align:left; 
@@ -154,6 +275,13 @@ header {
 
 .daily-challenge-link.spaced {
   margin-top: 24px;
+}
+
+.history-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 

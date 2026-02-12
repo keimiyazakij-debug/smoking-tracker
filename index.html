@@ -42,26 +42,42 @@
 
   <!-- メイン画面 -->
   <div id="main" class="tab active">
-    <div id="todayDisplay"></div>
-    <h2>今日の本数</h2>
-    <div id="since">禁煙時間：0分</div>
-    <div id="todayCountDisplay">0 / 10 本</div>
-    <div id="progress-bar"><div id="progress"></div></div>
-    <button class="large-btn" id="smokeBtn">吸った</button>
-    <div class="undo-row">
-      <div id="undoSmokeWrap" class="undo-center">
-        <button id="undoSmokeBtn" class="text-link">戻す</button>
-      </div>
-      <div class="today-right">
-        <button id="todayTimelineLink" class="text-link">
-          今日の履歴
-        </button>
-      </div>
-    </div>
-    <div class="daily-challenge-link spaced">
-      <button id="dailyChallengeLink" class="text-link">
-        今日のチャレンジ
-      </button>
+    <div class="main-layout">
+      <section class="today-status card">
+        <div class="today-status-header">
+          <div class="today-label">今日の状態</div>
+          <div id="todayDisplay" class="today-date"></div>
+        </div>
+        <div id="since" class="since-text">禁煙時間：0分</div>
+        <div class="today-count-row">
+          <div id="todayCountDisplay" class="today-count">0 / 10 本</div>
+          <div id="yesterdayDiff" class="yesterday-diff"></div>
+        </div>
+        <div id="progress-bar" class="progress-bar">
+          <div id="progress"></div>
+        </div>
+      </section>
+
+      <section class="smoke-action card">
+        <button class="large-btn" id="smokeBtn">吸った</button>
+        <div id="smokeHelp" class="smoke-help"></div>
+        <div class="undo-row">
+          <div id="undoSmokeWrap" class="undo-center">
+            <button id="undoSmokeBtn" class="text-link">戻す</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="history-section card">
+        <div class="history-actions">
+          <button id="todayTimelineLink" class="text-link">
+            今日の履歴
+          </button>
+          <button id="dailyChallengeLink" class="text-link">
+            今日のチャレンジ
+          </button>
+        </div>
+      </section>
     </div>
   </div>
 
