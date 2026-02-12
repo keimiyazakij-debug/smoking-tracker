@@ -1,4 +1,4 @@
-const CACHE_NAME = "smoking-log-v1.2.13";
+const CACHE_NAME = "smoking-log-v1.2.14";
 ""
 const CACHE_FILES = [
   "./",

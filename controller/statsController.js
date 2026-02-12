@@ -67,12 +67,21 @@ window.statsController = {
       rangeType === 'week'
         ? `${dateKeys[0]} – ${dateKeys[dateKeys.length - 1]}`
         : dateKeys[0].slice(0, 7);
+
+    const summary = buildStatsSummary({
+      dateKeys,
+      prevDateKeys:
+        rangeType === 'week'
+          ? shiftDateKeys(dateKeys, -7)
+          : getMonthDateKeys(moveBaseDate(baseDate, rangeType, -1))
+    });
     const viewState = buildStatsViewState({
       data,
       graphType,
       title,
       label,
-      target: window.settingModel.loadSettings().dailyTarget
+      target: window.settingModel.loadSettings().dailyTarget,
+      summary
     });
 
     window.statsView.render(viewState);
@@ -117,6 +126,31 @@ function moveBaseDate(baseDate, rangeType, dir) {
   return d;
 }
 
+function shiftDateKeys(dateKeys, offsetDays) {
+  return dateKeys.map(k => {
+    const d = window.common.parseDateKey(k);
+    d.setDate(d.getDate() + offsetDays);
+    return window.common.getDateKey(d);
+  });
+}
+
+function buildStatsSummary({ dateKeys, prevDateKeys }) {
+  const logs = window.common.loadLogs();
+  const sumForKeys = keys => keys.reduce((sum, key) => {
+    return sum + ((logs[key] || []).length);
+  }, 0);
+  const total = sumForKeys(dateKeys);
+  const prevTotal = sumForKeys(prevDateKeys);
+  const avg = dateKeys.length ? (total / dateKeys.length) : 0;
+  const prevAvg = prevDateKeys.length ? (prevTotal / prevDateKeys.length) : 0;
+  return {
+    total,
+    avg,
+    prevTotal,
+    prevAvg
+  };
+}
+
 function fillDaily(from, to, raw) {
   const map = Object.fromEntries(raw.map(d => [d.x, d.y]));
   const out = [];
@@ -144,7 +178,7 @@ function buildLabel(rangeType, range) {
   return rangeType === 'week' ? `${f} – ${t}` : f.slice(0, 7);
 }
 
-function buildStatsViewState({ data, graphType, title, label, target }) {
+function buildStatsViewState({ data, graphType, title, label, target, summary }) {
   const labels = data.map(d =>
     graphType === 'daily' ? d.x.slice(5) : `${d.x}時`
   );
@@ -157,6 +191,7 @@ function buildStatsViewState({ data, graphType, title, label, target }) {
     label,
     labels,
     values,
-    yMax
+    yMax,
+    summary
   };
 }

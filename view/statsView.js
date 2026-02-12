@@ -14,10 +14,23 @@ window.statsView = {
     const titleEl = document.getElementById('stats-title');
     const labelEl = document.getElementById('stats-label');
     const canvasEl = document.getElementById('stats-chart');
+    const curTotalEl = document.getElementById('stats-current-total');
+    const curAvgEl = document.getElementById('stats-current-avg');
+    const prevTotalEl = document.getElementById('stats-prev-total');
+    const prevAvgEl = document.getElementById('stats-prev-avg');
     if (!titleEl || !labelEl || !canvasEl) return;
 
     titleEl.textContent = state.title;
     labelEl.textContent = state.label;
+
+    if (state.summary && curTotalEl && curAvgEl && prevTotalEl && prevAvgEl) {
+      const avg = state.summary.avg.toFixed(1);
+      const prevAvg = state.summary.prevAvg.toFixed(1);
+      curTotalEl.textContent = `期間合計: ${state.summary.total}本`;
+      curAvgEl.textContent = `期間平均: ${avg}本/日`;
+      prevTotalEl.textContent = `前期間合計: ${state.summary.prevTotal}本`;
+      prevAvgEl.textContent = `前期間平均: ${prevAvg}本/日`;
+    }
 
     if (!this.chart) {
       const ctx = canvasEl.getContext('2d');

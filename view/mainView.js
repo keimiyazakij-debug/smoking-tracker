@@ -3,13 +3,59 @@
 
 function render(ctx) {
   const s = loadSettings();
+  const todayKey = ctx.todayKey;
 
   // 日付を表示
-  document.getElementById("todayDisplay").textContent = ctx.todayKey;
+  document.getElementById("todayDisplay").textContent = todayKey;
 
   // 今日の本数を表示
   const count = Number.isInteger(ctx.todayCount) ? ctx.todayCount : 0;
   document.getElementById("todayCountDisplay").textContent = `${count} / ${s.dailyTarget} 本`;
+
+  // 直近7日平均・今週・先週
+  const avgEl = document.getElementById("avg7Display");
+  const thisWeekEl = document.getElementById("thisWeekDisplay");
+  const lastWeekEl = document.getElementById("lastWeekDisplay");
+  if (avgEl && thisWeekEl && lastWeekEl && window.logModel?.getLogs) {
+    const logs = window.logModel.getLogs();
+    const toKey = d => window.common.getDateKey(d);
+    const countForKey = key => Array.isArray(logs[key]) ? logs[key].length : 0;
+    const todayDate = window.common.parseDateKey(todayKey);
+
+    // 直近7日平均（今日含む）
+    let sum7 = 0;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(todayDate);
+      d.setDate(d.getDate() - i);
+      sum7 += countForKey(toKey(d));
+    }
+    const avg7 = (sum7 / 7).toFixed(1);
+
+    // 今週（日曜始まり）
+    const dow = todayDate.getDay(); // 0: Sun
+    const weekStart = new Date(todayDate);
+    weekStart.setDate(weekStart.getDate() - dow);
+    let thisWeekSum = 0;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(weekStart);
+      d.setDate(d.getDate() + i);
+      thisWeekSum += countForKey(toKey(d));
+    }
+
+    // 先週
+    const lastWeekStart = new Date(weekStart);
+    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+    let lastWeekSum = 0;
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(lastWeekStart);
+      d.setDate(d.getDate() + i);
+      lastWeekSum += countForKey(toKey(d));
+    }
+
+    avgEl.textContent = `直近7日平均: ${avg7}本/日`;
+    thisWeekEl.textContent = `今週: ${thisWeekSum}本`;
+    lastWeekEl.textContent = `先週: ${lastWeekSum}本`;
+  }
 
   // 昨日との差分
   const diffEl = document.getElementById("yesterdayDiff");

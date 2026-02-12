@@ -42,6 +42,14 @@
   <!-- メイン画面 -->
   <div id="main" class="tab active">
     <div class="main-layout">
+      <!-- weekly summary card -->
+      <section class="weekly-summary card">
+        <div class="weekly-summary-row">
+          <div id="avg7Display" class="weekly-item"></div>
+          <div id="thisWeekDisplay" class="weekly-item"></div>
+          <div id="lastWeekDisplay" class="weekly-item"></div>
+        </div>
+      </section>
       <section class="today-status card">
         <div class="today-status-header">
           <div class="today-label">今日の状態</div>
@@ -235,6 +243,17 @@
 </div>
   <div id="stats-chart-wrap">
     <canvas id="stats-chart"></canvas>
+  </div>
+  <!-- stats summary card -->
+  <div class="card stats-summary-card">
+    <div class="stats-summary-row">
+      <div id="stats-current-total" class="stats-summary-item"></div>
+      <div id="stats-current-avg" class="stats-summary-item"></div>
+    </div>
+    <div class="stats-summary-row">
+      <div id="stats-prev-total" class="stats-summary-item"></div>
+      <div id="stats-prev-avg" class="stats-summary-item"></div>
+    </div>
   </div>
 </div>
 
