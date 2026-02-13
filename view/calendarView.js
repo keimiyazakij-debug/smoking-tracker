@@ -18,12 +18,12 @@ function render(ctx) {
 }
 
 function renderWeekHeader(grid) {
-  ["日","月","火","水","木","金","土"].forEach((w,i)=>{
+  ["日","月","火","水","木","金","土"].forEach((w, i)=>{
     const h=document.createElement("div");
     h.className="calendar-head";
+    if (i === 0) h.classList.add("sunday");
+    if (i === 6) h.classList.add("saturday");
     h.textContent=w;
-    if(i===0) h.classList.add("red");
-    if(i===6) h.classList.add("blue");
     grid.appendChild(h);
   });
 }
@@ -32,7 +32,11 @@ function renderPrevMonth(grid, ctx) {
   for (let i = ctx.firstDay - 1; i >= 0; i--) {
     const c = document.createElement("div");
     c.className = "calendar-day gray";
-    c.innerHTML = `<div class="day-number">${ctx.prevLastDate - i}</div><div class="day-count"></div>`;
+    // 当月セルと同じ表示形式に揃える（count-bg 構造）
+    c.innerHTML = `
+      <div class="day-number">${ctx.prevLastDate - i}</div>
+      <div class="count-bg empty"><span class="count-number"></span></div>
+    `;
     grid.appendChild(c);
   }
 }
@@ -43,7 +47,11 @@ function renderNextMonth(grid, ctx) {
   for (let i=1;i<=remain;i++){
     const c=document.createElement("div");
     c.className="calendar-day gray";
-    c.innerHTML = `<div class="day-number">${i}</div><div class="day-count"></div>`;
+    // 当月セルと同じ表示形式に揃える（count-bg 構造）
+    c.innerHTML = `
+      <div class="day-number">${i}</div>
+      <div class="count-bg empty"><span class="count-number"></span></div>
+    `;
     grid.appendChild(c);
   }
 }
@@ -65,20 +73,29 @@ function renderCurrentMonth(grid, ctx) {
 
 function decorate(cell, day, ctx) {
   const dow = new Date(ctx.year, ctx.month, day.day).getDay();
-  if (dow===0) cell.classList.add("red");
-  if (dow===6) cell.classList.add("blue");
+  if (dow === 0) cell.classList.add("sunday");
+  if (dow === 6) cell.classList.add("saturday");
+
+  // Design System v1.0: 選択日を primary 背景で表示
+  if (day.dateKey === ctx.selectedDateKey) cell.classList.add("selected");
   if (day.dateKey===ctx.todayKey) cell.classList.add("today");
   if (day.dateKey<ctx.todayKey) cell.classList.add("past");
   if (!day.hasLog) cell.classList.add("no-log");
-  cell.innerHTML = `<div class="day-number">${day.day}</div><div class="day-count">${day.count!=null?`${day.count}本`:""}</div>`;
-  const countEl = cell.querySelector(".day-count");
-  if (countEl && day.count != null && ctx.target != null) {
-    if (day.count <= ctx.target) {
-      countEl.classList.add("count-ok");
-    } else if (day.count <= ctx.target + 3) {
-      countEl.classList.add("count-warn");
+  // Design System v1.0: 本数は数字のみ（単位なし）+ count-bg を子要素化
+  cell.innerHTML = `
+    <div class="day-number">${day.day}</div>
+    <div class="count-bg">
+      <span class="count-number">${day.count != null ? `${day.count}` : ""}</span>
+    </div>
+  `;
+
+  const countBgEl = cell.querySelector(".count-bg");
+  if (countBgEl && day.count != null) {
+    // 本数背景ルール: 目標達成(<=target)は薄緑、超過(>target)は薄赤
+    if (day.count <= (ctx.target ?? 0)) {
+      countBgEl.classList.add("count-achieved");
     } else {
-      countEl.classList.add("count-bad");
+      countBgEl.classList.add("count-exceeded");
     }
   }
 }

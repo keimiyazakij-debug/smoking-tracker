@@ -10,7 +10,19 @@ function render(ctx) {
 
   // 今日の本数を表示
   const count = Number.isInteger(ctx.todayCount) ? ctx.todayCount : 0;
-  document.getElementById("todayCountDisplay").textContent = `${count} / ${s.dailyTarget} 本`;
+  // Design System v1.0: 主数値(text-hero)と単位(text-caption)を分離
+  const countEl = document.getElementById("todayCountDisplay");
+  if (countEl) {
+    countEl.textContent = String(count);
+  }
+  const unitEl = document.getElementById("todayCountUnit");
+  if (unitEl) {
+    unitEl.textContent = "本";
+  }
+  const targetEl = document.getElementById("todayTargetDisplay");
+  if (targetEl) {
+    targetEl.textContent = `目標 ${s.dailyTarget}本`;
+  }
 
   // 直近7日平均・今週・先週
   const avgEl = document.getElementById("avg7Display");

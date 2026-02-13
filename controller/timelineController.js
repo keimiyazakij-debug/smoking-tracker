@@ -6,11 +6,19 @@ let returnToMainOnSave = false;
 function openTimeline(dateKey, options = {}) {
   currentDateKey = dateKey;   // ★ 追加
   returnToMainOnSave = !!options.returnToMainOnSave;
-  const overlay = document.getElementById("timelineOverlay");
-  overlay.classList.remove("hidden");
+  if (typeof window.showTab === "function") {
+    window.showTab("timeline");
+  }
 
   const map = buildTimelineMap(dateKey);
   updateTimelineHeader(dateKey, map);
+  if (window.timelineView?.setDateKey) {
+    window.timelineView.setDateKey(dateKey);
+  }
+  if (window.timelineView?.setSelectedSummary) {
+    const total = Object.values(map).reduce((sum, arr) => sum + arr.length, 0);
+    window.timelineView.setSelectedSummary(dateKey, total);
+  }
   window.timelineView.render(map);
 }
 
@@ -18,11 +26,26 @@ function openTimeline(dateKey, options = {}) {
 function refreshTimeline(dateKey) {
   const map = buildTimelineMap(dateKey);
   updateTimelineHeader(dateKey, map);
+  if (window.timelineView?.setDateKey) {
+    window.timelineView.setDateKey(dateKey);
+  }
+  if (window.timelineView?.setSelectedSummary) {
+    const total = Object.values(map).reduce((sum, arr) => sum + arr.length, 0);
+    window.timelineView.setSelectedSummary(dateKey, total);
+  }
   window.timelineView.render(map);
 }
 
 function refreshCurrent() {
   if (!currentDateKey) return;
+  refreshTimeline(currentDateKey);
+}
+
+// タブ直表示時に、未選択なら今日を表示
+function ensureRendered() {
+  if (!currentDateKey) {
+    currentDateKey = window.common.getDateKey(new Date());
+  }
   refreshTimeline(currentDateKey);
 }
 
@@ -49,6 +72,7 @@ function updateTimelineHeader(dateKey, map) {
   const title = document.getElementById("timelineTitle");
   const summary = document.getElementById("timelineSummary");
   const nextBtn = document.getElementById("nextTimelineDay");
+  const todayKey = window.common.getDateKey(new Date());
   if (title) {
     title.textContent = `${dateKey.replaceAll("-", "/")}`;
   }
@@ -57,7 +81,6 @@ function updateTimelineHeader(dateKey, map) {
     summary.textContent = `合計 ${total}本`;
   }
   if (nextBtn) {
-    const todayKey = window.common.getDateKey(new Date());
     nextBtn.style.visibility = dateKey >= todayKey ? "hidden" : "visible";
   }
 }
@@ -93,20 +116,16 @@ function openEditFromTimeline() {
 
 // ===== タイムライン画面の非表示 =====
 function closeTimeline() {
-  const overlay = document.getElementById("timelineOverlay");
-  if (overlay && !overlay.classList.contains("hidden")) {
-    overlay.classList.add("hidden");
+  // タブ版ではメインへ戻す（既存呼び出し互換）
+  if (typeof window.showTab === "function") {
+    window.showTab("main");
   }
 }
 
 // ===== タイムライン画面の表示状態取得 =====
 function isOpenTimeline(){
-  const overlay = document.getElementById("timelineOverlay");
-  if (overlay && !overlay.classList.contains("hidden")) {
-    return true;
-  }else{
-    return false;
-  }
+  const tab = document.getElementById("timeline");
+  return !!(tab && tab.classList.contains("active"));
 }
 
 
@@ -116,6 +135,7 @@ window.timelineController = {
   openEditFromTimeline,
   refreshTimeline,
   refreshCurrent,
+  ensureRendered,
   isOpenTimeline,
   goPrevDay,
   goNextDay

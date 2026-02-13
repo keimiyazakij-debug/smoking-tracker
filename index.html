@@ -2,14 +2,14 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>禁煙ログモック</title>
+  <title>SmokingTracker</title>
   <link rel="stylesheet" href="./style.css">
   <link rel="manifest" href="manifest.json">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#4CAF50">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="禁煙ログ">
+  <meta name="apple-mobile-web-app-title" content="SmokingTracker">
   <style>
   </style>
   <script>
@@ -27,7 +27,7 @@
       .then(() => console.log("SW registered:", sw))
       .catch(err => console.error("SW error", err));
   }
-  const BUILD = "2026-02-09-v0.0.3";
+  const BUILD = "2026-02-13-0.0.3";
   console.log("BUILD:", BUILD);
   window.APP_BUILD = BUILD;
   </script>
@@ -35,7 +35,7 @@
 <body>
   <header>
     <div class="title-bar">
-      <h1>SmokinTracker <span id="appVersion" class="title-version"></span></h1>
+      <h1>SmokingTracker <span id="appVersion" class="title-version"></span></h1>
     </div>
   </header>
 
@@ -43,7 +43,8 @@
   <div id="main" class="tab active">
     <div class="main-layout">
       <!-- weekly summary card -->
-      <section class="weekly-summary card">
+      <!-- メイン統計は背景カードを解除（Design System v1.0） -->
+      <section class="weekly-summary">
         <div class="weekly-summary-row">
           <div id="avg7Display" class="weekly-item"></div>
           <div id="thisWeekDisplay" class="weekly-item"></div>
@@ -57,7 +58,15 @@
         </div>
         <div id="since" class="since-text">禁煙時間：0分</div>
         <div class="today-count-row">
-          <div id="todayCountDisplay" class="today-count">0 / 10 本</div>
+          <!-- text-hero / text-caption に分離（Design System v1.0） -->
+          <div class="today-count-wrap">
+            <!-- 数字と単位を横並び -->
+            <div class="today-count-main">
+              <div id="todayCountDisplay" class="today-count">0</div>
+              <div id="todayCountUnit" class="today-count-unit">本</div>
+            </div>
+            <div id="todayTargetDisplay" class="today-target-display">目標 10本</div>
+          </div>
           <div id="yesterdayDiff" class="yesterday-diff"></div>
         </div>
         <div id="progress-bar" class="progress-bar">
@@ -75,7 +84,7 @@
         </div>
       </section>
 
-      <section class="history-section card">
+      <section class="history-section">
         <div class="history-actions">
           <button id="todayTimelineLink" class="text-link">
             今日の履歴
@@ -101,24 +110,32 @@
     </div>
   </div>
 
-<!-- タイムライン（オーバーレイ） -->
-<div id="timelineOverlay" class="timeline-overlay hidden">
+<!-- タイムライン（タブ画面） -->
+<div id="timeline" class="tab">
   <header class="timeline-header">
-    <div class="timeline-header-top">
-      <button id="closeTimelineBtn">←</button>
-      <button class="edit-btn" id="openEditBtn">編集</button>
-    </div>
     <div class="timeline-header-date">
       <button id="prevTimelineDay" class="timeline-nav">◀</button>
       <div id="timelineTitle" class="timeline-title-main"></div>
       <button id="nextTimelineDay" class="timeline-nav">▶</button>
+      <button class="edit-btn" id="openEditBtn">編集</button>
     </div>
     <div id="timelineSummary" class="timeline-title-sub"></div>
   </header>
   <!-- card: timeline -->
   <div class="card timeline-card">
+    <!-- Design System v1.0: ページタイトル -->
+    <h2 class="timeline-page-title">時間帯別本数</h2>
     <!-- ヒートグリッド表示 -->
     <div id="timelineList" class="timeline-grid"></div>
+    <!-- Design System v1.0: 凡例 -->
+    <div class="timeline-legend" aria-hidden="true">
+      <span class="legend-label">少</span>
+      <span class="legend-chip legend-0"></span>
+      <span class="legend-chip legend-1"></span>
+      <span class="legend-chip legend-2"></span>
+      <span class="legend-chip legend-3"></span>
+      <span class="legend-label">多</span>
+    </div>
   </div>
 </div>
 
@@ -138,22 +155,23 @@
   <header class="timeline-header">
     <button id="closeEditBtn">← 戻る</button>
     <span id="editTitle"></span>
-    <button class="edit-btn" id="saveEditBtn">保存</button>
   </header>
 
   <!-- card: edit -->
   <div class="card edit-body">
-    <label>
-      日付：
-      <span id="editDate"></span>
+    <label class="edit-field">
+      <span class="edit-field-label">日付</span>
+      <input type="date" id="editDateInput">
     </label>
 
-    <label>
-      時刻：
+    <label class="edit-field">
+      <span class="edit-field-label">時刻</span>
       <div id="timeTags" class="time-tags"></div>
       <button type="button" id="addTimeTagBtn">＋ 追加</button>
     </label>
 
+    <!-- 主ボタン: 保存 -->
+    <button type="button" id="saveEditBtn" class="edit-save-btn">保存</button>
   </div>
 </div>
 
@@ -179,49 +197,51 @@
 
 <!-- 設定画面 -->
 <div id="settings" class="tab">
-  <h2>設定</h2>
+  <!-- Design System v1.0: ページタイトル -->
+  <h2 class="settings-page-title">設定</h2>
 
-  <h3>行動設定</h3>
-  <label>
-    1日の目標本数：
-    <input type="number" id="dailyTarget" class="setting-input" min="0">
-    本
-  </label>
+  <!-- セクション1: 目標設定 -->
+  <section class="settings-card">
+    <h3 class="settings-section-title">目標設定</h3>
+    <label class="settings-item settings-item-input">
+      <span class="settings-item-label">1日の目標本数</span>
+      <span class="settings-input-wrap">
+        <input type="number" id="dailyTarget" class="setting-input" min="0">
+        <span class="settings-input-unit">本</span>
+      </span>
+    </label>
+    <p class="settings-item-help">※変更した場合、新しい目標で評価されます</p>
+  </section>
 
-  <h3>カレンダー表示</h3>
-
-  <label>
-    <input type="radio" name="calendarEvaluation"
-          value="target">
-    目標本数を基準に評価する
-  </label><br>
-  <label>
-    <input type="radio" name="calendarEvaluation"
-          value="none">
-    評価しない（記録のみ表示）
-  </label><br>
-
-  <h3>利用プラン</h3>
-  <div id="planInfo" style="margin-bottom:10px;"></div>
-
-  <h3>データ管理</h3>
-  <button onclick="resetAll()" style="color:#c00;">
-    全データをリセット
-  </button>
-
-  <div style="font-size:12px;color:#666;margin-top:10px;">
-    このアプリは端末内にデータを保存します。<br>
-    ブラウザのデータを削除すると記録も消えます。
-  </div>
+  <!-- セクション2: データ管理 -->
+  <section class="settings-card">
+    <h3 class="settings-section-title">データ管理</h3>
+    <div class="settings-item settings-item-plan">
+      <span class="settings-item-label">利用プラン</span>
+      <div id="planInfo" class="settings-plan-info"></div>
+    </div>
+    <button onclick="resetAll()" class="settings-danger-btn">
+      全データをリセット
+    </button>
+    <p class="settings-note">
+      このアプリは端末内にデータを保存します。<br>
+      ブラウザのデータを削除すると記録も消えます。
+    </p>
+  </section>
 </div>
 
 <!-- 統計情報画面 -->
 <div id="stats" class="tab" style="display:none;">
-  <div id="stats-header">
-  <div id="stats-title"></div>
-    <button id="stats-prev">◀</button>
-    <span id="stats-label"></span>
-    <button id="stats-next">▶</button>
+  <!-- stats summary card: 画面最上部へ移動 -->
+  <div class="card stats-summary-card">
+    <div class="stats-summary-row">
+      <div id="stats-current-total" class="stats-summary-item"></div>
+      <div id="stats-current-avg" class="stats-summary-item"></div>
+    </div>
+    <div class="stats-summary-row">
+      <div id="stats-prev-total" class="stats-summary-item"></div>
+      <div id="stats-prev-avg" class="stats-summary-item"></div>
+    </div>
   </div>
 
 <!-- 集計期間 -->
@@ -241,31 +261,32 @@
     <button id="graph-hourly">時間帯別平均本数</button>
   </div>
 </div>
+  <!-- Design System v1.0: 合計値の主表示 -->
+  <div id="stats-total-highlight" class="stats-total-highlight"></div>
+  <!-- グラフ直上: タイトル/期間を2行表示 -->
+  <div id="stats-header">
+    <button id="stats-prev">◀</button>
+    <div class="stats-header-text">
+      <div id="stats-title"></div>
+      <span id="stats-label"></span>
+    </div>
+    <button id="stats-next">▶</button>
+  </div>
   <div id="stats-chart-wrap">
     <canvas id="stats-chart"></canvas>
-  </div>
-  <!-- stats summary card -->
-  <div class="card stats-summary-card">
-    <div class="stats-summary-row">
-      <div id="stats-current-total" class="stats-summary-item"></div>
-      <div id="stats-current-avg" class="stats-summary-item"></div>
-    </div>
-    <div class="stats-summary-row">
-      <div id="stats-prev-total" class="stats-summary-item"></div>
-      <div id="stats-prev-avg" class="stats-summary-item"></div>
-    </div>
   </div>
 </div>
 
 <!-- 下部タブ -->
 <nav>
-  <button onclick="showTab('main')">⌂</button>
-  <button onclick="showTab('calendar')">📅</button>
-  <!--<button onclick="showTab('timeline')">🕒</button>-->
+  <!-- Design System v1.0: tab selection state -->
+  <button data-tab="main" aria-selected="true" onclick="showTab('main')">⌂</button>
+  <button data-tab="calendar" aria-selected="false" onclick="showTab('calendar')">📅</button>
+  <button data-tab="timeline" aria-selected="false" onclick="showTab('timeline')">🕒</button>
   <!--<button onclick="showTab('achievements')">★</button>-->
-  <button onclick="showTab('badgeTab')">🏅</button>
-  <button onclick="showTab('stats')">📊</button>
-  <button onclick="showTab('settings')">⚙</button>
+  <button data-tab="badgeTab" aria-selected="false" onclick="showTab('badgeTab')">🏅</button>
+  <button data-tab="stats" aria-selected="false" onclick="showTab('stats')">📊</button>
+  <button data-tab="settings" aria-selected="false" onclick="showTab('settings')">⚙</button>
 </nav>
 
 <!-- ===== 定数・共通 ===== -->

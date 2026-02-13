@@ -1,49 +1,93 @@
+/* =========================================================
+   Design System v1.0 tokens
+   ========================================================= */
+:root {
+  /* color palette */
+  --color-primary: #0066FF;
+  --color-background: #FFFFFF;
+  --color-card-bg: #F8F8F8;
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #6E6E6E;
+  --color-danger: #FF3B30;
+  --saturday-blue: #4A7BFF;
+  /* alias: 指示書の変数名に合わせる */
+  --primary: var(--color-primary);
+  --background: var(--color-background);
+  --card-bg: var(--color-card-bg);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --danger: var(--color-danger);
+
+  /* typography */
+  --text-hero: 56px;
+  --text-h1: 22px;
+  --text-body: 16px;
+  --text-caption: 13px;
+  --text-micro: 12px;
+  /* alias: 指示書の変数名に合わせる */
+  --space-page: 16px;
+  --space-section: 24px;
+  --space-card: 16px;
+  --space-tight: 16px;
+
+  /* spacing */
+  --spacing-page: 16px;
+  --spacing-section: 24px;
+  --spacing-card: 16px;
+  --spacing-tight: 8px;
+
+  /* radius */
+  --radius-small: 8px;
+  --radius-card: 12px;
+  --radius-button: 24px;
+
+  --header-height: 0px;
+  --nav-height: 56px;
+  --calendar-grid-height: auto;
+}
+
 /* メイン部分 */
 body { 
   font-family: sans-serif;
-  font-size: 14px;
+  font-size: var(--text-body);
   margin:0; 
   padding:0; 
-  background: #eef3e9; /* unified soft background */
-}
-
-:root {
-  --header-height: 0px;
-  --nav-height: 50px;
+  background: var(--color-background);
+  color: var(--color-text-primary);
 }
 
 header { 
   text-align:center; 
   padding:0; 
-  background:#eef3e9; 
+  background: var(--color-background); 
 }
 
 .title-bar {
-  background: #eef3e9;
-  color: #333;
-  border-bottom: 1px solid #e3e8da;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid #e5e5e5;
   text-align: left;
 }
 
 .title-bar h1 {
   margin: 0;
-  padding: 6px 10px;
-  font-family: "Courier New", Courier, monospace;
-  font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 0.12em;
+  padding: var(--spacing-tight) var(--spacing-page);
+  font-family: sans-serif;
+  font-size: var(--text-h1);
+  font-weight: 700;
+  letter-spacing: 0;
   text-transform: none;
 }
 
 .title-version {
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  font-size: var(--text-micro);
+  letter-spacing: 0.02em;
   opacity: 0.7;
 }
 
 h2,
 h3 {
-  font-size: 18px;
+  font-size: var(--text-h1);
   font-weight: 600;
 }
 
@@ -52,8 +96,9 @@ h3 {
 /* ------------------------------ */
 .tab { 
   display:none; 
-  padding:20px; 
-  margin-bottom:60px; 
+  /* page padding: 16px */
+  padding: var(--space-page); 
+  margin-bottom: var(--nav-height); 
 }
 
 .active { 
@@ -62,27 +107,28 @@ h3 {
 
 .large-btn { 
   display:block; 
-  width:78%; 
-  height:60px;
-  margin:6px auto 0; 
+  width:85%; 
+  height:56px;
+  margin: 0 auto; 
   padding:0; 
-  font-size:22px; 
-  font-weight:600;
-  border-radius:28px; 
-  background:#2E7D32; 
-  color:white; 
-  border:none; 
-  box-shadow: 0 10px 20px rgba(46, 125, 50, 0.2);
+  /* Primary Button: text-body */
+  font-size: var(--text-body); 
+  font-weight:700;
+  border-radius: var(--radius-button); 
+  background: var(--primary); 
+  color: var(--background); 
+  border: none; 
+  box-shadow: none;
   transition: transform 150ms ease-out, background 150ms ease-out, box-shadow 150ms ease-out;
 }
 
 .large-btn:hover {
-  background: #3b8f3f;
+  background: var(--primary);
 }
 
 .large-btn:active {
-  transform: scale(0.96);
-  box-shadow: 0 6px 12px rgba(46, 125, 50, 0.18);
+  transform: scale(0.97);
+  box-shadow: none;
 }
 
 .large-btn:disabled {
@@ -94,11 +140,16 @@ h3 {
 .main-layout {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  /* section gap: 24px */
+  gap: var(--space-section);
 }
 
 .weekly-summary {
-  padding: 16px 20px;
+  /* 統計ミニ表示は背景カード化しない */
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
 
 .weekly-summary-row {
@@ -109,16 +160,17 @@ h3 {
 }
 
 .weekly-item {
-  font-size: 12px;
-  color: #5f6b5f;
+  /* 統計ミニ表示: text-micro + text-secondary */
+  font-size: var(--text-micro);
+  color: var(--text-secondary);
 }
 
 .card {
-  background: #f6f8f2;
-  border: 1px solid #e3e8da;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  background: var(--color-card-bg);
+  border: 1px solid #ececec;
+  border-radius: var(--radius-card);
+  padding: var(--spacing-card);
+  box-shadow: none;
 }
 
 .today-status-header {
@@ -130,34 +182,69 @@ h3 {
 }
 
 .today-label {
-  font-size: 12px;
-  color: #4c5a4c;
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
   letter-spacing: 0.04em;
 }
 
 .today-date {
-  font-size: 12px;
-  color: #6a7a6a;
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
 }
 
 .since-text {
-  color: #4a5b4a;
-  margin-bottom: 12px;
-  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-tight);
+  font-size: var(--text-caption);
 }
 
 .today-count-row {
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
+  justify-content: center;
   gap: 16px;
   flex-wrap: wrap;
 }
 
 .today-count {
-  font-size: 54px;
-  font-weight: 600;
+  /* text-hero 適用 */
+  font-size: var(--text-hero);
+  font-weight: 700;
   letter-spacing: 0.02em;
-  color: #2f3d2f;
+  color: var(--text-primary);
+  line-height: 1;
+  text-align: center;
+}
+
+.today-count-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.today-count-main {
+  /* 今日の本数: 数字と単位を横並び */
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.today-count-unit {
+  /* 数字の右に並べる: text-caption */
+  margin-top: 0;
+  font-size: var(--text-caption);
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1.2;
+  padding-bottom: 6px;
+}
+
+.today-target-display {
+  margin-top: 4px;
+  font-size: var(--text-caption);
+  font-weight: 400;
+  color: var(--text-secondary);
 }
 
 .timeline-count,
@@ -166,40 +253,43 @@ h3 {
 }
 
 .yesterday-diff {
-  font-size: 12px;
-  color: #6a7a6a;
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
+  flex-basis: 100%;
+  text-align: center;
 }
 
 .yesterday-diff.diff-positive {
-  color: #2f7a4a;
+  color: var(--color-primary);
 }
 
 .yesterday-diff.diff-negative {
-  color: #5f6b5f;
+  color: var(--color-danger);
 }
 
 .progress-bar {
   height: 12px;
-  background: #e3eadc;
+  background: #ececec;
   border-radius: 10px;
-  margin-top: 12px;
+  margin-top: var(--spacing-tight);
 }
 
 .smoke-action {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  /* ボタンとUNDO間隔: 16px */
+  gap: var(--space-tight);
 }
 
 .smoke-action .undo-row {
   width: 100%;
-  margin-top: 4px;
+  margin-top: 0;
 }
 
 .smoke-help {
-  font-size: 12px;
-  color: #6a7a6a;
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
   text-align: center;
   min-height: 1.4em;
 }
@@ -233,34 +323,34 @@ h3 {
 
 #progress-bar { 
   height:12px; 
-  background:#e3eadc; 
+  background:#ececec; 
   border-radius:10px; 
-  margin-top:12px; 
+  margin-top: var(--spacing-tight); 
 }
 
 #progress { 
   height:100%; 
   width:0%; 
-  background:#4CAF50; 
+  background: var(--color-primary); 
   border-radius:10px; 
 }
-#progress.progress-green { background:#6fbd74; }
-#progress.progress-yellow { background:#f2d152; }
-#progress.progress-red { background:#f4a0a0; }
+#progress.progress-green { background: var(--color-primary); }
+#progress.progress-yellow { background: #f5b400; }
+#progress.progress-red { background: var(--color-danger); }
 
 /* イベント通知（トースト） */
 .app-toast {
   position: fixed;
   left: 50%;
   transform: translateX(-50%) translateY(6px);
-  bottom: calc(var(--nav-height, 50px) + 12px);
+  bottom: calc(var(--nav-height, 56px) + 12px);
   max-width: calc(100% - 32px);
-  padding: 8px 12px;
-  background: #e8f2e2;
-  color: #2f3d2f;
-  border: 1px solid #d6e4cf;
-  border-radius: 12px;
-  font-size: 13px;
+  padding: var(--spacing-tight) 12px;
+  background: var(--color-card-bg);
+  color: var(--color-text-primary);
+  border: 1px solid #e5e5e5;
+  border-radius: var(--radius-card);
+  font-size: var(--text-caption);
   line-height: 1.3;
   opacity: 0;
   pointer-events: none;
@@ -284,9 +374,9 @@ h3 {
 
 .history-actions {
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--text-secondary);
 }
 
 .timeline-card,
@@ -297,11 +387,15 @@ h3 {
 .calendar-card {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
+  /* 画面の残り高さを受け取る */
+  flex: 1 1 0;
   min-height: 0;
-  padding: 12px;
+  /* 5-6行月の見切れ防止: カード内余白を圧縮 */
+  padding: var(--spacing-tight);
   align-self: stretch;
-  height: 100%;
+  /* 実測した利用可能高さをカードに適用 */
+  height: var(--calendar-grid-height, 100%);
+  overflow: hidden;
 }
 
 
@@ -311,15 +405,21 @@ nav {
   bottom:0; 
   width:100%; 
   display:flex; 
-  background:#eee; 
-  border-top:1px solid #ccc; 
+  height: 56px;
+  background: var(--color-background); 
+  border-top:1px solid #e5e5e5; 
   z-index: 2000; /* ← timelineOverlay より大きく */
 }
 
 nav button {
   flex:1; 
-  padding:10px; 
-  font-size:18px; 
+  height: 56px;
+  padding: 0; 
+  font-size: var(--text-h1);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
 
 /* ------------------------------ */
@@ -327,27 +427,54 @@ nav button {
 /* ------------------------------ */
 
 #calendar {
-  padding: 10px 12px 16px;
+  /* 横余白は維持し、縦方向は見切れ防止のためコンパクト化 */
+  padding: var(--spacing-tight) var(--space-page);
+  /* Chrome でも下部タブ分を常に除外する固定計算 */
   height: calc(100dvh - var(--nav-height, 50px) - var(--header-height, 0px));
   min-height: calc(100dvh - var(--nav-height, 50px) - var(--header-height, 0px));
   box-sizing: border-box;
   margin-bottom: 0;
+  /* 画面内に収める */
+  overflow: hidden;
 }
 
 #calendar.active {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  /* カレンダー画面は月ヘッダー + カードの2段構成 */
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--spacing-tight);
   align-items: stretch;
+  /* #calendar の calc 高さを優先して全画面領域を使用 */
+  min-height: 0;
 }
 
 .calendar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 0;
+  gap: var(--space-tight);
+  margin: 0;
   flex: 0 0 auto;
+}
+
+#calendarTitle {
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.calendar-header button {
+  border: 1px solid var(--card-bg);
+  background: transparent;
+  border-radius: var(--radius-small);
+  color: var(--text-primary);
+  font-size: var(--text-body);
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.calendar-header button:hover {
+  color: var(--primary);
 }
 
 /* カレンダー表示 */
@@ -356,82 +483,153 @@ nav button {
   grid-template-columns: repeat(7, 1fr);
   grid-template-rows: auto repeat(var(--calendar-rows, 6), minmax(0, 1fr));
   flex: 1;
+  /* 親カード高に追従 */
   height: 100%;
   min-height: 0;
   background: transparent;
   border-radius: 0;
-  gap: 4px 2px;
+  /* セル間 gap: 8px */
+  gap: 8px;
+  margin-bottom: 0;
   align-content: stretch;
 }
 
 .calendar-head {
-  font-weight: bold;
+  font-weight: 400;
   text-align: center;
-  padding: 0;
+  padding: 0 0 8px;
   line-height: 1.2;
-  font-size: 11px;
-  border-bottom: 1px solid #ccc;
+  font-size: var(--text-micro);
+  color: var(--text-secondary);
+  border-bottom: none;
+}
+
+/* 慣習色: 日曜/土曜 */
+.calendar-head.sunday {
+  color: var(--danger);
+}
+
+.calendar-head.saturday {
+  color: var(--saturday-blue);
 }
 
 .calendar-day {
+  /* 行高に合わせて描画し、見切れを防ぐ */
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 4px 2px;
+  /* 高行数月の見切れ防止: セル内余白を最小限に */
+  padding: 4px 3px;
   position: relative;
   box-sizing: border-box;
   overflow: hidden;
-  border-bottom: 1px solid #ddd;
+  border-radius: var(--radius-small);
+  background: var(--card-bg);
+  transition: transform 0.15s ease;
+}
+
+.calendar-day:active {
+  /* Design System v1.0: タップインタラクション */
+  transform: scale(0.95);
 }
 
 .day-number {
-  font-size: 12px;
-  font-weight: bold;
+  font-size: var(--text-body);
+  font-weight: 400;
   line-height: 1;
+  color: var(--text-primary);
 }
 
-.day-count {
-  margin-top: 6px;
-  min-height: 14px;
-  font-size: 13px;
-  line-height: 1;
-  width: 100%;
-  height: 18px;
+/* 本数背景はセル全体でなく count-bg のみ */
+.count-bg {
+  margin-top: 4px;
+  min-height: 1.2em;
+  padding: 1px 5px;
+  border-radius: var(--radius-small);
+  /* セル幅に合わせつつ、少し小さく見せる */
+  width: 88%;
+  max-width: 88%;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #e6e6e6;
-  border-radius: 6px;
+  background: transparent;
+}
+
+.count-number {
+  font-size: var(--text-caption);
+  line-height: 1;
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
 
-.day-count.count-ok { background: #cfe9cf; }
-.day-count.count-warn { background: #f4e9b5; }
-.day-count.count-bad { background: #f0c4c4; }
+.count-bg.empty {
+  background: transparent;
+}
+
+/* カレンダー専用の直感色 */
+.count-bg.count-achieved {
+  background: #E6F4EA;
+}
+
+.count-bg.count-exceeded {
+  background: #FFEBEE;
+}
 
 .calendar-day.gray { 
-  color: #aaa;
-  background: #eee;
+  color: var(--text-secondary);
+  /* 当月外セルは背景との差を出すため少し濃いグレーに */
+  background: #E2E2E2;
+  opacity: 0.6;
+  pointer-events: none;
 }
-.calendar-day.red { color: #d33; }
-.calendar-day.blue { color: #36f; }
+.calendar-day.red { color: var(--text-secondary); }
+.calendar-day.blue { color: var(--text-secondary); }
+
+.calendar-day.sunday .day-number {
+  color: var(--danger);
+}
+
+.calendar-day.saturday .day-number {
+  color: var(--saturday-blue);
+}
 
 .calendar-day.today {
-  border: 2px solid #4caf50;
-  background: #e8f5e9;
+  /* 今日: 枠線は薄めに */
+  border: 1px solid var(--primary);
+  background: none;
 }
-.calendar-day.past { opacity: 0.7;}
-.calendar-day.no-log { opacity: 0.4;}
+
+/* 選択日: 塗りつぶしではなく枠線のみ（従来today相当の強さ） */
+.calendar-day.selected {
+  border: 2px solid var(--primary);
+  background: none;
+}
+
+.calendar-day.selected .count-bg {
+  background: transparent;
+}
+
+/* 今日かつ選択日: 選択日の強調を優先 */
+.calendar-day.today.selected {
+  border: 2px solid var(--primary);
+}
+
+.calendar-day.past { opacity: 1;}
+.calendar-day.no-log { opacity: 1;}
 
 /* カレンダー上のマーク表示 */
 .calendar-mark {
-  font-size: 14px;
-  margin-top: 2px;
+  font-size: var(--text-caption);
+  margin-top: 0;
   line-height: 1;
   cursor: pointer;
-  padding: 2px 4px;
+  padding: 1px 3px;
+  /* 本数の直下に配置 */
+  position: static;
+  margin-top: 2px;
 }
 .mark-success {color: #f9a825; }
 .mark-down { color: #2196F3; }
@@ -451,15 +649,26 @@ nav button {
 /* ------------------------------ */
 
 /* タイムライン表示 */
+#timeline {
+  /* タブ画面として表示: ナビは常時表示 */
+  padding: var(--space-page);
+  box-sizing: border-box;
+}
+
+#timeline.active {
+  display: block;
+}
+
 .timeline-overlay {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100dvh;
-  background: #eef3e9;
+  background: var(--color-background);
   z-index: 2100;
   overflow-y: auto;
-  padding: 16px 12px calc(var(--nav-height, 50px) + 16px);
+  /* 余白統一: 左右 16px */
+  padding: var(--space-page) var(--space-page) calc(var(--nav-height, 56px) + var(--space-page));
   box-sizing: border-box;
 }
 
@@ -470,14 +679,14 @@ nav button {
 .timeline-header {
   position: sticky;
   top: 0;
-  background: #f6f8f2;
-  padding: 12px 16px;
+  background: var(--color-card-bg);
+  padding: var(--spacing-tight) var(--spacing-card);
   display: flex;
   flex-direction: column;
   gap: 6px;
-  border-bottom: 1px solid #e3e8da;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid #ececec;
+  border-radius: var(--radius-card);
+  box-shadow: none;
 }
 
 .timeline-header-top {
@@ -494,12 +703,12 @@ nav button {
 }
 
 .timeline-nav {
-  border: none;
-  background: #e8f2e2;
-  color: #2f3d2f;
-  border-radius: 10px;
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  border-radius: var(--radius-card);
   padding: 4px 8px;
-  font-size: 14px;
+  font-size: var(--text-caption);
 }
 
 .timeline-title-wrap {
@@ -512,14 +721,40 @@ nav button {
 }
 
 .timeline-title-main {
-  font-size: 14px;
-  color: #2f3d2f;
+  font-size: var(--text-body);
+  color: var(--color-text-primary);
 }
 
 .timeline-title-sub {
-  font-size: 12px;
-  color: #6a7a6a;
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
   text-align: center;
+}
+
+/* 今日の日付: 2px primary border */
+.today-date-highlight {
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-small);
+  padding: 2px 8px;
+}
+
+/* タイムライン画面タイトル */
+.timeline-page-title {
+  font-size: var(--text-h1);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-section);
+}
+
+/* 選択日サマリー */
+.timeline-selection-summary {
+  font-size: var(--text-body);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-section);
+}
+
+.timeline-selection-summary strong {
+  font-weight: 700;
 }
 
 /* ------------------------------ */
@@ -528,44 +763,60 @@ nav button {
 .timeline-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  /* セル間隔: 8px */
+  gap: 8px;
+  /* グリッド上下: 24px */
+  margin: var(--space-section) 0;
   padding: 0;
 }
 
 .timeline-cell {
-  background: #f3f6ef;
-  border: 1px solid #e3e8da;
-  border-radius: 14px;
-  padding: 12px;
-  min-height: 72px;
+  /* 正方形セル + small radius */
+  aspect-ratio: 1 / 1;
+  background: var(--card-bg);
+  border: 1px solid #ececec;
+  border-radius: var(--radius-small);
+  padding: 8px;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   text-align: left;
+  transition: transform 0.15s ease;
 }
 
 .timeline-hour {
-  font-size: 12px;
-  color: #5f6b5f;
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
 }
 
 .timeline-count {
-  font-size: 18px;
+  font-size: var(--text-body);
   font-weight: 600;
-  color: #2f3d2f;
+  color: var(--color-text-primary);
 }
 
 .timeline-count.empty {
-  font-size: 12px;
-  color: #8a8a8a;
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
   min-height: 1em;
 }
 
-.timeline-cell.count-1 { background: #e7f3e7; border-color: #d9ead9; }
-.timeline-cell.count-2 { background: #d7edd8; border-color: #c9e1cb; }
-.timeline-cell.count-3 { background: #c6e2c8; border-color: #b8d7ba; }
-.timeline-cell.count-4 { background: #b5d7b9; border-color: #a7ccab; }
+/* primary ベース濃淡 */
+.timeline-cell.count-1 {
+  background: color-mix(in srgb, var(--primary) 20%, var(--card-bg) 80%);
+  border-color: color-mix(in srgb, var(--primary) 20%, var(--card-bg) 80%);
+}
+.timeline-cell.count-2 {
+  background: color-mix(in srgb, var(--primary) 50%, var(--card-bg) 50%);
+  border-color: color-mix(in srgb, var(--primary) 50%, var(--card-bg) 50%);
+}
+.timeline-cell.count-3,
+.timeline-cell.count-4 {
+  background: color-mix(in srgb, var(--primary) 80%, var(--card-bg) 20%);
+  border-color: color-mix(in srgb, var(--primary) 80%, var(--card-bg) 20%);
+}
 
 .timeline-cell button {
   all: unset;
@@ -578,9 +829,46 @@ nav button {
   height: 100%;
 }
 
+.timeline-cell button:active {
+  transform: scale(0.95);
+  transition: transform 0.15s ease;
+}
+
 .timeline-cell:active {
-  transform: scale(0.98);
-  transition: transform 120ms ease-out;
+  /* インタラクション指定 */
+  transform: scale(0.95);
+  transition: transform 0.15s ease;
+}
+
+/* 凡例 */
+.timeline-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: var(--space-section);
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+}
+
+.legend-chip {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-small);
+  display: inline-block;
+  border: 1px solid #ececec;
+  background: var(--card-bg);
+}
+
+.legend-chip.legend-0 { background: var(--card-bg); }
+.legend-chip.legend-1 { background: color-mix(in srgb, var(--primary) 20%, var(--card-bg) 80%); }
+.legend-chip.legend-2 { background: color-mix(in srgb, var(--primary) 50%, var(--card-bg) 50%); }
+.legend-chip.legend-3 { background: color-mix(in srgb, var(--primary) 80%, var(--card-bg) 20%); }
+
+/* 複数月表示時の月タイトル */
+.timeline-month-title {
+  margin-top: var(--space-section);
+  font-size: var(--text-body);
+  color: var(--text-secondary);
 }
 
 /* ------------------------------ */
@@ -601,11 +889,11 @@ nav button {
 }
 
 .modal-card {
-  background: #f6f8f2;
-  border-radius: 16px;
+  background: var(--color-card-bg);
+  border-radius: var(--radius-card);
   width: min(90vw, 360px);
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  padding: var(--spacing-card);
+  box-shadow: none;
 }
 
 .modal-header {
@@ -617,25 +905,25 @@ nav button {
 }
 
 .modal-title {
-  font-size: 14px;
-  color: #2f3d2f;
+  font-size: var(--text-body);
+  color: var(--color-text-primary);
 }
 
 .modal-close {
-  border: none;
-  background: #e8f2e2;
-  color: #2f3d2f;
-  border-radius: 10px;
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  border-radius: var(--radius-card);
   padding: 6px 10px;
-  font-size: 12px;
+  font-size: var(--text-micro);
 }
 
 .modal-body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  color: #2f3d2f;
-  font-size: 13px;
+  color: var(--color-text-primary);
+  font-size: var(--text-caption);
 }
 
 .timeline-table {
@@ -650,12 +938,12 @@ nav button {
 .timeline-hour {
   padding: 8px;
   border-bottom: 1px solid #ddd;
-  background: #f9f9f9;
+  background: var(--color-card-bg);
   font-weight: bold;
   white-space: nowrap;      /* ← 折り返し禁止 */
   width: 90px;              /* ← 列幅固定 */
   box-sizing: border-box;
-  font-size: 14px;
+  font-size: var(--text-caption);
 }
 
 .timeline-log {
@@ -667,18 +955,19 @@ nav button {
   display: inline-block;
   margin-right: 6px;
   padding: 2px 6px;
-  background: #e6f4ea;
-  border-radius: 4px;
-  font-size: 14px;
+  background: #eef4ff;
+  border-radius: var(--radius-small);
+  font-size: var(--text-caption);
 }
 
 .edit-btn {
   margin-left: auto;
   padding: 6px 12px;
-  font-size: 14px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background: #fff;
+  font-size: var(--text-caption);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
 }
 
 /* ------------------------------ */
@@ -687,52 +976,124 @@ nav button {
 
 /* 記録の編集画面 */
 .edit-body {
-  padding: 20px;
+  padding: var(--space-page);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-tight);
 }
 
-.edit-body label {
+.edit-page-title {
+  /* Design System v1.0: ページタイトル */
+  margin: 0 0 var(--space-section);
+  font-size: var(--text-h1);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.edit-field {
   display: flex;
   flex-direction: column;
-  font-size: 14px;
+  gap: 8px;
+  margin: 0;
+}
+
+.edit-field-label {
+  font-size: var(--text-body);
+  color: var(--text-primary);
+}
+
+.edit-field-help {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
 }
 
 .edit-body input {
-  font-size: 16px;
-  padding: 6px;
+  font-size: var(--text-body);
+  padding: 8px;
+  border: 1px solid var(--text-secondary);
+  border-radius: var(--radius-small);
+  box-sizing: border-box;
+  background: var(--background);
+  color: var(--text-primary);
+}
+
+.edit-body input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+#editDateInput:disabled,
+#editDateInput.is-disabled {
+  background: var(--card-bg);
+  color: var(--text-secondary);
 }
 
 .time-tags {
-  display: flex;
-  flex-wrap: wrap;
+  /* 時刻ログは2列表示に統一 */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 6px;
 }
 
 .time-tag {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 6px 10px;
-  background: #eef;
-  border-radius: 16px;
-  font-size: 14px;
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  font-size: var(--text-caption);
+  min-width: 0;
 }
 
 .time-tag input {
-  border: none;
-  background: transparent;
-  width: 70px;
-  font-size: 14px;
+  border: 1px solid var(--text-secondary);
+  background: var(--background);
+  width: 100%;
+  min-width: 88px;
+  font-size: var(--text-body);
+  border-radius: var(--radius-small);
+  padding: 8px;
+  box-sizing: border-box;
 }
 
 .time-tag button {
-  border: none;
-  background: none;
-  font-size: 14px;
+  border: 1px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+  font-size: var(--text-caption);
+  border-radius: var(--radius-small);
+  min-height: 32px;
   cursor: pointer;
+}
+
+.time-empty {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+#addTimeTagBtn {
+  align-self: flex-start;
+  min-height: 40px;
+}
+
+.edit-save-btn {
+  /* 主役ボタン */
+  margin-top: var(--space-section);
+  width: 100%;
+  min-height: 56px;
+  border-radius: var(--radius-button);
+  border: 0;
+  background: var(--primary);
+  color: #FFFFFF;
+  font-size: var(--text-body);
+  font-weight: 700;
+}
+
+.edit-save-btn:active {
+  transform: scale(0.97);
 }
 
 /* ------------------------------ */
@@ -797,8 +1158,8 @@ nav button {
 }
 
 .badge-date {
-  font-size: 12px;
-  color: #666;
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
 }
 
 /* ------------------------------ */
@@ -812,7 +1173,7 @@ nav button {
 }
 
 .daily-challenge .challenge-item.done {
-  color: #2e7d32;
+  color: var(--color-primary);
   font-weight: bold;
 }
 
@@ -834,7 +1195,7 @@ nav button {
 
 /* 中身 */
 .daily-challenge .overlay-content {
-  background: #fff;
+  background: var(--color-background);
   width: 90%;
   max-width: 480px;
   max-height: 85vh;
@@ -842,7 +1203,7 @@ nav button {
   display: flex;
   flex-direction: column;
 
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   overflow: hidden;
 }
 
@@ -853,7 +1214,7 @@ nav button {
   justify-content: space-between;
 
   padding: 12px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #e5e5e5;
   flex-shrink: 0;
 
   /* Safari対策 ここから */
@@ -871,32 +1232,39 @@ nav button {
 /* フッター */
 .daily-challenge .overlay-footer {
   padding: 12px;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid #e5e5e5;
   flex-shrink: 0;
 }
 
 /* 統計情報画面 */
 .stats-section-title {
-  font-size: 0.85em;
-  color: #666;
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
   margin-bottom: 4px;
 }
 .stats-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 0;
+}
+
+/* Design System v1.0: セクション間 24px */
+.stats-section {
+  margin-bottom: var(--space-section);
 }
 
 .stats-label {
-  font-size: 0.85em;
-  color: #666;
+  font-size: var(--text-micro);
+  color: var(--text-secondary);
   min-width: 4.5em; /* ラベル幅を固定して揃える */
 }
 
-.stats-range-buttons button,
-.stats-graph-buttons button {
-  margin-right: 4px;
+.stats-range-buttons,
+.stats-graph-buttons {
+  display: flex;
+  gap: var(--spacing-tight);
+  flex-wrap: wrap;
 }
 
 #stats-chart {
@@ -905,8 +1273,9 @@ nav button {
 }
 
 #stats-chart-wrap {
-  height: 280px;     /* ← 必ず固定値 */
+  height: 280px;
   width: 100%;
+  margin-top: var(--spacing-tight); /* 合計値との間: 16px */
 }
 
 #stats-chart {
@@ -927,8 +1296,386 @@ nav button {
 }
 
 .stats-summary-item {
-  font-size: 12px;
-  color: #5f6b5f;
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
+}
+
+/* =========================================================
+   Design System v1.0 component unification
+   ========================================================= */
+button {
+  font-size: var(--text-body);
+  border-radius: var(--radius-card);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* secondary button style */
+.text-link,
+#closeEditBtn,
+#addTimeTagBtn,
+#dcClose,
+#dcPrev,
+#dcNext,
+#stats-prev,
+#stats-next,
+#range-week,
+#range-month,
+#graph-daily,
+#graph-hourly,
+#calendar .calendar-header button,
+#settings button {
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-tight) 12px;
+  font-size: var(--text-caption);
+}
+
+.text-link {
+  min-height: 36px;
+}
+
+/* メイン導線: List Item コンポーネント */
+#main .history-section {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
+#main .history-actions .text-link {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 16px;
+  font-size: var(--text-body);
+  color: var(--text-primary);
+  border: 0;
+  border-bottom: 1px solid var(--text-secondary);
+  border-radius: 0;
+  background: transparent;
+}
+
+/* UNDO: 装飾なし + タップ領域確保 */
+#undoSmokeBtn {
+  min-height: 40px;
+  padding: 0;
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+#undoSmokeBtn:hover,
+#undoSmokeBtn:active {
+  color: var(--primary);
+}
+
+/* tabs */
+nav button.is-active {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* toast undo emphasis */
+.app-toast .toast-undo {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* settings / stats layout spacing */
+#badgeTab h2,
+#history h2 {
+  margin: 0 0 var(--spacing-tight);
+}
+
+/* ============================== */
+/* 設定画面 UI (Design System v1.0) */
+/* ============================== */
+#settings {
+  padding: var(--space-page);
+}
+
+.settings-page-title {
+  /* ページタイトル */
+  margin: 0 0 var(--space-section);
+  font-size: var(--text-h1);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.settings-card {
+  /* セクションカード */
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  padding: var(--space-card);
+  margin-bottom: var(--space-section);
+}
+
+.settings-section-title {
+  margin: 0 0 var(--spacing-card);
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.settings-item {
+  min-height: 48px;
+  padding: 0 var(--space-page);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--text-secondary);
+}
+
+.settings-item:last-child {
+  border-bottom: 0;
+}
+
+.settings-item-label {
+  font-size: var(--text-body);
+  color: var(--text-primary);
+}
+
+.settings-item-help {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  margin: var(--spacing-tight) 0 0;
+}
+
+.settings-item-input {
+  gap: var(--spacing-tight);
+}
+
+.settings-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#settings .setting-input {
+  /* 数値入力統一 */
+  width: 84px;
+  min-height: 36px;
+  border: 1px solid var(--text-secondary);
+  border-radius: var(--radius-small);
+  font-size: var(--text-body);
+  color: var(--text-primary);
+  padding: 8px;
+  box-sizing: border-box;
+  background: var(--background);
+}
+
+#settings .setting-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.settings-input-unit {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+/* トグルUI統一 */
+.settings-item-toggle {
+  position: relative;
+}
+
+.settings-toggle-wrap {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+.settings-toggle-wrap input[type="radio"] {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.settings-toggle-ui {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: var(--text-secondary);
+  transition: all 0.15s ease;
+}
+
+.settings-toggle-ui::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  transition: transform 0.15s ease;
+}
+
+.settings-toggle-wrap input[type="radio"]:checked + .settings-toggle-ui {
+  background: var(--primary);
+}
+
+.settings-toggle-wrap input[type="radio"]:checked + .settings-toggle-ui::after {
+  transform: translateX(20px);
+}
+
+.settings-item-plan {
+  min-height: auto;
+  align-items: flex-start;
+  padding-top: var(--spacing-tight);
+  padding-bottom: var(--spacing-tight);
+}
+
+.settings-plan-info {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  text-align: right;
+  max-width: 68%;
+}
+
+#settings .settings-danger-btn {
+  /* 危険操作を明確化 */
+  margin-top: var(--spacing-card);
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-card);
+  background: transparent;
+  color: var(--danger);
+  font-size: var(--text-body);
+  font-weight: 600;
+}
+
+.settings-note {
+  margin: var(--spacing-tight) 0 0;
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+#stats {
+  font-size: var(--text-caption);
+  padding: var(--space-page);
+}
+
+#stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-tight);
+  margin-bottom: var(--spacing-tight);
+}
+
+.stats-header-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+#stats-title {
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+#stats-label {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+/* Design System v1.0: 週/月 セグメント */
+.stats-range-buttons {
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-button);
+  overflow: hidden;
+}
+
+#stats #range-week,
+#stats #range-month {
+  min-height: 40px;
+  height: 40px;
+  padding: 0 16px;
+  border: 0;
+  /* 月選択時のみ縦線が目立つ問題を避けるため、内部仕切り線は使わない */
+  border-right: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-body);
+  transition: all 0.15s ease;
+}
+
+#stats #range-week.is-active,
+#stats #range-month.is-active {
+  background: var(--primary);
+  color: #FFFFFF;
+}
+
+/* 集計内容ボタンは secondary を維持しつつ階層を抑える */
+#stats #graph-daily,
+#stats #graph-hourly {
+  min-height: 40px;
+  height: 40px;
+  font-size: var(--text-caption);
+}
+
+/* Design System v1.0: 合計値主表示 */
+.stats-total-highlight {
+  font-size: var(--text-h1);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-tight);
+}
+
+.stats-total-highlight strong {
+  font-weight: 700;
+}
+
+.stats-summary-card {
+  /* 統計サマリーを主役化 */
+  margin: 0 0 var(--space-section);
+  padding: var(--space-card);
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  border: 1px solid #E5E5E5;
+}
+
+.stats-summary-item {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+/* 現在期間の値を強く表示 */
+#stats-current-total {
+  font-size: var(--text-h1);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+#stats-current-avg {
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 前期間は補助情報として抑える */
+#stats-prev-total,
+#stats-prev-avg {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
 }
 
 /* Safari のみ適用 */

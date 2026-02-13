@@ -7,6 +7,7 @@ function bootstrap() {
   window.appState.todayKey = window.common.getDateKey(new Date());
   mainController.initMain();
   updateLayoutHeights();
+  syncTabButtons("main");
 
   const earned = badgeModel.loadEarnedBadges();
   badgeView.render(earned);
@@ -24,11 +25,40 @@ function updateLayoutHeights() {
   const root = document.documentElement;
   const header = document.querySelector("header");
   const nav = document.querySelector("nav");
+  const calendarTab = document.getElementById("calendar");
   if (header) {
     root.style.setProperty("--header-height", `${header.offsetHeight}px`);
   }
   if (nav) {
     root.style.setProperty("--nav-height", `${nav.offsetHeight}px`);
+  }
+  if (calendarTab && nav) {
+    const calendarHeader = calendarTab.querySelector(".calendar-header");
+    const calendarCard = calendarTab.querySelector(".calendar-card");
+    const tabStyle = getComputedStyle(calendarTab);
+    const cardStyle = calendarCard ? getComputedStyle(calendarCard) : null;
+    const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const topHeaderHeight = header ? header.offsetHeight : 0;
+    const tabPaddingY =
+      (parseFloat(tabStyle.paddingTop) || 0) + (parseFloat(tabStyle.paddingBottom) || 0);
+    const cardPaddingY = cardStyle
+      ? (parseFloat(cardStyle.paddingTop) || 0) + (parseFloat(cardStyle.paddingBottom) || 0)
+      : 0;
+    const monthHeaderHeight = calendarHeader ? calendarHeader.offsetHeight : 0;
+    const sectionGap = parseFloat(getComputedStyle(root).getPropertyValue("--spacing-tight")) || 8;
+    // 月ヘッダー/余白を引いた、calendar-grid の実利用可能高さ
+    const gridHeight = Math.max(
+      0,
+      viewportHeight
+        - topHeaderHeight
+        - nav.offsetHeight
+        - tabPaddingY
+        - monthHeaderHeight
+        - sectionGap
+        - cardPaddingY
+        - 1
+    );
+    root.style.setProperty("--calendar-grid-height", `${gridHeight}px`);
   }
 }
 
@@ -72,14 +102,14 @@ function onLogChanged(date= null) {
     window.messageController.enqueue(dailyEvents, badgeEvents);
   }
 
+  // タイムライン表示中でもメイン状態は最新化しておく
+  window.mainView.render(ctx);
   if (window.timelineController.isOpenTimeline() === true) {
     if (date) {
       window.timelineController.openTimeline(date);
     } else {
       window.timelineController.refreshCurrent();
     }
-  } else {
-    window.mainView.render(ctx);
   }
   window.calendarController.refresh();
   window.badgeView.render();
@@ -100,10 +130,6 @@ function onLogChanged(date= null) {
 }
 
 function showTab(tabId) {
-  if (window.timelineController.isOpenTimeline() == true){
-    window.timelineController.closeTimeline();
-  }
-
   document.querySelectorAll('.tab').forEach(el => {
     el.style.display = 'none';
     el.classList.remove('active');
@@ -114,6 +140,9 @@ function showTab(tabId) {
     target.style.display = 'block';
     target.classList.add('active');
   }
+  // タブ切替直後に高さを再計算（display:none -> block 変化を反映）
+  updateLayoutHeights();
+  syncTabButtons(tabId);
 
   // ===== 統計タブ専用 =====
   if (tabId === 'stats') {
@@ -123,6 +152,18 @@ function showTab(tabId) {
       window._statsInitialized = true;
     }
   }
+  if (tabId === 'timeline' && window.timelineController?.ensureRendered) {
+    window.timelineController.ensureRendered();
+  }
+}
+
+// Design System v1.0: タブ選択色を同期
+function syncTabButtons(activeTabId) {
+  document.querySelectorAll("nav button[data-tab]").forEach(btn => {
+    const isActive = btn.dataset.tab === activeTabId;
+    btn.classList.toggle("is-active", isActive);
+    btn.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
 }
 
 // iOS対策

@@ -1,5 +1,6 @@
 (function () {
 let toastTimer = null;
+const TOAST_DURATION_MS = 3000;
 
 function getToastEl() {
   let el = document.getElementById("appToast");
@@ -12,10 +13,25 @@ function getToastEl() {
   return el;
 }
 
-function showToast(text, durationMs = 1200) {
+function escapeHtml(text) {
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+// Design System v1.0: UNDO を強調表示
+function renderToastText(text) {
+  const safe = escapeHtml(text);
+  return safe.replace(/\bUNDO\b/g, '<span class="toast-undo">UNDO</span>');
+}
+
+function showToast(text, durationMs = TOAST_DURATION_MS) {
   if (!text) return;
   const toast = getToastEl();
-  toast.textContent = text;
+  toast.innerHTML = renderToastText(text);
   toast.classList.add("is-visible");
   if (toastTimer) window.clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => {
@@ -24,7 +40,7 @@ function showToast(text, durationMs = 1200) {
 }
 
 function addMessage(text) {
-  showToast(text, 1200);
+  showToast(text, TOAST_DURATION_MS);
 }
 
 function clearAll() {
@@ -35,7 +51,7 @@ function clearAll() {
   }
 }
 
-function showMessageWithAutoClose(text, onClose, durationMs = 1200) {
+function showMessageWithAutoClose(text, onClose, durationMs = TOAST_DURATION_MS) {
   showToast(text, durationMs);
   if (typeof onClose === "function") {
     window.setTimeout(onClose, durationMs);

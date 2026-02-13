@@ -19,7 +19,10 @@ function open(state) {
   document.getElementById("editOverlay").classList.remove("hidden");
   document.getElementById("editTitle").textContent = state.title;
 
-  document.getElementById("editDate").textContent = state.dateKey;
+  const dateInput = document.getElementById("editDateInput");
+  dateInput.value = state.dateKey;
+  dateInput.disabled = false;
+  dateInput.classList.remove("is-disabled");
   render(state);
 }
 
@@ -33,6 +36,11 @@ function isOpen() {
   return overlay && !overlay.classList.contains("hidden");
 }
 
+function getEditedDate() {
+  const dateInput = document.getElementById("editDateInput");
+  return dateInput ? dateInput.value : null;
+}
+
 function render(state) {
   const container = document.getElementById("timeTags");
   container.innerHTML = "";
@@ -40,7 +48,7 @@ function render(state) {
   if (state.times.length === 0) {
     const empty = document.createElement("div");
     empty.className = "time-empty";
-    empty.textContent = "";
+    empty.textContent = "時刻がありません";
     container.appendChild(empty);
     return;
   }
@@ -69,6 +77,6 @@ function render(state) {
   });
 }
 
-window.editView = { open, close, render, isOpen };
+window.editView = { open, close, render, isOpen, getEditedDate };
 
 })();

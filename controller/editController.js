@@ -13,9 +13,16 @@ function openEdit(dateKey, options = {}) {
 }
 
 function closeEdit() {
+  // キャンセル時は編集前の日付に戻す
+  const originalDateKey = currentDateKey;
   window.editModel.close();
   window.editView.close();
   returnToMainOnSave = false;
+  if (originalDateKey && window.timelineController?.openTimeline) {
+    window.timelineController.openTimeline(originalDateKey);
+  } else if (typeof window.showTab === "function") {
+    window.showTab("timeline");
+  }
 }
 
 function addTimeTag() {
@@ -37,18 +44,27 @@ function removeTime(index) {
 }
 
 function saveEdit() {
+  // 保存後遷移: 編集画面の入力日付（変更後）を優先
+  const editedDate = window.editView?.getEditedDate
+    ? window.editView.getEditedDate()
+    : currentDateKey;
   window.editModel.save();
-  const shouldReturnToMain = returnToMainOnSave;
-  closeEdit();
-  if (shouldReturnToMain) {
-    if (window.timelineController?.closeTimeline) {
-      window.timelineController.closeTimeline();
-    }
-    if (typeof window.showTab === "function") {
-      window.showTab("main");
-    }
+  const targetDateKey = editedDate || currentDateKey;
+
+  // 保存ロジックは維持し、保存後の遷移のみ変更
+  window.editModel.close();
+  window.editView.close();
+  returnToMainOnSave = false;
+  currentDateKey = targetDateKey;
+  if (window.timelineController?.openTimeline) {
+    window.timelineController.openTimeline(targetDateKey);
+  } else if (typeof window.showTab === "function") {
+    window.showTab("timeline");
   }
-  onLogChanged(currentDateKey);
+
+  if (typeof window.onLogChanged === "function") {
+    window.onLogChanged(targetDateKey);
+  }
   window.messageController.enqueue({ type: "msg", text: "修正しました", priority: -1});
 }
 
@@ -66,7 +82,7 @@ function buildEditViewState() {
   const state = window.editModel.getState();
   return {
     dateKey: state.dateKey,
-    title: `${state.dateKey} を修正`,
+    title: "記録を編集",
     times: [...state.times]
   };
 }

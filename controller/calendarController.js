@@ -1,6 +1,8 @@
 (function () {
 
 // controller/calendarController.js
+// Design System v1.0: 選択日ハイライト用の状態（機能ロジックは変更しない）
+let selectedDateKey = null;
 
 function renderCalendar() {
   const state = window.calendarModel.buildCalendarState();
@@ -21,12 +23,14 @@ function renderCalendar() {
   window.calendarView.render({
     ...state,
     calendarData,
-    days
+    days,
+    selectedDateKey
   });
 }
 
 function showCalendar() {
   window.calendarModel.resetToToday();
+  selectedDateKey = null;
   renderCalendar();
 }
 
@@ -79,6 +83,9 @@ function buildCalendarDays(state, calendarData) {
 }
 
 function onDayClick(dateKey, hasLog) {
+  // 選択日の見た目だけ更新（既存遷移は維持）
+  selectedDateKey = dateKey;
+  renderCalendar();
   if (hasLog) {
     window.timelineController.openTimeline (dateKey);
   } else {

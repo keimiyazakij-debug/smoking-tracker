@@ -1,12 +1,9 @@
 (function () {
+let currentTimelineDateKey = null;
 
 // DOMの書き換え
 document.getElementById("openEditBtn").addEventListener("click", () => {
   window.timelineController.openEditFromTimeline();
-});
-
-document.getElementById("closeTimelineBtn").addEventListener("click", () => {
-  window.timelineController.closeTimeline();
 });
 
 // 日付の前後移動
@@ -32,6 +29,7 @@ document.getElementById("timelineDetailModal").addEventListener("click", (e) => 
   // ===== タイムライン画面の描画 =====
 function renderTimelineForDate(map) {
   const container = document.getElementById("timelineList");
+  if (!container) return;
   container.innerHTML = "";
 
   // 0〜23時を必ず描画（4列×6行）
@@ -43,12 +41,15 @@ function renderTimelineForDate(map) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.addEventListener("click", () => {
+      // Design System v1.0: セルタップ時に選択サマリーを更新
+      setSelectedSummary(currentTimelineDateKey, count);
       openDetailModal(h, map[h] || []);
     });
 
     const hour = document.createElement("div");
     hour.className = "timeline-hour";
-    hour.textContent = String(h).padStart(2, "0");
+    // 時刻表記を 0時〜23時 に統一
+    hour.textContent = `${h}時`;
 
     const log = document.createElement("div");
     log.className = "timeline-count";
@@ -79,7 +80,7 @@ function openDetailModal(hour, times) {
   const modal = document.getElementById("timelineDetailModal");
   const title = document.getElementById("timelineDetailTitle");
   const list = document.getElementById("timelineDetailList");
-  title.textContent = `${String(hour).padStart(2, "0")}時の記録`;
+  title.textContent = `${hour}時の記録`;
   list.innerHTML = "";
 
   if (!times || times.length === 0) {
@@ -102,6 +103,22 @@ function closeDetailModal() {
   modal.classList.add("hidden");
 }
 
-window.timelineView = { render: renderTimelineForDate };
+function setDateKey(dateKey) {
+  currentTimelineDateKey = dateKey || null;
+}
+
+function setSelectedSummary(dateKey, count) {
+  const el = document.getElementById("timelineSelectionSummary");
+  if (!el || !dateKey) return;
+  const dateText = String(dateKey).replaceAll("-", "/");
+  const safeCount = Number.isInteger(count) ? count : 0;
+  el.innerHTML = `${dateText} <strong>${safeCount}本</strong>`;
+}
+
+window.timelineView = {
+  render: renderTimelineForDate,
+  setDateKey,
+  setSelectedSummary
+};
 
 })();

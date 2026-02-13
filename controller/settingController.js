@@ -5,15 +5,17 @@ let settingsInputs = [];
 
 // ===== 設定画面 =====
 document.addEventListener("DOMContentLoaded", () => {
-
-  const settingsInputs = document.querySelectorAll(".setting-input");
+  settingsInputs = Array.from(document.querySelectorAll(".setting-input"));
 
   settingsInputs.forEach(input => {
     input.addEventListener("input", () => {
-      const s = loadSettings();
+      const s = window.settingModel.loadSettings();
       s[input.id] = Number(input.value);
-      saveSettings(s);
-      updateMainDisplay();
+      window.settingModel.saveSettings(s);
+      // 旧 updateMainDisplay は廃止。現在は onLogChanged で全画面再描画する
+      if (typeof window.onLogChanged === "function") {
+        window.onLogChanged();
+      }
     });
   });
 
@@ -21,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function loadSettingsToInputs() {
-  const s = loadSettings();
+  const s = window.settingModel.loadSettings();
 
   document.querySelectorAll(".setting-input")
     .forEach(input => input.value = s[input.id]);
@@ -33,9 +35,9 @@ function loadSettingsToInputs() {
 }
 
 function saveCurrentSettings() {
-  const s = loadSettings();
+  const s = window.settingModel.loadSettings();
   settingsInputs.forEach(input => s[input.id] = Number(input.value));
-  saveSettings(s);
+  window.settingModel.saveSettings(s);
 }
 
 // ===== 設定画面でのプランの判定 =====
@@ -50,5 +52,9 @@ function resetAll() {
   localStorage.clear();
   location.reload();
 }
+
+// インラインonclick/他Viewから使うため公開
+window.resetAll = resetAll;
+window.isPremium = isPremium;
 
 })();

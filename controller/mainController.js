@@ -30,7 +30,9 @@ function addSmoke() {
   btn.disabled = true;
 
   window.logModel.addSmoke(new Date());
-  onLogChanged();
+  if (typeof window.onLogChanged === "function") {
+    window.onLogChanged();
+  }
 
   updateSmokeHelp(buildSmokeMessage());
   pulseTodayCount();
@@ -45,7 +47,9 @@ function undoLastSmoke() {
   const dateKey = window.common.getDateKey(new Date());
   const removed = window.logModel.removeLastSmoke(dateKey);
   if (removed) {
-    onLogChanged();
+    if (typeof window.onLogChanged === "function") {
+      window.onLogChanged();
+    }
   }
 }
 

@@ -77,6 +77,7 @@ window.statsController = {
     });
     const viewState = buildStatsViewState({
       data,
+      rangeType,
       graphType,
       title,
       label,
@@ -178,7 +179,7 @@ function buildLabel(rangeType, range) {
   return rangeType === 'week' ? `${f} – ${t}` : f.slice(0, 7);
 }
 
-function buildStatsViewState({ data, graphType, title, label, target, summary }) {
+function buildStatsViewState({ data, rangeType, graphType, title, label, target, summary }) {
   const labels = data.map(d =>
     graphType === 'daily' ? d.x.slice(5) : `${d.x}時`
   );
@@ -187,6 +188,7 @@ function buildStatsViewState({ data, graphType, title, label, target, summary })
   const yMax = Math.max(maxValue, target ?? 0) + 10;
 
   return {
+    rangeType,
     title,
     label,
     labels,
