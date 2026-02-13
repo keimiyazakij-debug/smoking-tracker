@@ -619,6 +619,20 @@ nav button {
 
 .calendar-day.past { opacity: 1;}
 .calendar-day.no-log { opacity: 1;}
+.calendar-day.locked {
+  pointer-events: none;
+  opacity: 0.5;
+}
+.calendar-day.locked .count-bg {
+  background: transparent !important;
+}
+.lock-mark {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  font-size: var(--text-micro);
+  color: var(--text-secondary);
+}
 
 /* カレンダー上のマーク表示 */
 .calendar-mark {
@@ -769,6 +783,15 @@ nav button {
   margin: var(--space-section) 0;
   padding: 0;
 }
+.timeline-locked-message {
+  grid-column: 1 / -1;
+  padding: var(--space-card);
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+  text-align: center;
+}
 
 .timeline-cell {
   /* 正方形セル + small radius */
@@ -789,6 +812,11 @@ nav button {
 .timeline-hour {
   font-size: var(--text-micro);
   color: var(--color-text-secondary);
+  width: auto;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .timeline-count {
@@ -931,11 +959,11 @@ nav button {
   grid-template-columns: 90px 1fr;
 }
 
-.timeline-row {
+.timeline-table .timeline-row {
   display: contents;
 }
 
-.timeline-hour {
+.timeline-table .timeline-hour {
   padding: 8px;
   border-bottom: 1px solid #ddd;
   background: var(--color-card-bg);
@@ -946,12 +974,12 @@ nav button {
   font-size: var(--text-caption);
 }
 
-.timeline-log {
+.timeline-table .timeline-log {
   padding: 8px;
   border-bottom: 1px solid #ddd;
 }
 
-.timeline-log span {
+.timeline-table .timeline-log span {
   display: inline-block;
   margin-right: 6px;
   padding: 2px 6px;
@@ -1094,6 +1122,13 @@ nav button {
 
 .edit-save-btn:active {
   transform: scale(0.97);
+}
+
+.edit-save-btn:disabled {
+  background: var(--text-secondary);
+  color: #FFFFFF;
+  cursor: not-allowed;
+  opacity: 0.8;
 }
 
 /* ------------------------------ */
@@ -1565,6 +1600,59 @@ nav button.is-active {
   color: var(--text-secondary);
 }
 
+/* 開発モード専用デバッグカード */
+.settings-debug-card {
+  margin-top: var(--space-section);
+}
+
+.settings-item-debug {
+  min-height: 48px;
+}
+
+.settings-debug-toggle-wrap {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+.settings-debug-toggle-wrap input[type="checkbox"] {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.settings-debug-toggle-ui {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: var(--text-secondary);
+  transition: all 0.15s ease;
+}
+
+.settings-debug-toggle-ui::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  transition: transform 0.15s ease;
+}
+
+.settings-debug-toggle-wrap input[type="checkbox"]:checked + .settings-debug-toggle-ui {
+  background: var(--primary);
+}
+
+.settings-debug-toggle-wrap input[type="checkbox"]:checked + .settings-debug-toggle-ui::after {
+  transform: translateX(20px);
+}
+
 #stats {
   font-size: var(--text-caption);
   padding: var(--space-page);
@@ -1651,6 +1739,11 @@ nav button.is-active {
   background: var(--card-bg);
   border-radius: var(--radius-card);
   border: 1px solid #E5E5E5;
+}
+.stats-free-notice {
+  margin: 0 0 var(--space-tight);
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
 }
 
 .stats-summary-item {

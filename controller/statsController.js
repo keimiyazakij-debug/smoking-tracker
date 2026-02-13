@@ -42,6 +42,11 @@ window.statsController = {
       rangeType === 'week'
         ? getWeekDateKeys(baseDate)
         : getMonthDateKeys(baseDate);
+    // 無料版60日ロック: 集計対象は閲覧可能日付のみ
+    const unlockedDateKeys = dateKeys.filter(k => {
+      if (!window.common?.isDateLocked) return true;
+      return !window.common.isDateLocked(k);
+    });
 
     const todayKey = window.common.getDateKey(new Date());
 
@@ -50,11 +55,11 @@ window.statsController = {
 
     if (graphType === 'daily') {
       // ★ 日別：future を含めてそのまま表示（0 本）
-      data = window.statsModel.aggregateDailyByDateKeys(dateKeys);
+      data = window.statsModel.aggregateDailyByDateKeys(unlockedDateKeys);
     } else {
 
       // ★ 時間帯別平均：future を除外
-      const effectiveDateKeys = dateKeys.filter(k => k <= todayKey);
+      const effectiveDateKeys = unlockedDateKeys.filter(k => k <= todayKey);
       data = window.statsModel.aggregateHourlyByDateKeys(effectiveDateKeys);
     }
     
@@ -69,11 +74,18 @@ window.statsController = {
         : dateKeys[0].slice(0, 7);
 
     const summary = buildStatsSummary({
-      dateKeys,
+      dateKeys: unlockedDateKeys,
       prevDateKeys:
         rangeType === 'week'
-          ? shiftDateKeys(dateKeys, -7)
+          ? shiftDateKeys(unlockedDateKeys, -7).filter(k => {
+              if (!window.common?.isDateLocked) return true;
+              return !window.common.isDateLocked(k);
+            })
           : getMonthDateKeys(moveBaseDate(baseDate, rangeType, -1))
+            .filter(k => {
+              if (!window.common?.isDateLocked) return true;
+              return !window.common.isDateLocked(k);
+            })
     });
     const viewState = buildStatsViewState({
       data,
@@ -82,7 +94,10 @@ window.statsController = {
       title,
       label,
       target: window.settingModel.loadSettings().dailyTarget,
-      summary
+      summary,
+      freeNotice: typeof window.getIsPremium === "function" && !window.getIsPremium()
+        ? `無料版では直近${window.common.FREE_LIMIT_DAYS}日分のデータを表示しています`
+        : ""
     });
 
     window.statsView.render(viewState);
@@ -179,7 +194,7 @@ function buildLabel(rangeType, range) {
   return rangeType === 'week' ? `${f} – ${t}` : f.slice(0, 7);
 }
 
-function buildStatsViewState({ data, rangeType, graphType, title, label, target, summary }) {
+function buildStatsViewState({ data, rangeType, graphType, title, label, target, summary, freeNotice }) {
   const labels = data.map(d =>
     graphType === 'daily' ? d.x.slice(5) : `${d.x}時`
   );
@@ -194,6 +209,7 @@ function buildStatsViewState({ data, rangeType, graphType, title, label, target,
     labels,
     values,
     yMax,
-    summary
+    summary,
+    freeNotice
   };
 }

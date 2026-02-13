@@ -67,6 +67,17 @@ function renderTimelineForDate(map) {
   }
 }
 
+function renderLocked(message) {
+  const container = document.getElementById("timelineList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const notice = document.createElement("div");
+  notice.className = "timeline-locked-message";
+  notice.textContent = message;
+  container.appendChild(notice);
+}
+
 function getHeatClass(count) {
   // 本数に応じて濃淡（赤は使わない）
   if (count >= 4) return "count-4";
@@ -117,6 +128,7 @@ function setSelectedSummary(dateKey, count) {
 
 window.timelineView = {
   render: renderTimelineForDate,
+  renderLocked,
   setDateKey,
   setSelectedSummary
 };

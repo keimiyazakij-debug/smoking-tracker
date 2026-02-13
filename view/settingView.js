@@ -4,7 +4,7 @@ function renderSettings() {
   const el = document.getElementById("planInfo");
   if (!el) return;
 
-  if (isPremium()) {
+  if (typeof window.getIsPremium === "function" && window.getIsPremium()) {
     el.innerHTML = `
       <strong>プレミアム</strong><br>
       ・記録は無期限<br>
@@ -14,7 +14,7 @@ function renderSettings() {
   } else {
     el.innerHTML = `
       <strong>無料版</strong><br>
-      ・記録は直近30日まで<br>
+      ・記録は直近60日まで<br>
       ・広告が表示されます
     `;
   }

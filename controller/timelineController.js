@@ -1,6 +1,12 @@
 (function () {
 let currentDateKey = null;
 let returnToMainOnSave = false;
+const LOCKED_MSG = "60日より前のデータはプレミアム版で閲覧できます。";
+
+function isLocked(dateKey) {
+  if (!window.common?.isDateLocked) return false;
+  return window.common.isDateLocked(dateKey);
+}
 
 // ===== タイムライン画面の表示 =====
 function openTimeline(dateKey, options = {}) {
@@ -8,6 +14,11 @@ function openTimeline(dateKey, options = {}) {
   returnToMainOnSave = !!options.returnToMainOnSave;
   if (typeof window.showTab === "function") {
     window.showTab("timeline");
+  }
+
+  if (isLocked(dateKey)) {
+    renderLockedTimeline(dateKey);
+    return;
   }
 
   const map = buildTimelineMap(dateKey);
@@ -24,6 +35,11 @@ function openTimeline(dateKey, options = {}) {
 
 // ===== タイムライン画面の再表示 =====
 function refreshTimeline(dateKey) {
+  if (isLocked(dateKey)) {
+    renderLockedTimeline(dateKey);
+    return;
+  }
+
   const map = buildTimelineMap(dateKey);
   updateTimelineHeader(dateKey, map);
   if (window.timelineView?.setDateKey) {
@@ -45,6 +61,10 @@ function refreshCurrent() {
 function ensureRendered() {
   if (!currentDateKey) {
     currentDateKey = window.common.getDateKey(new Date());
+  }
+  if (isLocked(currentDateKey)) {
+    renderLockedTimeline(currentDateKey);
+    return;
   }
   refreshTimeline(currentDateKey);
 }
@@ -90,6 +110,11 @@ function goPrevDay() {
   const d = window.common.parseDateKey(currentDateKey);
   d.setDate(d.getDate() - 1);
   const prevKey = window.common.getDateKey(d);
+  if (isLocked(prevKey)) {
+    currentDateKey = prevKey;
+    renderLockedTimeline(prevKey);
+    return;
+  }
   currentDateKey = prevKey;
   refreshTimeline(prevKey);
 }
@@ -101,6 +126,11 @@ function goNextDay() {
   const nextKey = window.common.getDateKey(d);
   const todayKey = window.common.getDateKey(new Date());
   if (nextKey > todayKey) return;
+  if (isLocked(nextKey)) {
+    currentDateKey = nextKey;
+    renderLockedTimeline(nextKey);
+    return;
+  }
   currentDateKey = nextKey;
   refreshTimeline(nextKey);
 }
@@ -109,9 +139,35 @@ function goNextDay() {
 // ===== 編集画面を開く =====
 function openEditFromTimeline() {
     if (!currentDateKey) return;
+    if (isLocked(currentDateKey)) {
+      if (window.messageController?.enqueue) {
+        window.messageController.enqueue({
+          type: "msg",
+          text: LOCKED_MSG,
+          priority: -1
+        });
+      }
+      return;
+    }
     window.editController.openEdit(currentDateKey, {
       returnToMainOnSave
     });
+}
+
+function renderLockedTimeline(dateKey) {
+  updateTimelineHeader(dateKey, {});
+  const summary = document.getElementById("timelineSummary");
+  if (summary) {
+    summary.textContent = "この期間はプレミアム版で閲覧できます";
+  }
+  if (window.timelineView?.setDateKey) {
+    window.timelineView.setDateKey(dateKey);
+  }
+  if (window.timelineView?.renderLocked) {
+    window.timelineView.renderLocked(LOCKED_MSG);
+  } else {
+    window.timelineView.render({});
+  }
 }
 
 // ===== タイムライン画面の非表示 =====

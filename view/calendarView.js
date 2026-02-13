@@ -63,10 +63,12 @@ function renderCurrentMonth(grid, ctx) {
     decorate(cell, day, ctx);
     applyMark(cell, day);
 
-    cell.onclick = ()=> calendarController.onDayClick(
-      day.dateKey,
-      day.hasLog
-    );
+    if (!day.isLocked) {
+      cell.onclick = ()=> calendarController.onDayClick(
+        day.dateKey,
+        day.hasLog
+      );
+    }
     grid.appendChild(cell);
   });
 }
@@ -81,6 +83,7 @@ function decorate(cell, day, ctx) {
   if (day.dateKey===ctx.todayKey) cell.classList.add("today");
   if (day.dateKey<ctx.todayKey) cell.classList.add("past");
   if (!day.hasLog) cell.classList.add("no-log");
+  if (day.isLocked) cell.classList.add("locked");
   // Design System v1.0: 本数は数字のみ（単位なし）+ count-bg を子要素化
   cell.innerHTML = `
     <div class="day-number">${day.day}</div>
@@ -88,6 +91,15 @@ function decorate(cell, day, ctx) {
       <span class="count-number">${day.count != null ? `${day.count}` : ""}</span>
     </div>
   `;
+
+  // ロック日は背景ロジックよりロック状態を優先
+  if (day.isLocked) {
+    const lock = document.createElement("span");
+    lock.className = "lock-mark";
+    lock.textContent = "🔒";
+    cell.appendChild(lock);
+    return;
+  }
 
   const countBgEl = cell.querySelector(".count-bg");
   if (countBgEl && day.count != null) {

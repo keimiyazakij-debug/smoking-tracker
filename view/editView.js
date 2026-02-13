@@ -1,5 +1,6 @@
 (function () {
 // view/editView.js
+const EDIT_LOCK_MESSAGE = "60日より前のデータはプレミアム版で編集できます";
 
 // DOMの書き換え
 document.getElementById("addTimeTagBtn").addEventListener("click", () => {
@@ -14,6 +15,33 @@ document.getElementById("closeEditBtn").addEventListener("click", () => {
     window.editController.closeEdit();
 });
 
+const dateInputEl = document.getElementById("editDateInput");
+if (dateInputEl) {
+  dateInputEl.addEventListener("input", () => {
+    updateDateLockState();
+  });
+  dateInputEl.addEventListener("change", () => {
+    updateDateLockState();
+  });
+}
+
+function isLockedDate(dateKey) {
+  if (!window.common?.isDateLocked) return false;
+  return window.common.isDateLocked(dateKey);
+}
+
+function updateDateLockState() {
+  const dateInput = document.getElementById("editDateInput");
+  const saveBtn = document.getElementById("saveEditBtn");
+  const notice = document.getElementById("editDateLockNotice");
+  if (!dateInput || !saveBtn) return;
+
+  const locked = isLockedDate(dateInput.value);
+  saveBtn.disabled = locked;
+  if (notice) {
+    notice.textContent = locked ? EDIT_LOCK_MESSAGE : "";
+  }
+}
 
 function open(state) {
   document.getElementById("editOverlay").classList.remove("hidden");
@@ -23,12 +51,17 @@ function open(state) {
   dateInput.value = state.dateKey;
   dateInput.disabled = false;
   dateInput.classList.remove("is-disabled");
+  updateDateLockState();
   render(state);
 }
 
 function close() {
   document.getElementById("editOverlay").classList.add("hidden");
   document.getElementById("timeTags").innerHTML = "";
+  const saveBtn = document.getElementById("saveEditBtn");
+  const notice = document.getElementById("editDateLockNotice");
+  if (saveBtn) saveBtn.disabled = false;
+  if (notice) notice.textContent = "";
 }
 
 function isOpen() {

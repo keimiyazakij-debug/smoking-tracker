@@ -11,6 +11,61 @@ function getDateKey(date = new Date()) {
   return new Date(date - tzOffset).toISOString().slice(0,10);
 }
 
+// 無料版ロック設定: 直近60日まで閲覧可能
+const FREE_LIMIT_DAYS = 60;
+const DEBUG_PREMIUM_KEY = "debug_isPremium";
+// デバッグ専用プレミアム状態を一元管理
+let premiumState = false;
+const isDevMode =
+  (typeof location !== "undefined" && location.hostname === "127.0.0.1") ||
+  (typeof location !== "undefined" && location.hostname === "localhost") ||
+  (typeof location !== "undefined" && location.hostname.includes("github.io"));
+
+try {
+  const saved = localStorage.getItem(DEBUG_PREMIUM_KEY);
+  if (saved !== null) {
+    premiumState = saved === "true";
+  }
+} catch {
+  premiumState = false;
+}
+
+function getIsPremium() {
+  return premiumState;
+}
+
+function setIsPremium(value) {
+  premiumState = !!value;
+  try {
+    localStorage.setItem(DEBUG_PREMIUM_KEY, String(premiumState));
+  } catch {
+    // noop
+  }
+  return premiumState;
+}
+
+function differenceInDays(fromDate, toDate) {
+  const from = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+  const to = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
+  return Math.floor((from - to) / (24 * 60 * 60 * 1000));
+}
+
+// 閲覧ロック判定はこの関数に集約する
+function isDateLocked(dateInput) {
+  if (getIsPremium()) return false;
+  if (!dateInput) return false;
+
+  const todayDate = parseDateKey(getDateKey(new Date()));
+  const targetDate =
+    typeof dateInput === "string"
+      ? parseDateKey(dateInput)
+      : new Date(dateInput);
+  if (Number.isNaN(targetDate.getTime())) return false;
+
+  const diffDays = differenceInDays(todayDate, targetDate);
+  return diffDays > FREE_LIMIT_DAYS;
+}
+
 // 今日の喫煙データ
 function loadLogs() {
   try {
@@ -237,6 +292,15 @@ window.common.getDateKey = getDateKey;
 window.common.formatDate = formatDate;
 window.common.formatDurationFromMinutes = formatDurationFromMinutes;
 window.common.parseDateKey = parseDateKey;
+window.common.differenceInDays = differenceInDays;
+window.common.isDateLocked = isDateLocked;
+window.common.FREE_LIMIT_DAYS = FREE_LIMIT_DAYS;
+window.common.isDevMode = isDevMode;
+window.getIsPremium = getIsPremium;
+window.setIsPremium = setIsPremium;
+// 既存互換: 参照先は getIsPremium に集約
+window.isPremium = () => getIsPremium();
+window.isDevMode = isDevMode;
 
 // ログ関連
 window.common.loadLogs = loadLogs;

@@ -21,6 +21,7 @@ window.statsView = {
     const curAvgEl = document.getElementById('stats-current-avg');
     const prevTotalEl = document.getElementById('stats-prev-total');
     const prevAvgEl = document.getElementById('stats-prev-avg');
+    const freeNoticeEl = document.getElementById('statsFreeNotice');
     if (!titleEl || !labelEl || !canvasEl) return;
 
     titleEl.textContent = state.title;
@@ -43,6 +44,9 @@ window.statsView = {
       curAvgEl.textContent = `期間平均: ${avg}本/日`;
       prevTotalEl.textContent = `前期間合計: ${state.summary.prevTotal}本`;
       prevAvgEl.textContent = `前期間平均: ${prevAvg}本/日`;
+    }
+    if (freeNoticeEl) {
+      freeNoticeEl.textContent = state.freeNotice || '';
     }
 
     if (!this.chart) {

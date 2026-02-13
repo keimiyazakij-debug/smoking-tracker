@@ -4,6 +4,11 @@
 // Design System v1.0: 選択日ハイライト用の状態（機能ロジックは変更しない）
 let selectedDateKey = null;
 
+function isLockedDate(dateKey) {
+  if (!window.common?.isDateLocked) return false;
+  return window.common.isDateLocked(dateKey);
+}
+
 function renderCalendar() {
   const state = window.calendarModel.buildCalendarState();
   const grouped = window.common.groupLogsByDate(state.logs);
@@ -72,6 +77,8 @@ function buildCalendarDays(state, calendarData) {
       day: d,
       dateKey,
       count,
+      // 無料版60日ロック判定（共通ロジック）
+      isLocked: isLockedDate(dateKey),
       evalType,
       downStreak,
       prevCount: prev?.count ?? null,
@@ -83,6 +90,7 @@ function buildCalendarDays(state, calendarData) {
 }
 
 function onDayClick(dateKey, hasLog) {
+  if (isLockedDate(dateKey)) return;
   // 選択日の見た目だけ更新（既存遷移は維持）
   selectedDateKey = dateKey;
   renderCalendar();

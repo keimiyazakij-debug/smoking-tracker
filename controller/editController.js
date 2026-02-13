@@ -6,6 +6,25 @@ let currentDateKey;
 let returnToMainOnSave = false;
 
 function openEdit(dateKey, options = {}) {
+  const locked = window.common?.isDateLocked
+    ? window.common.isDateLocked(dateKey)
+    : false;
+  // 無料版60日ロック: 編集入口でブロック
+  if (locked) {
+    if (window.messageController?.enqueue) {
+      window.messageController.enqueue({
+        type: "msg",
+        text: "60日より前のデータはプレミアム版で閲覧できます。",
+        priority: -1
+      });
+    }
+    if (window.timelineController?.openTimeline) {
+      window.timelineController.openTimeline(dateKey);
+    } else if (typeof window.showTab === "function") {
+      window.showTab("timeline");
+    }
+    return;
+  }
   currentDateKey=dateKey;
   returnToMainOnSave = !!options.returnToMainOnSave;
   editModel.open(dateKey);
@@ -48,8 +67,19 @@ function saveEdit() {
   const editedDate = window.editView?.getEditedDate
     ? window.editView.getEditedDate()
     : currentDateKey;
-  window.editModel.save();
   const targetDateKey = editedDate || currentDateKey;
+  const locked = window.common?.isDateLocked
+    ? window.common.isDateLocked(targetDateKey)
+    : false;
+  if (locked) {
+    window.messageController.enqueue({
+      type: "msg",
+      text: "60日より前のデータはプレミアム版で編集できます",
+      priority: -1
+    });
+    return;
+  }
+  window.editModel.save();
 
   // 保存ロジックは維持し、保存後の遷移のみ変更
   window.editModel.close();
