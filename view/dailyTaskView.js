@@ -27,6 +27,10 @@ function create() {
         <h2 id="dcTitle"></h2>
         <button id="dcNext">▶</button>
       </div>
+      <div class="daily-task-recommend">
+        <div class="daily-task-recommend-title">今日の提案</div>
+        <div id="dcRecommended" class="daily-task-recommend-label"></div>
+      </div>
       <div id="dcList" class="challenge-list"></div>
       <div class="overlay-footer">
         <button id="dcClose">閉じる</button>
@@ -44,6 +48,8 @@ function create() {
 
 function render(state) {
   document.getElementById("dcTitle").textContent = state.title;
+  const rec = document.getElementById("dcRecommended");
+  if (rec) rec.textContent = state.recommendedTaskLabel || "";
 
   const list = document.getElementById("dcList");
   list.innerHTML = "";
@@ -51,6 +57,10 @@ function render(state) {
   state.tasks.forEach(t => {
     const div = document.createElement("div");
     div.className = "challenge-item" + (t.done ? " done" : "");
+    if (state.recommendedTaskId && t.id === state.recommendedTaskId) {
+      // 今日の提案タスクを昇格表示
+      div.classList.add("recommended");
+    }
     div.textContent = t.label;
     list.appendChild(div);
   });

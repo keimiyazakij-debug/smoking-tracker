@@ -176,6 +176,25 @@
   </div>
 </div>
 
+<!-- プレミアム説明画面（詳細画面） -->
+<div id="premiumOverlay" class="timeline-overlay hidden premium-overlay">
+  <header class="timeline-header premium-header">
+    <button id="closePremiumBtn" class="text-link">← 戻る</button>
+  </header>
+  <div class="card premium-card">
+    <h2 class="premium-title">プレミアム版</h2>
+    <p class="premium-subcopy">すべての記録を、<br>制限なく振り返る。</p>
+    <ul class="premium-feature-list">
+      <li>✓ 60日より前のデータ閲覧</li>
+      <li>✓ 統計の期間制限なし</li>
+      <li>✓ 広告なし（将来）</li>
+    </ul>
+    <div class="premium-price">買い切り 800円</div>
+    <button id="premiumUpgradeBtn" class="large-btn premium-upgrade-btn">アップグレード</button>
+    <button id="premiumLaterBtn" class="text-link premium-later-btn">あとで検討する</button>
+  </div>
+</div>
+
   <!-- 成果画面 
   <div id="achievements" class="tab">
     <h2>成果</h2>
@@ -200,6 +219,12 @@
 <div id="settings" class="tab">
   <!-- Design System v1.0: ページタイトル -->
   <h2 class="settings-page-title">設定</h2>
+
+  <!-- プレミアム導線カード -->
+  <section id="settingsPremiumCard" class="settings-card settings-premium-card">
+    <h3 class="settings-section-title">プレミアム版</h3>
+    <p class="settings-item-help">期間制限なし・広告なし</p>
+  </section>
 
   <!-- セクション1: 目標設定 -->
   <section class="settings-card">
@@ -315,6 +340,7 @@
 <script src="./controller/badgeController.js"></script>
 <script src="./controller/settingController.js"></script>
 <script src="./controller/statsController.js"></script>
+<script src="./controller/premiumController.js"></script>
 <script src="./controller/appController.js"></script>
 
 <!-- ===== View ===== -->
@@ -327,6 +353,7 @@
 <script src="./view/settingView.js"></script>
 <script src="./view/messageView.js"></script>
 <script src="./view/statsView.js"></script>
+<script src="./view/premiumView.js"></script>
 
 <!-- ===== chart.js ===== -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

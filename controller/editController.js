@@ -13,7 +13,8 @@ function openEdit(dateKey, options = {}) {
   if (locked) {
     if (window.messageController?.enqueue) {
       window.messageController.enqueue({
-        type: "msg",
+        // プレミアム導線: ロックトーストに「詳細を見る」を表示
+        type: "premium_lock",
         text: "60日より前のデータはプレミアム版で閲覧できます。",
         priority: -1
       });
@@ -73,7 +74,7 @@ function saveEdit() {
     : false;
   if (locked) {
     window.messageController.enqueue({
-      type: "msg",
+      type: "premium_lock",
       text: "60日より前のデータはプレミアム版で編集できます",
       priority: -1
     });

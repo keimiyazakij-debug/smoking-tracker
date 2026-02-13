@@ -63,12 +63,10 @@ function renderCurrentMonth(grid, ctx) {
     decorate(cell, day, ctx);
     applyMark(cell, day);
 
-    if (!day.isLocked) {
-      cell.onclick = ()=> calendarController.onDayClick(
-        day.dateKey,
-        day.hasLog
-      );
-    }
+    cell.onclick = ()=> calendarController.onDayClick(
+      day.dateKey,
+      day.hasLog
+    );
     grid.appendChild(cell);
   });
 }

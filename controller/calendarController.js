@@ -90,15 +90,22 @@ function buildCalendarDays(state, calendarData) {
 }
 
 function onDayClick(dateKey, hasLog) {
-  if (isLockedDate(dateKey)) return;
+  if (isLockedDate(dateKey)) {
+    if (window.messageController?.enqueue) {
+      window.messageController.enqueue({
+        // プレミアム導線: ロックトーストから詳細画面へ遷移可能にする
+        type: "premium_lock",
+        text: "60日より前のデータはプレミアム版で閲覧できます。",
+        priority: -1
+      });
+    }
+    return;
+  }
   // 選択日の見た目だけ更新（既存遷移は維持）
   selectedDateKey = dateKey;
   renderCalendar();
-  if (hasLog) {
-    window.timelineController.openTimeline (dateKey);
-  } else {
-    window.editController.openEdit(dateKey);
-  }
+  // UX改善: ログ有無に関係なく、カレンダーからは常にタイムラインを開く
+  window.timelineController.openTimeline(dateKey);
 }
 
 window.calendarController = {

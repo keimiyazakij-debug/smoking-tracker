@@ -362,6 +362,7 @@ h3 {
 .app-toast.is-visible {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
 }
 
 .daily-challenge-link {
@@ -620,7 +621,6 @@ nav button {
 .calendar-day.past { opacity: 1;}
 .calendar-day.no-log { opacity: 1;}
 .calendar-day.locked {
-  pointer-events: none;
   opacity: 0.5;
 }
 .calendar-day.locked .count-bg {
@@ -1212,6 +1212,30 @@ nav button {
   font-weight: bold;
 }
 
+/* デイリータスク再設計: 今日の提案表示 */
+.daily-task-recommend {
+  padding: 12px;
+  border-bottom: 1px solid #e5e5e5;
+  background: var(--card-bg);
+}
+
+.daily-task-recommend-title {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.daily-task-recommend-label {
+  font-size: var(--text-body);
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.daily-challenge .challenge-item.recommended {
+  background: var(--card-bg);
+  font-weight: 700;
+}
+
 /* ===== 今日のチャレンジ：オーバーレイ ===== */
 .overlay.daily-challenge {
   position: fixed;
@@ -1425,6 +1449,17 @@ nav button.is-active {
   font-weight: 700;
 }
 
+.app-toast .toast-action {
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font-size: var(--text-caption);
+  font-weight: 700;
+  margin-left: 8px;
+  cursor: pointer;
+  padding: 0;
+}
+
 /* settings / stats layout spacing */
 #badgeTab h2,
 #history h2 {
@@ -1600,6 +1635,14 @@ nav button.is-active {
   color: var(--text-secondary);
 }
 
+.settings-premium-card {
+  cursor: pointer;
+}
+
+.settings-premium-card:active {
+  transform: scale(0.99);
+}
+
 /* 開発モード専用デバッグカード */
 .settings-debug-card {
   margin-top: var(--space-section);
@@ -1651,6 +1694,63 @@ nav button.is-active {
 
 .settings-debug-toggle-wrap input[type="checkbox"]:checked + .settings-debug-toggle-ui::after {
   transform: translateX(20px);
+}
+
+/* プレミアム説明画面 */
+.premium-overlay {
+  background: var(--background);
+}
+
+.premium-header {
+  margin-bottom: var(--space-section);
+}
+
+.premium-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  padding: var(--space-card);
+}
+
+.premium-title {
+  margin: 0 0 var(--space-section);
+  font-size: var(--text-h1);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.premium-subcopy {
+  margin: 0 0 var(--space-section);
+  font-size: var(--text-body);
+  color: var(--text-secondary);
+}
+
+.premium-feature-list {
+  list-style: none;
+  margin: 0 0 32px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: var(--text-body);
+  color: var(--text-primary);
+}
+
+.premium-price {
+  margin: 0 0 var(--space-section);
+  font-size: var(--text-h1);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.premium-upgrade-btn {
+  width: 100%;
+}
+
+.premium-later-btn {
+  margin-top: 16px;
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  width: 100%;
 }
 
 #stats {

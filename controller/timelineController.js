@@ -111,8 +111,14 @@ function goPrevDay() {
   d.setDate(d.getDate() - 1);
   const prevKey = window.common.getDateKey(d);
   if (isLocked(prevKey)) {
-    currentDateKey = prevKey;
-    renderLockedTimeline(prevKey);
+    // 無料版60日ロック: ロック日へは遷移せず、導線付きトーストのみ表示
+    if (window.messageController?.enqueue) {
+      window.messageController.enqueue({
+        type: "premium_lock",
+        text: LOCKED_MSG,
+        priority: -1
+      });
+    }
     return;
   }
   currentDateKey = prevKey;
@@ -127,8 +133,14 @@ function goNextDay() {
   const todayKey = window.common.getDateKey(new Date());
   if (nextKey > todayKey) return;
   if (isLocked(nextKey)) {
-    currentDateKey = nextKey;
-    renderLockedTimeline(nextKey);
+    // 無料版60日ロック: ロック日へは遷移せず、導線付きトーストのみ表示
+    if (window.messageController?.enqueue) {
+      window.messageController.enqueue({
+        type: "premium_lock",
+        text: LOCKED_MSG,
+        priority: -1
+      });
+    }
     return;
   }
   currentDateKey = nextKey;
@@ -142,7 +154,7 @@ function openEditFromTimeline() {
     if (isLocked(currentDateKey)) {
       if (window.messageController?.enqueue) {
         window.messageController.enqueue({
-          type: "msg",
+          type: "premium_lock",
           text: LOCKED_MSG,
           priority: -1
         });

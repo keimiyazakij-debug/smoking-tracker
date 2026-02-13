@@ -31,6 +31,8 @@ try {
 }
 
 function getIsPremium() {
+  // デバッグ切替は開発モードでのみ有効
+  if (!isDevMode) return false;
   return premiumState;
 }
 

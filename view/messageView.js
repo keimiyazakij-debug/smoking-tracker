@@ -32,6 +32,7 @@ function showToast(text, durationMs = TOAST_DURATION_MS) {
   if (!text) return;
   const toast = getToastEl();
   toast.innerHTML = renderToastText(text);
+  toast.onclick = null;
   toast.classList.add("is-visible");
   if (toastTimer) window.clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => {
@@ -39,8 +40,36 @@ function showToast(text, durationMs = TOAST_DURATION_MS) {
   }, durationMs);
 }
 
-function addMessage(text) {
-  showToast(text, TOAST_DURATION_MS);
+function addMessage(payload) {
+  if (!payload) return;
+  if (typeof payload === "string") {
+    showToast(payload, TOAST_DURATION_MS);
+    return;
+  }
+
+  const text = payload.text;
+  if (!text) return;
+  const toast = getToastEl();
+  const actionLabel = payload.actionLabel ? escapeHtml(payload.actionLabel) : "";
+  const body = renderToastText(text);
+  toast.innerHTML = actionLabel
+    ? `${body} <button type="button" class="toast-action">${actionLabel}</button>`
+    : body;
+  toast.classList.add("is-visible");
+
+  const actionBtn = toast.querySelector(".toast-action");
+  if (actionBtn && typeof payload.onAction === "function") {
+    actionBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      payload.onAction();
+      toast.classList.remove("is-visible");
+    }, { once: true });
+  }
+
+  if (toastTimer) window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => {
+    toast.classList.remove("is-visible");
+  }, TOAST_DURATION_MS);
 }
 
 function clearAll() {
