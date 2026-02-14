@@ -28,7 +28,7 @@ function openEdit(dateKey, options = {}) {
   }
   currentDateKey=dateKey;
   returnToMainOnSave = !!options.returnToMainOnSave;
-  editModel.open(dateKey);
+  editModel.open(dateKey, options);
   editView.open(buildEditViewState());
 }
 
@@ -46,9 +46,12 @@ function closeEdit() {
 }
 
 function addTimeTag() {
+  const state = window.editModel?.getState ? window.editModel.getState() : null;
   const now = new Date();
-  const hh = now.getHours().toString().padStart(2,"0");
-  const mm = now.getMinutes().toString().padStart(2,"0");
+  const hasScopedHour = Number.isInteger(state?.scopeHour);
+  const baseHour = hasScopedHour ? state.scopeHour : now.getHours();
+  const hh = String(baseHour).padStart(2,"0");
+  const mm = hasScopedHour ? "00" : now.getMinutes().toString().padStart(2,"0");
 
   window.editModel.addTime(`${hh}:${mm}`);
   window.editView.render(buildEditViewState());
@@ -69,6 +72,37 @@ function saveEdit() {
     ? window.editView.getEditedDate()
     : currentDateKey;
   const targetDateKey = editedDate || currentDateKey;
+  const todayKey = window.common.getDateKey(new Date());
+  if (targetDateKey > todayKey) {
+    window.messageController.enqueue({
+      type: "msg",
+      text: "未来の日付は保存できません",
+      priority: -1
+    });
+    return;
+  }
+
+  const state = window.editModel?.getState ? window.editModel.getState() : null;
+  if (state && Array.isArray(state.times) && targetDateKey === todayKey) {
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const hasFutureTime = state.times.some((time) => {
+      const [hhRaw, mmRaw] = String(time || "").split(":");
+      const hh = Number.parseInt(hhRaw, 10);
+      const mm = Number.parseInt(mmRaw, 10);
+      if (!Number.isInteger(hh) || !Number.isInteger(mm)) return false;
+      return (hh * 60 + mm) > nowMinutes;
+    });
+    if (hasFutureTime) {
+      window.messageController.enqueue({
+        type: "msg",
+        text: "未来の時刻は保存できません",
+        priority: -1
+      });
+      return;
+    }
+  }
+
   const locked = window.common?.isDateLocked
     ? window.common.isDateLocked(targetDateKey)
     : false;
@@ -79,6 +113,9 @@ function saveEdit() {
       priority: -1
     });
     return;
+  }
+  if (window.editModel?.setDateKey) {
+    window.editModel.setDateKey(targetDateKey);
   }
   window.editModel.save();
 
@@ -111,9 +148,10 @@ function isOpenEdit() {
 
 function buildEditViewState() {
   const state = window.editModel.getState();
+  const hourLabel = Number.isInteger(state.scopeHour) ? `（${state.scopeHour}時台）` : "";
   return {
     dateKey: state.dateKey,
-    title: "記録を編集",
+    title: `記録を編集${hourLabel}`,
     times: [...state.times]
   };
 }

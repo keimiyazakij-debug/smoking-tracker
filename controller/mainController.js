@@ -7,10 +7,6 @@ function initMain() {
   const undoBtn = document.getElementById("undoSmokeBtn");
   if (undoBtn) undoBtn.onclick = undoLastSmoke;
 
-  document.getElementById("dailyChallengeLink").onclick = () => {
-    dailyTaskController.openToday();
-  };
-
   const todayTimelineLink = document.getElementById("todayTimelineLink");
   if (todayTimelineLink) {
     todayTimelineLink.onclick = () => {
@@ -18,6 +14,31 @@ function initMain() {
       window.timelineController.openTimeline(todayKey, {
         returnToMainOnSave: true
       });
+    };
+  }
+
+  const gameChallengeLink = document.getElementById("gameChallengeLink");
+  if (gameChallengeLink) {
+    gameChallengeLink.onclick = () => {
+      window.dailyTaskController.openToday();
+    };
+  }
+
+  const gameBadgeLink = document.getElementById("gameBadgeLink");
+  if (gameBadgeLink) {
+    gameBadgeLink.onclick = () => {
+      if (typeof window.showTab === "function") {
+        window.showTab("gameBadges");
+      }
+    };
+  }
+
+  const badgeBackBtn = document.getElementById("badgeBackBtn");
+  if (badgeBackBtn) {
+    badgeBackBtn.onclick = () => {
+      if (typeof window.showTab === "function") {
+        window.showTab("game");
+      }
     };
   }
 }

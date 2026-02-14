@@ -1,25 +1,45 @@
 // model/editModel.js
 
 const editState = {
+  sourceDateKey: null,
   dateKey: null,
-  times: []
+  times: [],
+  scopeHour: null,
+  untouchedTimes: []
 };
 
-function open(dateKey) {
+function open(dateKey, options = {}) {
+  const hour = Number.isInteger(options.hour) && options.hour >= 0 && options.hour <= 23
+    ? options.hour
+    : null;
+  editState.sourceDateKey = dateKey;
   editState.dateKey = dateKey;
+  editState.scopeHour = hour;
+  editState.untouchedTimes = [];
 
   const logs = window.common.loadLogs();
   const times = logs[dateKey] || [];
 
-  editState.times = times.map(t => {
+  const scopedTimes = [];
+  times.forEach((t) => {
     const d = new Date(t);
-    return `${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")}`;
+    if (Number.isNaN(d.getTime())) return;
+    const formatted = `${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")}`;
+    if (hour === null || d.getHours() === hour) {
+      scopedTimes.push(formatted);
+      return;
+    }
+    editState.untouchedTimes.push(t);
   });
+  editState.times = scopedTimes;
 }
 
 function close() {
+  editState.sourceDateKey = null;
   editState.dateKey = null;
   editState.times = [];
+  editState.scopeHour = null;
+  editState.untouchedTimes = [];
 }
 
 function addTime(time) {
@@ -34,23 +54,43 @@ function removeTime(index) {
   editState.times.splice(index, 1);
 }
 
+function setDateKey(dateKey) {
+  editState.dateKey = dateKey;
+}
+
 function save() {
   const logs = window.common.loadLogs();
-  const date = editState.dateKey;
+  const targetDate = editState.dateKey;
+  const sourceDate = editState.sourceDateKey || targetDate;
 
   const newTimes = editState.times
     .filter(Boolean)
     .sort()
-    .map(t => new Date(`${date}T${t}:00`).toISOString());
+    .map(t => new Date(`${targetDate}T${t}:00`).toISOString());
 
-  logs[date] = newTimes;
+  if (editState.scopeHour === null) {
+    logs[targetDate] = newTimes;
+    window.common.saveLogs(logs);
+    return;
+  }
+
+  if (targetDate === sourceDate) {
+    logs[targetDate] = [...editState.untouchedTimes, ...newTimes].sort();
+    window.common.saveLogs(logs);
+    return;
+  }
+
+  logs[sourceDate] = [...editState.untouchedTimes].sort();
+  const targetExisting = logs[targetDate] || [];
+  logs[targetDate] = [...targetExisting, ...newTimes].sort();
   window.common.saveLogs(logs);
 }
 
 function getState() {
   return {
     dateKey: editState.dateKey,
-    times: [...editState.times]
+    times: [...editState.times],
+    scopeHour: editState.scopeHour
   };
 }
 
@@ -60,6 +100,7 @@ window.editModel = {
   addTime,
   updateTime,
   removeTime,
+  setDateKey,
   save,
   getState
 };

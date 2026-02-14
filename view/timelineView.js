@@ -1,11 +1,6 @@
 (function () {
 let currentTimelineDateKey = null;
 
-// DOMの書き換え
-document.getElementById("openEditBtn").addEventListener("click", () => {
-  window.timelineController.openEditFromTimeline();
-});
-
 // 日付の前後移動
 document.getElementById("prevTimelineDay").addEventListener("click", () => {
   window.timelineController.goPrevDay();
@@ -15,21 +10,11 @@ document.getElementById("nextTimelineDay").addEventListener("click", () => {
   window.timelineController.goNextDay();
 });
 
-// モーダルの閉じる処理
-document.getElementById("closeTimelineDetailBtn").addEventListener("click", () => {
-  closeDetailModal();
-});
-
-document.getElementById("timelineDetailModal").addEventListener("click", (e) => {
-  if (e.target.id === "timelineDetailModal") {
-    closeDetailModal();
-  }
-});
-
   // ===== タイムライン画面の描画 =====
 function renderTimelineForDate(map) {
   const container = document.getElementById("timelineList");
   if (!container) return;
+  container.classList.remove("is-locked");
   container.innerHTML = "";
 
   // 0〜23時を必ず描画（4列×6行）
@@ -43,7 +28,7 @@ function renderTimelineForDate(map) {
     btn.addEventListener("click", () => {
       // Design System v1.0: セルタップ時に選択サマリーを更新
       setSelectedSummary(currentTimelineDateKey, count);
-      openDetailModal(h, map[h] || []);
+      window.timelineController?.openEditForHour?.(h);
     });
 
     const hour = document.createElement("div");
@@ -70,6 +55,7 @@ function renderTimelineForDate(map) {
 function renderLocked(message) {
   const container = document.getElementById("timelineList");
   if (!container) return;
+  container.classList.add("is-locked");
   container.innerHTML = "";
 
   const notice = document.createElement("div");
@@ -85,33 +71,6 @@ function getHeatClass(count) {
   if (count === 2) return "count-2";
   if (count === 1) return "count-1";
   return "";
-}
-
-function openDetailModal(hour, times) {
-  const modal = document.getElementById("timelineDetailModal");
-  const title = document.getElementById("timelineDetailTitle");
-  const list = document.getElementById("timelineDetailList");
-  title.textContent = `${hour}時の記録`;
-  list.innerHTML = "";
-
-  if (!times || times.length === 0) {
-    const p = document.createElement("div");
-    p.textContent = "記録はありません";
-    list.appendChild(p);
-  } else {
-    times.forEach(t => {
-      const row = document.createElement("div");
-      row.textContent = t;
-      list.appendChild(row);
-    });
-  }
-
-  modal.classList.remove("hidden");
-}
-
-function closeDetailModal() {
-  const modal = document.getElementById("timelineDetailModal");
-  modal.classList.add("hidden");
 }
 
 function setDateKey(dateKey) {

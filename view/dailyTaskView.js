@@ -1,57 +1,46 @@
 (function () {
 // view/dailyTaskView.js
 
-let overlay = null;
+let isBound = false;
 
 function open(state) {
-  if (!overlay) overlay = create();
+  ensureBind();
   render(state);
-  overlay.classList.remove("hidden");
+  if (typeof window.showTab === "function") {
+    window.showTab("gameChallenge");
+  }
 }
 
 function close() {
-  if (overlay) overlay.classList.add("hidden");
+  if (typeof window.showTab === "function") {
+    window.showTab("game");
+  }
 }
 
 function isOpen() {
-  return !!overlay && !overlay.classList.contains("hidden");
+  const tab = document.getElementById("gameChallenge");
+  return !!(tab && tab.classList.contains("active"));
 }
 
-function create() {
-  const o = document.createElement("div");
-  o.className = "overlay daily-challenge hidden";
-  o.innerHTML = `
-    <div class="overlay-content">
-      <div class="overlay-header">
-        <button id="dcPrev">◀</button>
-        <h2 id="dcTitle"></h2>
-        <button id="dcNext">▶</button>
-      </div>
-      <div class="daily-task-recommend">
-        <div class="daily-task-recommend-title">今日の提案</div>
-        <div id="dcRecommended" class="daily-task-recommend-label"></div>
-      </div>
-      <div id="dcList" class="challenge-list"></div>
-      <div class="overlay-footer">
-        <button id="dcClose">閉じる</button>
-      </div>
-    </div>
-  `;
-
-  o.querySelector("#dcClose").onclick = close;
-  o.querySelector("#dcPrev").onclick = () => dailyTaskController.move(-1);
-  o.querySelector("#dcNext").onclick = () => dailyTaskController.move(1);
-
-  document.body.appendChild(o);
-  return o;
+function ensureBind() {
+  if (isBound) return;
+  const backBtn = document.getElementById("dcBack");
+  const prevBtn = document.getElementById("dcPrev");
+  const nextBtn = document.getElementById("dcNext");
+  if (!backBtn || !prevBtn || !nextBtn) return;
+  backBtn.onclick = close;
+  prevBtn.onclick = () => dailyTaskController.move(-1);
+  nextBtn.onclick = () => dailyTaskController.move(1);
+  isBound = true;
 }
 
 function render(state) {
-  document.getElementById("dcTitle").textContent = state.title;
+  const titleEl = document.getElementById("dcTitle");
   const rec = document.getElementById("dcRecommended");
-  if (rec) rec.textContent = state.recommendedTaskLabel || "";
-
   const list = document.getElementById("dcList");
+  if (!titleEl || !rec || !list) return;
+  titleEl.textContent = state.title;
+  if (rec) rec.textContent = state.recommendedTaskLabel || "";
   list.innerHTML = "";
 
   state.tasks.forEach(t => {
@@ -67,7 +56,7 @@ function render(state) {
 
   // ▼ 追加：未来日なら Next を隠す
   const nextBtn = document.getElementById("dcNext");
-  nextBtn.style.visibility = state.canNext ? "visible" : "hidden";
+  if (nextBtn) nextBtn.style.visibility = state.canNext ? "visible" : "hidden";
 }
 
 window.dailyTaskView = { open, close, isOpen };

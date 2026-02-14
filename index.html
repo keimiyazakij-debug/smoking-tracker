@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>SmokingTracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./help.css">
   <link rel="manifest" href="manifest.json">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#4CAF50">
@@ -18,10 +22,10 @@
                location.hostname === "::1")
     ? "dev"
     : "prod";
+  const sw = ENV === "prod"
+    ? "./service-worker.prod.js"
+    : "./service-worker.dev.js";
   if ("serviceWorker" in navigator) {
-    const sw = ENV === "prod"
-      ? "./service-worker.prod.js"
-      : "./service-worker.dev.js";
 
     navigator.serviceWorker.register(sw)
       .then(() => console.log("SW registered:", sw))
@@ -30,12 +34,16 @@
   const BUILD = "2026-02-13-0.0.3";
   console.log("BUILD:", BUILD);
   window.APP_BUILD = BUILD;
+  window.APP_SW_FILE = sw;
   </script>
 </head>
 <body>
   <header>
     <div class="title-bar">
-      <h1>SmokingTracker <span id="appVersion" class="title-version"></span></h1>
+      <div class="title-bar-inner">
+        <h1>SmokingTracker</h1>
+        <button id="openHelpBtn" class="help-trigger" aria-label="操作ガイドを開く">？</button>
+      </div>
     </div>
   </header>
 
@@ -84,15 +92,10 @@
         </div>
       </section>
 
-      <section class="history-section">
-        <div class="history-actions">
-          <button id="todayTimelineLink" class="text-link">
-            今日の履歴
-          </button>
-          <button id="dailyChallengeLink" class="text-link">
-            今日のチャレンジ
-          </button>
-        </div>
+      <section class="history-cta">
+        <button id="todayTimelineLink" class="sub-large-btn">
+          今日の履歴
+        </button>
       </section>
     </div>
   </div>
@@ -117,7 +120,6 @@
       <button id="prevTimelineDay" class="timeline-nav">◀</button>
       <div id="timelineTitle" class="timeline-title-main"></div>
       <button id="nextTimelineDay" class="timeline-nav">▶</button>
-      <button class="edit-btn" id="openEditBtn">編集</button>
     </div>
     <div id="timelineSummary" class="timeline-title-sub"></div>
   </header>
@@ -125,8 +127,6 @@
   <div class="card timeline-card">
     <!-- Design System v1.0: ページタイトル -->
     <h2 class="timeline-page-title">時間帯別本数</h2>
-    <!-- ヒートグリッド表示 -->
-    <div id="timelineList" class="timeline-grid"></div>
     <!-- Design System v1.0: 凡例 -->
     <div class="timeline-legend" aria-hidden="true">
       <span class="legend-label">少</span>
@@ -136,17 +136,62 @@
       <span class="legend-chip legend-3"></span>
       <span class="legend-label">多</span>
     </div>
+    <!-- ヒートグリッド表示 -->
+    <div id="timelineList" class="timeline-grid"></div>
   </div>
 </div>
 
-<!-- タイムライン詳細モーダル -->
-<div id="timelineDetailModal" class="modal-overlay hidden">
-  <div class="modal-card">
-    <div class="modal-header">
-      <div id="timelineDetailTitle" class="modal-title"></div>
-      <button id="closeTimelineDetailBtn" class="modal-close">閉じる</button>
+<!-- ヘルプモーダル -->
+<div id="helpModal" class="help-modal hidden" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="help-modal-card">
+    <div class="help-modal-header">
+      <h2 id="helpTitle" class="help-modal-title">操作ガイド</h2>
+      <button id="closeHelpBtn" class="help-close-btn" type="button" aria-label="閉じる">×</button>
     </div>
-    <div id="timelineDetailList" class="modal-body"></div>
+    <div class="help-modal-body">
+      <section class="help-section">
+        <h3>このアプリについて</h3>
+        <p>このアプリは喫煙の「間隔」を可視化するアプリです。</p>
+        <p>本数管理ではなく、間隔改善を目的にしています。</p>
+        <p>我慢ではなく「距離を伸ばす」思考で継続を支援します。</p>
+      </section>
+
+      <section class="help-section">
+        <h3>記録のしかた</h3>
+        <p><strong>吸ったボタン</strong><br>タップで現在時刻を記録します。直前の記録からの間隔が自動計算されます。</p>
+        <p><strong>UNDO</strong><br>直前の記録を取り消します。</p>
+        <p><strong>今日の履歴</strong><br>その日の喫煙記録一覧を表示します。タップで編集画面へ移動します。</p>
+      </section>
+
+      <section class="help-section">
+        <h3>タイムライン</h3>
+        <p>1日の喫煙記録を時系列で表示します。</p>
+        <p>過去日も確認でき、日付指定で移動できます。</p>
+      </section>
+
+      <section class="help-section">
+        <h3>統計</h3>
+        <p>週表示 / 月表示に対応しています。</p>
+        <p>平均間隔、最大間隔、記録回数を確認できます。</p>
+      </section>
+
+      <section class="help-section">
+        <h3>バッジ</h3>
+        <p>一定の間隔達成で獲得できます。</p>
+        <p>継続記録で増えていきます。</p>
+      </section>
+
+      <section class="help-section">
+        <h3>よくある質問</h3>
+        <p><strong>Q. 記録を修正できますか？</strong><br>A. 履歴一覧から編集できます。</p>
+        <p><strong>Q. データはどこに保存されますか？</strong><br>A. 端末内（ローカルストレージ）に保存されます。</p>
+      </section>
+
+      <footer class="help-footer">
+        <div id="helpVersionSlot" class="help-footer-item"></div>
+        <div id="helpContactSlot" class="help-footer-item"></div>
+      </footer>
+    </div>
   </div>
 </div>
 
@@ -203,10 +248,48 @@
   </div>
   -->
 
-  <!-- バッジ画面 -->
-  <div id="badgeTab" class="tab">
-    <h2>バッジ一覧</h2>
-    <div id="allBadges"></div>
+  <!-- ゲーミフィケーション画面 -->
+  <div id="game" class="tab">
+    <h2 class="settings-page-title">ゲーミフィケーション</h2>
+    <section class="settings-card game-hub-card">
+      <button id="gameChallengeLink" class="text-link game-hub-link">今日のチャレンジ</button>
+      <p class="settings-item-help">今日の課題を確認して達成状況をチェック</p>
+    </section>
+    <section class="settings-card game-hub-card">
+      <button id="gameBadgeLink" class="text-link game-hub-link">バッジ一覧</button>
+      <p class="settings-item-help">達成したバッジと未達成バッジを一覧表示</p>
+    </section>
+  </div>
+
+  <!-- ゲーミフィケーション: 今日のチャレンジ -->
+  <div id="gameChallenge" class="tab">
+    <header class="timeline-header">
+      <button id="dcBack" type="button">← 戻る</button>
+      <span>今日のチャレンジ</span>
+    </header>
+    <div class="card game-subpage-card">
+      <div class="overlay-header daily-challenge-header">
+        <button id="dcPrev">◀</button>
+        <h2 id="dcTitle"></h2>
+        <button id="dcNext">▶</button>
+      </div>
+      <div class="daily-task-recommend">
+        <div class="daily-task-recommend-title">今日の提案</div>
+        <div id="dcRecommended" class="daily-task-recommend-label"></div>
+      </div>
+      <div id="dcList" class="challenge-list"></div>
+    </div>
+  </div>
+
+  <!-- ゲーミフィケーション: バッジ一覧 -->
+  <div id="gameBadges" class="tab">
+    <header class="timeline-header">
+      <button id="badgeBackBtn" type="button">← 戻る</button>
+      <span>バッジ一覧</span>
+    </header>
+    <div class="card game-subpage-card">
+      <div id="allBadges"></div>
+    </div>
   </div>
 
   <!-- 履歴画面 -->
@@ -285,8 +368,8 @@
 <div class="stats-section stats-row">
   <span class="stats-label">集計内容:</span>
   <div class="stats-graph-buttons">
-    <button id="graph-daily">日別本数</button>
-    <button id="graph-hourly">時間帯別平均本数</button>
+    <button id="graph-daily">合計本数</button>
+    <button id="graph-hourly">平均本数</button>
   </div>
 </div>
   <!-- Design System v1.0: 合計値の主表示 -->
@@ -312,7 +395,7 @@
   <button data-tab="calendar" aria-selected="false" onclick="showTab('calendar')">📅</button>
   <button data-tab="timeline" aria-selected="false" onclick="showTab('timeline')">🕒</button>
   <!--<button onclick="showTab('achievements')">★</button>-->
-  <button data-tab="badgeTab" aria-selected="false" onclick="showTab('badgeTab')">🏅</button>
+  <button data-tab="game" aria-selected="false" onclick="showTab('game')">🎮</button>
   <button data-tab="stats" aria-selected="false" onclick="showTab('stats')">📊</button>
   <button data-tab="settings" aria-selected="false" onclick="showTab('settings')">⚙</button>
 </nav>
@@ -354,17 +437,11 @@
 <script src="./view/messageView.js"></script>
 <script src="./view/statsView.js"></script>
 <script src="./view/premiumView.js"></script>
+<script src="./helpModal.js"></script>
 
 <!-- ===== chart.js ===== -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 
-<!-- ===== 初期化 ===== -->
-<script>
-  const versionEl = document.getElementById("appVersion");
-  if (versionEl && window.APP_BUILD) {
-    versionEl.textContent = `v${window.APP_BUILD}`;
-  }
-</script>
 </body>
 </html>

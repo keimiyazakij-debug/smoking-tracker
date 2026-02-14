@@ -4,6 +4,7 @@ const holidays = {};
 let settingsInputs = [];
 const DEBUG_SECTION_ID = "settingsDebugSection";
 const DEBUG_TOGGLE_ID = "debugPremiumToggle";
+const DEBUG_CACHE_ID = "debugCacheName";
 const DEV_MODE_FALLBACK =
   (typeof location !== "undefined" && typeof location.hostname === "string" && location.hostname === "localhost") ||
   (typeof location !== "undefined" && typeof location.hostname === "string" && location.hostname.includes("github.io"));
@@ -103,6 +104,7 @@ function renderDebugSection() {
     if (existingToggle) {
       existingToggle.checked = window.getIsPremium();
     }
+    renderSwCacheName();
     return;
   }
 
@@ -118,6 +120,7 @@ function renderDebugSection() {
         <span class="settings-debug-toggle-ui"></span>
       </span>
     </label>
+    <p id="${DEBUG_CACHE_ID}" class="settings-item-help settings-debug-cache">SW CACHE: 読み込み中...</p>
   `;
   settingsRoot.appendChild(section);
 
@@ -131,6 +134,28 @@ function renderDebugSection() {
       window.onLogChanged();
     }
   });
+
+  renderSwCacheName();
+}
+
+async function renderSwCacheName() {
+  const cacheText = document.getElementById(DEBUG_CACHE_ID);
+  if (!cacheText) return;
+  const cacheName = await getSwCacheName();
+  cacheText.textContent = `SW CACHE: ${cacheName}`;
+}
+
+async function getSwCacheName() {
+  const swPath = typeof window.APP_SW_FILE === "string" ? window.APP_SW_FILE : "./service-worker.prod.js";
+  try {
+    const response = await fetch(swPath, { cache: "no-store" });
+    if (!response.ok) return "取得失敗";
+    const source = await response.text();
+    const match = source.match(/const\s+CACHE_NAME\s*=\s*["']([^"']+)["']/);
+    return match ? match[1] : "未定義";
+  } catch (_) {
+    return "取得失敗";
+  }
 }
 
 // ===== 設定画面でのデータ消去処理 =====

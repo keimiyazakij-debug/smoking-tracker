@@ -149,7 +149,7 @@ function goNextDay() {
 
 
 // ===== 編集画面を開く =====
-function openEditFromTimeline() {
+function openEditFromTimeline(hour = null) {
     if (!currentDateKey) return;
     if (isLocked(currentDateKey)) {
       if (window.messageController?.enqueue) {
@@ -161,9 +161,17 @@ function openEditFromTimeline() {
       }
       return;
     }
-    window.editController.openEdit(currentDateKey, {
+    const options = {
       returnToMainOnSave
-    });
+    };
+    if (Number.isInteger(hour) && hour >= 0 && hour <= 23) {
+      options.hour = hour;
+    }
+    window.editController.openEdit(currentDateKey, options);
+}
+
+function openEditForHour(hour) {
+  openEditFromTimeline(hour);
 }
 
 function renderLockedTimeline(dateKey) {
@@ -201,6 +209,7 @@ window.timelineController = {
   openTimeline,
   closeTimeline,
   openEditFromTimeline,
+  openEditForHour,
   refreshTimeline,
   refreshCurrent,
   ensureRendered,

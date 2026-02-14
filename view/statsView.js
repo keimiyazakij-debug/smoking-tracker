@@ -40,10 +40,13 @@ window.statsView = {
     if (state.summary && curTotalEl && curAvgEl && prevTotalEl && prevAvgEl) {
       const avg = state.summary.avg.toFixed(1);
       const prevAvg = state.summary.prevAvg.toFixed(1);
-      curTotalEl.textContent = `期間合計: ${state.summary.total}本`;
-      curAvgEl.textContent = `期間平均: ${avg}本/日`;
-      prevTotalEl.textContent = `前期間合計: ${state.summary.prevTotal}本`;
-      prevAvgEl.textContent = `前期間平均: ${prevAvg}本/日`;
+      const isMonth = state.rangeType === 'month';
+      const currentLabel = isMonth ? '月間' : '週間';
+      const prevLabel = isMonth ? '前月' : '前週';
+      curTotalEl.textContent = `${currentLabel}合計: ${state.summary.total}本`;
+      curAvgEl.textContent = `${currentLabel}平均: ${avg}本/日`;
+      prevTotalEl.textContent = `${prevLabel}合計: ${state.summary.prevTotal}本`;
+      prevAvgEl.textContent = `${prevLabel}平均: ${prevAvg}本/日`;
     }
     if (freeNoticeEl) {
       freeNoticeEl.textContent = state.freeNotice || '';
@@ -60,6 +63,7 @@ window.statsView = {
       const primary = rootStyle.getPropertyValue('--primary').trim() || '#0066FF';
       const secondary = rootStyle.getPropertyValue('--text-secondary').trim() || '#6E6E6E';
       const grid = rootStyle.getPropertyValue('--card-bg').trim() || '#F8F8F8';
+      const microTextSize = parseInt(rootStyle.getPropertyValue('--text-micro'), 10) || 14;
       this.chart = new window.Chart(ctx, {
         type: 'bar',
         data: {
@@ -83,7 +87,7 @@ window.statsView = {
               ticks: {
                 precision: 0,
                 maxTicksLimit: 4,
-                font: { size: 12 },
+                font: { size: microTextSize },
                 color: secondary
               },
               grid: {
@@ -93,7 +97,7 @@ window.statsView = {
             },
             x: {
               ticks: {
-                font: { size: 12 },
+                font: { size: microTextSize },
                 color: secondary
               },
               grid: {
@@ -116,9 +120,15 @@ window.statsView = {
       ? getStyle(document.documentElement)
       : { getPropertyValue: () => '' };
     const primary = rootStyle.getPropertyValue('--primary').trim() || '#0066FF';
+    const secondary = rootStyle.getPropertyValue('--text-secondary').trim() || '#6E6E6E';
+    const microTextSize = parseInt(rootStyle.getPropertyValue('--text-micro'), 10) || 14;
     this.chart.data.datasets[0].backgroundColor = primary;
     this.chart.data.datasets[0].borderColor = primary;
     this.chart.options.scales.y.max = state.yMax;
+    this.chart.options.scales.y.ticks.font.size = microTextSize;
+    this.chart.options.scales.y.ticks.color = secondary;
+    this.chart.options.scales.x.ticks.font.size = microTextSize;
+    this.chart.options.scales.x.ticks.color = secondary;
     this.chart.update('none');
   }
 };

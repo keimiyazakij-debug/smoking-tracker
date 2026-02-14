@@ -26,6 +26,7 @@ function updateLayoutHeights() {
   const header = document.querySelector("header");
   const nav = document.querySelector("nav");
   const calendarTab = document.getElementById("calendar");
+  const timelineTab = document.getElementById("timeline");
   if (header) {
     root.style.setProperty("--header-height", `${header.offsetHeight}px`);
   }
@@ -60,6 +61,13 @@ function updateLayoutHeights() {
     );
     root.style.setProperty("--calendar-grid-height", `${gridHeight}px`);
   }
+
+  if (timelineTab) {
+    const timelineHeader = timelineTab.querySelector(".timeline-header");
+    const timelineHeaderHeight = timelineHeader ? timelineHeader.offsetHeight : 0;
+    root.style.setProperty("--timeline-header-height", `${timelineHeaderHeight}px`);
+  }
+
 }
 
 window.addEventListener("resize", updateLayoutHeights);
@@ -159,8 +167,12 @@ function showTab(tabId) {
 
 // Design System v1.0: タブ選択色を同期
 function syncTabButtons(activeTabId) {
+  const resolvedTabId =
+    activeTabId === "gameChallenge" || activeTabId === "gameBadges"
+      ? "game"
+      : activeTabId;
   document.querySelectorAll("nav button[data-tab]").forEach(btn => {
-    const isActive = btn.dataset.tab === activeTabId;
+    const isActive = btn.dataset.tab === resolvedTabId;
     btn.classList.toggle("is-active", isActive);
     btn.setAttribute("aria-selected", isActive ? "true" : "false");
   });
