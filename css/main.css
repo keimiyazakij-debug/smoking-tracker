@@ -1,0 +1,292 @@
+/* ------------------------------ */
+/* メイン画面                      */
+/* ------------------------------ */
+.tab { 
+  display:none; 
+  /* page padding: 16px */
+  padding: var(--space-page); 
+  margin-bottom: var(--nav-height); 
+}
+
+.active { 
+  display:block; 
+}
+
+.large-btn { 
+  display:block; 
+  width:85%; 
+  height:60px;
+  margin: 0 auto; 
+  padding:0; 
+  /* Primary Button: text-body */
+  font-size: var(--text-body); 
+  font-weight:700;
+  border-radius: var(--radius-button); 
+  background: var(--primary); 
+  color: var(--background); 
+  border: none; 
+  box-shadow: none;
+  transition: transform 150ms ease-out, background 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+.large-btn:hover {
+  background: var(--primary);
+}
+
+.large-btn:active {
+  transform: scale(0.97);
+  box-shadow: none;
+}
+
+.large-btn:disabled {
+  opacity: 0.75;
+  transform: none;
+  cursor: not-allowed;
+}
+
+.sub-large-btn {
+  display: block;
+  width: 72%;
+  height: 48px;
+  margin: 0 auto;
+  padding: 0;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  border-radius: var(--radius-button);
+  background: #f4f8ff;
+  color: var(--primary);
+  border: 1px solid #cfe0ff;
+  transition: transform 150ms ease-out, background 150ms ease-out, opacity 150ms ease-out;
+}
+
+.sub-large-btn:active {
+  transform: scale(0.97);
+  background: #ebf3ff;
+}
+
+.sub-large-btn:disabled {
+  opacity: 0.75;
+  transform: none;
+  cursor: not-allowed;
+}
+
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  /* section gap: 24px */
+  gap: var(--space-section);
+}
+
+.weekly-summary {
+  /* 統計ミニ表示は背景カード化しない */
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.weekly-summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.weekly-item {
+  /* 統計ミニ表示: text-micro + text-secondary */
+  font-size: var(--text-micro);
+  color: var(--text-secondary);
+}
+
+.card {
+  background: var(--color-card-bg);
+  border: 1px solid #ececec;
+  border-radius: var(--radius-card);
+  padding: var(--spacing-card);
+  box-shadow: none;
+}
+
+.today-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.today-label {
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.04em;
+}
+
+.today-date {
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
+}
+
+.since-text {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-tight);
+  font-size: var(--text-caption);
+}
+
+.today-count-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.today-count {
+  /* text-hero 適用 */
+  font-size: var(--text-hero);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  line-height: 1;
+  text-align: center;
+}
+
+.today-count-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.today-count-main {
+  /* 今日の本数: 数字と単位を横並び */
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.today-count-unit {
+  /* 数字の右に並べる: text-caption */
+  margin-top: 0;
+  font-size: var(--text-caption);
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1.2;
+  padding-bottom: 6px;
+}
+
+.today-target-display {
+  margin-top: 4px;
+  font-size: var(--text-caption);
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.timeline-count,
+.day-number {
+  font-weight: 600;
+}
+
+.yesterday-diff {
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
+  flex-basis: 100%;
+  text-align: center;
+}
+
+.yesterday-diff.diff-positive {
+  color: var(--color-primary);
+}
+
+.yesterday-diff.diff-negative {
+  color: var(--color-danger);
+}
+
+.progress-bar {
+  height: 12px;
+  background: #ececec;
+  border-radius: 10px;
+  margin-top: var(--spacing-tight);
+}
+
+.smoke-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* ボタンとUNDO間隔: 16px */
+  gap: var(--space-tight);
+}
+
+.smoke-action .undo-row {
+  width: 100%;
+  margin-top: 0;
+}
+
+.smoke-help {
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+  text-align: center;
+  min-height: 1.4em;
+}
+
+@keyframes countPulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+.today-count.count-pulse {
+  animation: countPulse 220ms ease-out;
+}
+
+.undo-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.undo-center {
+  grid-column: 2;
+  justify-self: center;
+}
+
+.today-right {
+  grid-column: 3;
+  justify-self: end;
+}
+
+#progress-bar { 
+  height:12px; 
+  background:#ececec; 
+  border-radius:10px; 
+  margin-top: var(--spacing-tight); 
+}
+
+#progress { 
+  height:100%; 
+  width:0%; 
+  background: var(--color-primary); 
+  border-radius:10px; 
+}
+#progress.progress-green { background: var(--color-primary); }
+#progress.progress-yellow { background: #f5b400; }
+#progress.progress-red { background: var(--color-danger); }
+
+.daily-challenge-link {
+  text-align: center;
+}
+
+.daily-challenge-link.spaced {
+  margin-top: 24px;
+}
+
+.history-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--text-secondary);
+}
+
+.history-cta {
+  padding: 0;
+}
+

@@ -10,6 +10,7 @@ function enqueue(...events) {
     const text = buildMessageText(event);
     if (!text) return;
     const payload = buildMessagePayload(event, text);
+    if (publishInlineMessage(text, event)) return;
     if (window.messageView?.addMessage) {
       window.messageView.addMessage(payload);
     } else if (window.messageView?.showMessageWithAutoClose) {
@@ -31,16 +32,31 @@ function buildMessagePayload(event, text) {
       }
     };
   }
+  if (event.type === "msg" && event.toastPosition === "top") {
+    return {
+      text,
+      position: "top"
+    };
+  }
   return text;
 }
 
 function showMessage(text) {
   if (!text) return;
+  if (publishInlineMessage(text)) return;
   if (window.messageView?.addMessage) {
     window.messageView.addMessage(text);
   } else if (window.messageView?.showMessageWithAutoClose) {
     window.messageView.showMessageWithAutoClose(text, () => {});
   }
+}
+
+function publishInlineMessage(text, event = null) {
+  if (!text) return false;
+  if (event?.forceToast === true) return false;
+  if (!window.calendarController?.setInlineMessage) return false;
+  window.calendarController.setInlineMessage(text);
+  return true;
 }
 
 function buildMessageText(event) {

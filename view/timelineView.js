@@ -2,13 +2,27 @@
 let currentTimelineDateKey = null;
 
 // 日付の前後移動
-document.getElementById("prevTimelineDay").addEventListener("click", () => {
-  window.timelineController.goPrevDay();
-});
+const prevBtn = document.getElementById("prevTimelineDay");
+if (prevBtn) {
+  prevBtn.addEventListener("click", () => {
+    window.timelineController.goPrevDay();
+  });
+}
 
-document.getElementById("nextTimelineDay").addEventListener("click", () => {
-  window.timelineController.goNextDay();
-});
+const nextBtn = document.getElementById("nextTimelineDay");
+if (nextBtn) {
+  nextBtn.addEventListener("click", () => {
+    window.timelineController.goNextDay();
+  });
+}
+
+const backLink = document.getElementById("timelineBackLink");
+if (backLink) {
+  backLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    window.timelineController?.goBack?.();
+  });
+}
 
   // ===== タイムライン画面の描画 =====
 function renderTimelineForDate(map) {

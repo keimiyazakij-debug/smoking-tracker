@@ -6,7 +6,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./css/common.css">
+  <link rel="stylesheet" href="./css/main.css">
+  <link rel="stylesheet" href="./css/calendar.css">
+  <link rel="stylesheet" href="./css/timeline.css">
+  <link rel="stylesheet" href="./css/edit.css">
+  <link rel="stylesheet" href="./css/badges.css">
+  <link rel="stylesheet" href="./css/daily-task.css">
+  <link rel="stylesheet" href="./css/stats.css">
+  <link rel="stylesheet" href="./css/settings.css">
+  <link rel="stylesheet" href="./css/premium.css">
   <link rel="stylesheet" href="./help.css">
   <link rel="manifest" href="manifest.json">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -26,10 +35,21 @@
     ? "./service-worker.prod.js"
     : "./service-worker.dev.js";
   if ("serviceWorker" in navigator) {
-
-    navigator.serviceWorker.register(sw)
-      .then(() => console.log("SW registered:", sw))
-      .catch(err => console.error("SW error", err));
+    if (ENV === "dev") {
+      // 開発環境では SW を無効化して、古いキャッシュ由来の更新ループを防ぐ
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((reg) => reg.unregister());
+      });
+      if (window.caches && typeof window.caches.keys === "function") {
+        window.caches.keys().then((keys) => {
+          keys.forEach((key) => window.caches.delete(key));
+        });
+      }
+    } else {
+      navigator.serviceWorker.register(sw)
+        .then(() => console.log("SW registered:", sw))
+        .catch(err => console.error("SW error", err));
+    }
   }
   const BUILD = "2026-02-13-0.0.3";
   console.log("BUILD:", BUILD);
@@ -111,11 +131,13 @@
     <div class="card calendar-card">
       <div id="calendarGrid" class="calendar-grid"></div>
     </div>
+    <section id="calendarDetail" class="calendar-detail" hidden></section>
   </div>
 
 <!-- タイムライン（タブ画面） -->
 <div id="timeline" class="tab">
   <header class="timeline-header">
+    <a id="timelineBackLink" class="timeline-back-link" href="./">← メインに戻る</a>
     <div class="timeline-header-date">
       <button id="prevTimelineDay" class="timeline-nav">◀</button>
       <div id="timelineTitle" class="timeline-title-main"></div>
@@ -305,8 +327,11 @@
 
   <!-- プレミアム導線カード -->
   <section id="settingsPremiumCard" class="settings-card settings-premium-card">
-    <h3 class="settings-section-title">プレミアム版</h3>
-    <p class="settings-item-help">期間制限なし・広告なし</p>
+    <h3 class="settings-section-title">利用プラン</h3>
+    <div class="settings-item settings-item-plan">
+      <span class="settings-item-label">現在のプラン</span>
+      <div id="planInfo" class="settings-plan-info"></div>
+    </div>
   </section>
 
   <!-- セクション1: 目標設定 -->
@@ -325,9 +350,14 @@
   <!-- セクション2: データ管理 -->
   <section class="settings-card">
     <h3 class="settings-section-title">データ管理</h3>
-    <div class="settings-item settings-item-plan">
-      <span class="settings-item-label">利用プラン</span>
-      <div id="planInfo" class="settings-plan-info"></div>
+    <div class="settings-data-actions">
+      <button id="exportDataBtn" type="button" class="settings-secondary-btn">
+        データをエクスポート
+      </button>
+      <button id="importDataBtn" type="button" class="settings-secondary-btn">
+        データをインポート
+      </button>
+      <input id="importDataFile" type="file" accept="application/json,.json" hidden>
     </div>
     <button onclick="resetAll()" class="settings-danger-btn">
       全データをリセット
@@ -393,7 +423,7 @@
   <!-- Design System v1.0: tab selection state -->
   <button data-tab="main" aria-selected="true" onclick="showTab('main')">⌂</button>
   <button data-tab="calendar" aria-selected="false" onclick="showTab('calendar')">📅</button>
-  <button data-tab="timeline" aria-selected="false" onclick="showTab('timeline')">🕒</button>
+  <button data-tab="timeline" aria-selected="false" onclick="showTab('timeline', { resetTimelineContext: true })">🕒</button>
   <!--<button onclick="showTab('achievements')">★</button>-->
   <button data-tab="game" aria-selected="false" onclick="showTab('game')">🎮</button>
   <button data-tab="stats" aria-selected="false" onclick="showTab('stats')">📊</button>
@@ -406,6 +436,7 @@
 
 <!-- ===== Model ===== -->
 <script src="./model/logModel.js"></script>
+<script src="./model/dailyDataModel.js"></script>
 <script src="./model/settingModel.js"></script>
 <script src="./model/editModel.js"></script>
 <script src="./model/dailyTaskModel.js"></script>

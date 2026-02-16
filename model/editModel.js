@@ -58,9 +58,10 @@ function setDateKey(dateKey) {
   editState.dateKey = dateKey;
 }
 
-function save() {
-  const logs = window.common.loadLogs();
-  const targetDate = editState.dateKey;
+function buildNextLogs(targetDateKey = null) {
+  const original = window.common.loadLogs();
+  const logs = JSON.parse(JSON.stringify(original || {}));
+  const targetDate = targetDateKey || editState.dateKey;
   const sourceDate = editState.sourceDateKey || targetDate;
 
   const newTimes = editState.times
@@ -70,19 +71,39 @@ function save() {
 
   if (editState.scopeHour === null) {
     logs[targetDate] = newTimes;
-    window.common.saveLogs(logs);
-    return;
+    return logs;
   }
 
   if (targetDate === sourceDate) {
     logs[targetDate] = [...editState.untouchedTimes, ...newTimes].sort();
-    window.common.saveLogs(logs);
-    return;
+    return logs;
   }
 
   logs[sourceDate] = [...editState.untouchedTimes].sort();
   const targetExisting = logs[targetDate] || [];
   logs[targetDate] = [...targetExisting, ...newTimes].sort();
+  return logs;
+}
+
+function hasChanges(targetDateKey = null) {
+  const current = normalizeLogs(window.common.loadLogs());
+  const next = normalizeLogs(buildNextLogs(targetDateKey));
+  return JSON.stringify(current) !== JSON.stringify(next);
+}
+
+function normalizeLogs(logs) {
+  const normalized = {};
+  Object.keys(logs || {})
+    .sort()
+    .forEach((key) => {
+      const value = Array.isArray(logs[key]) ? [...logs[key]].sort() : [];
+      normalized[key] = value;
+    });
+  return normalized;
+}
+
+function save() {
+  const logs = buildNextLogs(editState.dateKey);
   window.common.saveLogs(logs);
 }
 
@@ -102,5 +123,6 @@ window.editModel = {
   removeTime,
   setDateKey,
   save,
-  getState
+  getState,
+  hasChanges
 };

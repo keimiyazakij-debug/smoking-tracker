@@ -1,19 +1,92 @@
 (function () {
 let currentDateKey = null;
 let returnToMainOnSave = false;
+let routeSource = null; // "home" | "calendar" | null
+let sourceDateKey = null;
 const LOCKED_MSG = "60日より前のデータはプレミアム版で閲覧できます。";
+const ROUTE_BASE_PATH = getRouteBasePath();
 
 function isLocked(dateKey) {
   if (!window.common?.isDateLocked) return false;
   return window.common.isDateLocked(dateKey);
 }
 
+function resolveFrom(from) {
+  if (from === "calendar") return "calendar";
+  if (from === "home") return "home";
+  return null;
+}
+
+function hasDrilldownContext() {
+  return !!sourceDateKey && !!routeSource;
+}
+
+function buildTimelineUrl(dateKey) {
+  if (!hasDrilldownContext()) {
+    return `${ROUTE_BASE_PATH}timeline`;
+  }
+  return `${ROUTE_BASE_PATH}timeline?date=${dateKey}&from=${routeSource}`;
+}
+
+function formatReturnDate(dateKey) {
+  if (!dateKey) return "";
+  const d = window.common.parseDateKey(dateKey);
+  return `${d.getMonth() + 1}月${d.getDate()}日`;
+}
+
+function updateBackLink() {
+  const link = document.getElementById("timelineBackLink");
+  if (!link) return;
+  if (!hasDrilldownContext()) {
+    link.style.display = "none";
+    link.href = `${ROUTE_BASE_PATH}timeline`;
+    return;
+  }
+  link.style.display = "inline-block";
+
+  if (routeSource === "calendar") {
+    const dateText = formatReturnDate(sourceDateKey);
+    link.textContent = `← ${dateText}に戻る`;
+    link.href = `${ROUTE_BASE_PATH}calendar?date=${sourceDateKey}`;
+    return;
+  }
+  link.textContent = "← メインに戻る";
+  link.href = ROUTE_BASE_PATH;
+}
+
 // ===== タイムライン画面の表示 =====
 function openTimeline(dateKey, options = {}) {
-  currentDateKey = dateKey;   // ★ 追加
+  currentDateKey = dateKey;
   returnToMainOnSave = !!options.returnToMainOnSave;
+  const nextFrom = resolveFrom(options.from);
+  const nextSourceDateKey =
+    typeof options.sourceDateKey === "string" ? options.sourceDateKey : null;
+  if (nextFrom && nextSourceDateKey) {
+    routeSource = nextFrom;
+    sourceDateKey = nextSourceDateKey;
+  } else if (nextFrom === null && options.resetDrilldown === true) {
+    routeSource = null;
+    sourceDateKey = null;
+  }
+
+  const shouldUpdateHistory = options.updateHistory !== false;
   if (typeof window.showTab === "function") {
-    window.showTab("timeline");
+    window.showTab("timeline", { updateHistory: false });
+  }
+  updateBackLink();
+
+  if (shouldUpdateHistory) {
+    const url = buildTimelineUrl(dateKey);
+    window.history.pushState(
+      {
+        view: "timeline",
+        date: dateKey,
+        from: routeSource,
+        sourceDateKey
+      },
+      "",
+      url
+    );
   }
 
   if (isLocked(dateKey)) {
@@ -57,11 +130,26 @@ function refreshCurrent() {
   refreshTimeline(currentDateKey);
 }
 
-// タブ直表示時に、未選択なら今日を表示
-function ensureRendered() {
+// 直接表示時に、未選択なら今日を表示
+function ensureRendered(options = {}) {
+  if (options.resetDrilldown === true) {
+    routeSource = null;
+    sourceDateKey = null;
+  }
   if (!currentDateKey) {
     currentDateKey = window.common.getDateKey(new Date());
   }
+  updateBackLink();
+  window.history.replaceState(
+    {
+      view: "timeline",
+      date: currentDateKey,
+      from: routeSource,
+      sourceDateKey
+    },
+    "",
+    buildTimelineUrl(currentDateKey)
+  );
   if (isLocked(currentDateKey)) {
     renderLockedTimeline(currentDateKey);
     return;
@@ -111,7 +199,6 @@ function goPrevDay() {
   d.setDate(d.getDate() - 1);
   const prevKey = window.common.getDateKey(d);
   if (isLocked(prevKey)) {
-    // 無料版60日ロック: ロック日へは遷移せず、導線付きトーストのみ表示
     if (window.messageController?.enqueue) {
       window.messageController.enqueue({
         type: "premium_lock",
@@ -122,6 +209,16 @@ function goPrevDay() {
     return;
   }
   currentDateKey = prevKey;
+  window.history.replaceState(
+    {
+      view: "timeline",
+      date: prevKey,
+      from: routeSource,
+      sourceDateKey
+    },
+    "",
+    buildTimelineUrl(prevKey)
+  );
   refreshTimeline(prevKey);
 }
 
@@ -133,7 +230,6 @@ function goNextDay() {
   const todayKey = window.common.getDateKey(new Date());
   if (nextKey > todayKey) return;
   if (isLocked(nextKey)) {
-    // 無料版60日ロック: ロック日へは遷移せず、導線付きトーストのみ表示
     if (window.messageController?.enqueue) {
       window.messageController.enqueue({
         type: "premium_lock",
@@ -144,30 +240,81 @@ function goNextDay() {
     return;
   }
   currentDateKey = nextKey;
+  window.history.replaceState(
+    {
+      view: "timeline",
+      date: nextKey,
+      from: routeSource,
+      sourceDateKey
+    },
+    "",
+    buildTimelineUrl(nextKey)
+  );
   refreshTimeline(nextKey);
 }
 
+function goBack() {
+  if (!hasDrilldownContext()) {
+    return;
+  }
+  if (routeSource === "calendar") {
+    const backDateKey = sourceDateKey;
+    if (window.calendarController?.restoreViewState) {
+      window.calendarController.restoreViewState();
+    }
+    if (typeof window.showTab === "function") {
+      window.showTab("calendar", { updateHistory: false });
+    }
+    if (window.calendarController?.refresh) {
+      window.calendarController.refresh();
+    }
+    window.history.replaceState(
+      { view: "calendar", date: backDateKey },
+      "",
+      `${ROUTE_BASE_PATH}calendar?date=${backDateKey}`
+    );
+    return;
+  }
+
+  if (typeof window.showTab === "function") {
+    window.showTab("main", { updateHistory: false });
+  }
+  window.history.replaceState(
+    { view: "main" },
+    "",
+    ROUTE_BASE_PATH
+  );
+}
+
+function getRouteBasePath() {
+  const path = window.location.pathname || "/";
+  const normalized = path.endsWith("/") ? path : `${path}/`;
+  return normalized
+    .replace(/index\.html\/?$/, "")
+    .replace(/timeline\/?$/, "")
+    .replace(/calendar\/?$/, "");
+}
 
 // ===== 編集画面を開く =====
 function openEditFromTimeline(hour = null) {
-    if (!currentDateKey) return;
-    if (isLocked(currentDateKey)) {
-      if (window.messageController?.enqueue) {
-        window.messageController.enqueue({
-          type: "premium_lock",
-          text: LOCKED_MSG,
-          priority: -1
-        });
-      }
-      return;
+  if (!currentDateKey) return;
+  if (isLocked(currentDateKey)) {
+    if (window.messageController?.enqueue) {
+      window.messageController.enqueue({
+        type: "premium_lock",
+        text: LOCKED_MSG,
+        priority: -1
+      });
     }
-    const options = {
-      returnToMainOnSave
-    };
-    if (Number.isInteger(hour) && hour >= 0 && hour <= 23) {
-      options.hour = hour;
-    }
-    window.editController.openEdit(currentDateKey, options);
+    return;
+  }
+  const options = {
+    returnToMainOnSave
+  };
+  if (Number.isInteger(hour) && hour >= 0 && hour <= 23) {
+    options.hour = hour;
+  }
+  window.editController.openEdit(currentDateKey, options);
 }
 
 function openEditForHour(hour) {
@@ -192,22 +339,30 @@ function renderLockedTimeline(dateKey) {
 
 // ===== タイムライン画面の非表示 =====
 function closeTimeline() {
-  // タブ版ではメインへ戻す（既存呼び出し互換）
-  if (typeof window.showTab === "function") {
-    window.showTab("main");
+  if (hasDrilldownContext()) {
+    goBack();
+    return;
   }
+  if (typeof window.showTab === "function") {
+    window.showTab("main", { updateHistory: false });
+  }
+  window.history.replaceState(
+    { view: "main" },
+    "",
+    ROUTE_BASE_PATH
+  );
 }
 
 // ===== タイムライン画面の表示状態取得 =====
-function isOpenTimeline(){
+function isOpenTimeline() {
   const tab = document.getElementById("timeline");
   return !!(tab && tab.classList.contains("active"));
 }
 
-
-window.timelineController = { 
+window.timelineController = {
   openTimeline,
   closeTimeline,
+  goBack,
   openEditFromTimeline,
   openEditForHour,
   refreshTimeline,
@@ -216,6 +371,6 @@ window.timelineController = {
   isOpenTimeline,
   goPrevDay,
   goNextDay
- };
+};
 
- })();
+})();

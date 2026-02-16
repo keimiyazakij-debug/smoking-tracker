@@ -17,6 +17,7 @@
   --text-primary: var(--color-text-primary);
   --text-secondary: var(--color-text-secondary);
   --danger: var(--color-danger);
+  --accent-color: var(--color-primary);
 
   /* typography */
   --text-hero: 60px;
@@ -390,6 +391,12 @@ h3 {
   text-align: center;
 }
 
+.app-toast.app-toast--top {
+  top: calc(var(--header-height, 0px) + 12px);
+  bottom: auto;
+  transform: translateX(-50%) translateY(-6px);
+}
+
 .app-toast.is-visible {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
@@ -421,17 +428,11 @@ h3 {
 }
 
 .calendar-card {
-  display: flex;
-  flex-direction: column;
-  /* 画面の残り高さを受け取る */
-  flex: 1 1 0;
-  min-height: 0;
-  /* 5-6行月の見切れ防止: カード内余白を圧縮 */
+  display: block;
+  flex: 0 0 auto;
   padding: var(--spacing-tight);
-  align-self: stretch;
-  /* 実測した利用可能高さをカードに適用 */
-  height: var(--calendar-grid-height, 100%);
-  overflow: hidden;
+  height: auto;
+  overflow: visible;
 }
 
 
@@ -470,18 +471,15 @@ nav button {
   min-height: calc(100dvh - var(--nav-height, 50px) - var(--header-height, 0px));
   box-sizing: border-box;
   margin-bottom: 0;
-  /* 画面内に収める */
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 #calendar.active {
-  /* カレンダー画面は月ヘッダー + カードの2段構成 */
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: var(--spacing-tight);
-  align-items: stretch;
-  /* #calendar の calc 高さを優先して全画面領域を使用 */
-  min-height: 0;
+  min-height: 100%;
 }
 
 .calendar-header {
@@ -517,11 +515,7 @@ nav button {
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-template-rows: auto repeat(var(--calendar-rows, 6), minmax(0, 1fr));
-  flex: 1;
-  /* 親カード高に追従 */
-  height: 100%;
-  min-height: 0;
+  grid-template-rows: auto repeat(var(--calendar-rows, 6), minmax(72px, 1fr));
   background: transparent;
   border-radius: 0;
   /* セル線を連続させる */
@@ -570,9 +564,10 @@ nav button {
   position: relative;
   box-sizing: border-box;
   overflow: hidden;
-  /* 縦線は左側だけにして重複線を防ぐ */
+  /* セル境界は calendar-day 側で管理 */
   border: 0;
   border-left: 1px solid #bdbdbd;
+  border-top: 1px solid #bdbdbd;
   border-radius: 0;
   background: var(--card-bg);
   transition: transform 0.15s ease;
@@ -589,12 +584,15 @@ nav button {
 
 .day-number {
   display: block;
-  width: 100%;
+  /* calendar-day の左右 padding(3px) を打ち消してセル幅いっぱいにする */
+  width: calc(100% + 6px);
+  margin-left: -3px;
+  margin-right: -3px;
+  box-sizing: border-box;
   padding-top: 4px;
   text-align: center;
   padding-bottom: 4px;
   margin-bottom: 4px;
-  border-top: 1px solid #bdbdbd;
   border-bottom: 1px solid #bdbdbd;
   font-size: var(--text-body);
   font-weight: 400;
@@ -656,25 +654,28 @@ nav button {
   color: var(--saturday-blue);
 }
 
+.calendar-day.holiday .day-number {
+  color: var(--danger);
+}
+
 .calendar-day.today {
-  /* 今日: 枠線は薄めに */
-  border: 1px solid var(--primary);
+  /* レイアウトを変えずにセル境界へ沿わせる */
+  outline: 1px solid var(--primary);
+  outline-offset: -1px;
   background: none;
 }
 
 /* 選択日: 塗りつぶしではなく枠線のみ（従来today相当の強さ） */
 .calendar-day.selected {
-  border: 2px solid var(--primary);
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
   background: none;
-}
-
-.calendar-day.selected .count-bg {
-  background: transparent;
 }
 
 /* 今日かつ選択日: 選択日の強調を優先 */
 .calendar-day.today.selected {
-  border: 2px solid var(--primary);
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
 }
 
 .calendar-day.past { opacity: 1;}
@@ -693,28 +694,119 @@ nav button {
   color: var(--text-secondary);
 }
 
-/* カレンダー上のマーク表示 */
-.calendar-mark {
-  font-size: var(--text-caption);
-  margin-top: 0;
-  line-height: 1;
-  cursor: pointer;
-  padding: 1px 3px;
-  /* 本数の直下に配置 */
-  position: static;
-  margin-top: 2px;
-}
-.mark-success {color: #f9a825; }
-.mark-down { color: #2196F3; }
-.mark-same { color: #9e9e9e; }
-.mark-up { color: #FB8C00; }
-
-/* 連続減少ボーナス */
-.calendar-sparkle {
+.memo-indicator {
   position: absolute;
-  top: 2px;
-  right: 4px;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-color);
+}
+
+.calendar-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: calc(var(--nav-height, 56px) + 12px);
+}
+
+.calendar-detail-link-wrap {
+  padding: 0 2px;
+}
+
+.calendar-detail-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-button);
+  border: 1px solid #cfe0ff;
+  background: #f4f8ff;
+  color: var(--primary);
+  font-size: var(--text-caption);
+  font-weight: 600;
+}
+
+.calendar-detail-link-btn:active {
+  transform: scale(0.97);
+  background: #ebf3ff;
+}
+
+.memo-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--card-bg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.memo-status-line {
+  margin: 0 0 10px;
+  min-height: 1.2em;
   font-size: var(--text-micro);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.memo-status-line--orange {
+  color: #d9822b;
+}
+
+.memo-status-line--blue {
+  color: #2f6fd6;
+}
+
+.memo-text {
+  margin: 0;
+  white-space: pre-wrap;
+  color: var(--text-primary);
+  font-size: var(--text-caption);
+}
+
+.memo-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.memo-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.memo-toggle-btn,
+.memo-edit-btn {
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font-size: var(--text-caption);
+  text-decoration: underline;
+}
+
+.memo-empty {
+  margin: 0 0 8px;
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+}
+
+.memo-editor {
+  width: 100%;
+  min-height: 120px;
+  border: 1px solid #d8d8d8;
+  border-radius: var(--radius-small);
+  padding: 10px;
+  font-size: var(--text-caption);
+  color: var(--text-primary);
+  background: #fff;
+  box-sizing: border-box;
+  resize: vertical;
 }
 
 /* ------------------------------ */
@@ -774,6 +866,20 @@ nav button {
   border-bottom: 1px solid #ececec;
   border-radius: var(--radius-card);
   box-shadow: none;
+}
+
+.timeline-back-link {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.timeline-back-link:hover {
+  text-decoration: underline;
 }
 
 .timeline-header-top {
@@ -1198,7 +1304,8 @@ nav button {
   border: 1px solid var(--text-secondary);
   background: var(--background);
   width: 4.2em;
-  min-width: 0;
+  min-width: 4.2em;
+  flex: 0 0 4.2em;
   font-size: var(--text-body);
   border-radius: var(--radius-small);
   padding: 8px 6px;
@@ -1224,6 +1331,12 @@ nav button {
 .time-empty {
   font-size: var(--text-caption);
   color: var(--text-secondary);
+}
+
+@media (max-width: 520px) {
+  .time-tags {
+    grid-template-columns: 1fr;
+  }
 }
 
 #addTimeTagBtn {

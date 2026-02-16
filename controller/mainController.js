@@ -12,6 +12,8 @@ function initMain() {
     todayTimelineLink.onclick = () => {
       const todayKey = window.common.getDateKey(new Date());
       window.timelineController.openTimeline(todayKey, {
+        from: "home",
+        sourceDateKey: todayKey,
         returnToMainOnSave: true
       });
     };

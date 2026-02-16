@@ -31,6 +31,7 @@ function renderToastText(text) {
 function showToast(text, durationMs = TOAST_DURATION_MS) {
   if (!text) return;
   const toast = getToastEl();
+  applyToastPosition(toast, "bottom");
   toast.innerHTML = renderToastText(text);
   toast.onclick = null;
   toast.classList.add("is-visible");
@@ -50,6 +51,7 @@ function addMessage(payload) {
   const text = payload.text;
   if (!text) return;
   const toast = getToastEl();
+  applyToastPosition(toast, payload.position === "top" ? "top" : "bottom");
   const actionLabel = payload.actionLabel ? escapeHtml(payload.actionLabel) : "";
   const body = renderToastText(text);
   toast.innerHTML = actionLabel
@@ -70,6 +72,11 @@ function addMessage(payload) {
   toastTimer = window.setTimeout(() => {
     toast.classList.remove("is-visible");
   }, TOAST_DURATION_MS);
+}
+
+function applyToastPosition(toast, position) {
+  if (!toast) return;
+  toast.classList.toggle("app-toast--top", position === "top");
 }
 
 function clearAll() {

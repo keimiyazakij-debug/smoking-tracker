@@ -1,6 +1,11 @@
 (function () {
 
 // controller/appController.js
+const APP_ENTRY_PATH = window.location.pathname.endsWith("/timeline")
+  ? window.location.pathname.replace(/\/timeline$/, "/")
+  : window.location.pathname.endsWith("/calendar")
+    ? window.location.pathname.replace(/\/calendar$/, "/")
+  : window.location.pathname;
 
 // 初期化処理
 function bootstrap() {
@@ -14,12 +19,46 @@ function bootstrap() {
 
   calendarController.showCalendar();
   onLogChanged();
+  openInitialRoute();
 
   setInterval(() => {
+    const activeTab = document.querySelector(".tab.active");
+    if (activeTab?.id !== "main") return;
     onLogChanged();
   }, 60 * 1000);
 }
 document.addEventListener("DOMContentLoaded", bootstrap);
+
+function openInitialRoute() {
+  const params = new URLSearchParams(window.location.search);
+  const dateFromQuery = params.get("date");
+  const fromRaw = params.get("from");
+  const from = fromRaw === "calendar" || fromRaw === "home" ? fromRaw : null;
+  const isTimelineRoute = window.location.pathname.endsWith("/timeline");
+  const isCalendarRoute = window.location.pathname.endsWith("/calendar");
+
+  if (isTimelineRoute) {
+    const hasDrilldown = !!dateFromQuery && !!from;
+    const dateKey = dateFromQuery || window.common.getDateKey(new Date());
+    if (window.timelineController?.openTimeline) {
+      window.timelineController.openTimeline(dateKey, {
+        from: hasDrilldown ? from : null,
+        sourceDateKey: hasDrilldown ? dateKey : null,
+        resetDrilldown: !hasDrilldown,
+        updateHistory: false
+      });
+    }
+    return;
+  }
+
+  if (isCalendarRoute) {
+    showTab("calendar", { updateHistory: false });
+    if (window.calendarController?.refresh) {
+      window.calendarController.refresh();
+    }
+    return;
+  }
+}
 
 function updateLayoutHeights() {
   const root = document.documentElement;
@@ -76,6 +115,9 @@ window.updateLayoutHeights = updateLayoutHeights;
 // ログ更新時処理
 function onLogChanged(date= null) {
   const logs = window.logModel.getLogs();
+  if (window.dailyDataModel?.syncCountsFromLogs) {
+    window.dailyDataModel.syncCountsFromLogs(logs);
+  }
   const nowKey = window.common.getDateKey(new Date());
   const settings = window.settingModel.loadSettings();
 
@@ -114,7 +156,7 @@ function onLogChanged(date= null) {
   window.mainView.render(ctx);
   if (window.timelineController.isOpenTimeline() === true) {
     if (date) {
-      window.timelineController.openTimeline(date);
+      window.timelineController.openTimeline(date, { updateHistory: false });
     } else {
       window.timelineController.refreshCurrent();
     }
@@ -137,7 +179,13 @@ function onLogChanged(date= null) {
   }
 }
 
-function showTab(tabId) {
+function showTab(tabId, options = {}) {
+  const shouldUpdateHistory = options.updateHistory !== false;
+  const activeTab = document.querySelector(".tab.active");
+  if (activeTab?.id === "calendar" && window.calendarController?.saveViewState) {
+    window.calendarController.saveViewState();
+  }
+
   document.querySelectorAll('.tab').forEach(el => {
     el.style.display = 'none';
     el.classList.remove('active');
@@ -161,7 +209,16 @@ function showTab(tabId) {
     }
   }
   if (tabId === 'timeline' && window.timelineController?.ensureRendered) {
-    window.timelineController.ensureRendered();
+    window.timelineController.ensureRendered({
+      resetDrilldown: options.resetTimelineContext === true
+    });
+  }
+  if (tabId === "calendar" && window.calendarController?.restoreViewState) {
+    window.calendarController.restoreViewState();
+    window.calendarController.refresh();
+  }
+  if (shouldUpdateHistory && tabId !== "timeline") {
+    window.history.replaceState({ view: tabId }, "", APP_ENTRY_PATH);
   }
 }
 
@@ -196,6 +253,32 @@ window.onLogChanged = onLogChanged;
 window.addEventListener("logs-changed", () => onLogChanged());
 window.addEventListener("storage", (e) => {
   if (e && e.key === "dailyLogs") onLogChanged();
+});
+window.addEventListener("popstate", (event) => {
+  const params = new URLSearchParams(window.location.search);
+  const dateFromQuery = params.get("date");
+  const fromRaw = params.get("from");
+  const from = fromRaw === "calendar" || fromRaw === "home" ? fromRaw : null;
+  const isTimelineRoute = window.location.pathname.endsWith("/timeline");
+  const isCalendarRoute = window.location.pathname.endsWith("/calendar");
+  if (isTimelineRoute) {
+    const hasDrilldown = !!dateFromQuery && !!from;
+    const dateKey = dateFromQuery || window.common.getDateKey(new Date());
+    window.timelineController?.openTimeline?.(dateKey, {
+      from: hasDrilldown ? from : null,
+      sourceDateKey: hasDrilldown ? dateKey : null,
+      resetDrilldown: !hasDrilldown,
+      updateHistory: false
+    });
+    return;
+  }
+  if (isCalendarRoute) {
+    showTab("calendar", { updateHistory: false });
+    window.calendarController?.refresh?.();
+    return;
+  }
+  const nextView = event?.state?.view || "calendar";
+  showTab(nextView, { updateHistory: false });
 });
 
 // ★ テスト用に公開

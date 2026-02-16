@@ -1,0 +1,153 @@
+/* ------------------------------ */
+/* 記録編集画面 　　               */
+/* ------------------------------ */
+
+/* 記録の編集画面 */
+.edit-body {
+  padding: var(--space-page);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-tight);
+}
+
+.edit-page-title {
+  /* Design System v1.0: ページタイトル */
+  margin: 0 0 var(--space-section);
+  font-size: var(--text-h1);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+
+.edit-field-label {
+  font-size: var(--text-body);
+  color: var(--text-primary);
+}
+
+.edit-field-help {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+.edit-body input {
+  font-size: var(--text-body);
+  padding: 10px;
+  border: 1px solid var(--text-secondary);
+  border-radius: var(--radius-small);
+  box-sizing: border-box;
+  background: var(--background);
+  color: var(--text-primary);
+}
+
+.edit-body input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+#editDateInput:disabled,
+#editDateInput.is-disabled {
+  background: var(--card-bg);
+  color: var(--text-secondary);
+}
+
+.time-tags {
+  /* 時刻ログは2列表示に統一 */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.time-tag {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  font-size: var(--text-caption);
+  min-width: 0;
+}
+
+.time-select-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.time-select {
+  border: 1px solid var(--text-secondary);
+  background: var(--background);
+  width: 4.2em;
+  min-width: 4.2em;
+  flex: 0 0 4.2em;
+  font-size: var(--text-body);
+  border-radius: var(--radius-small);
+  padding: 8px 6px;
+  box-sizing: border-box;
+  color: var(--text-primary);
+}
+
+.time-separator {
+  font-size: var(--text-body);
+  color: var(--text-primary);
+}
+
+.time-tag button {
+  border: 1px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+  font-size: var(--text-caption);
+  border-radius: var(--radius-small);
+  min-height: 32px;
+  cursor: pointer;
+}
+
+.time-empty {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 520px) {
+  .time-tags {
+    grid-template-columns: 1fr;
+  }
+}
+
+#addTimeTagBtn {
+  align-self: flex-start;
+  min-height: 40px;
+}
+
+.edit-save-btn {
+  /* 主役ボタン */
+  margin-top: var(--space-section);
+  width: 100%;
+  min-height: 56px;
+  border-radius: var(--radius-button);
+  border: 0;
+  background: var(--primary);
+  color: #FFFFFF;
+  font-size: var(--text-body);
+  font-weight: 700;
+}
+
+.edit-save-btn:active {
+  transform: scale(0.97);
+}
+
+.edit-save-btn:disabled {
+  background: var(--text-secondary);
+  color: #FFFFFF;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+

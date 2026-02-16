@@ -26,12 +26,27 @@ function resetToToday() {
   state.month = now.getMonth();
 }
 
-function buildCalendarData(logs, todayKey) {
-  if (!Array.isArray(logs) || logs.length === 0) return {};
+function buildCalendarData(logs, todayKey, dailyData = {}) {
   const map = {};
-  logs.forEach(l => {
-    map[l.date] = { count: l.count };
-  });
+  if (Array.isArray(logs)) {
+    logs.forEach(l => {
+      map[l.date] = { count: l.count };
+    });
+  }
+
+  if (dailyData && typeof dailyData === "object") {
+    Object.keys(dailyData).forEach((key) => {
+      const entry = dailyData[key];
+      if (!map[key]) {
+        map[key] = {
+          count: Number.isInteger(entry?.count) ? entry.count : 0
+        };
+      }
+      if (typeof entry?.memo === "string" && entry.memo.trim().length > 0) {
+        map[key].memo = entry.memo;
+      }
+    });
+  }
 
   const keys = Object.keys(map).sort();
   if (keys.length === 0) return {};
@@ -82,29 +97,6 @@ function buildCalendarState(ctx) {
 }
 
 
-// 日評価（純粋関数）
-function evaluateDay({ count, prevCount, target, isPast }) {
-  if (!isPast || prevCount == null) return null;
-  if (count === 0) return "success";
-  if (count < prevCount) return "down";
-  if (count > prevCount) return "up";
-  return "same";
-}
-
-// 前日の件数を取得（純粋関数）
-function getPrevDayInfo(dateKey, calendarData) {
-  if (!calendarData || !calendarData.hasOwnProperty(dateKey)) return null;
-  const d = window.common.parseDateKey(dateKey);
-  d.setDate(d.getDate() - 1);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  const prevKey = `${y}-${m}-${day}`;
-
-  if (!calendarData.hasOwnProperty(prevKey)) return null;
-  return { key: prevKey, count: calendarData[prevKey].count };
-}
-
 window.calendarModel = {
   state,
   setMonth,
@@ -112,7 +104,5 @@ window.calendarModel = {
   nextMonth,
   resetToToday,
   buildCalendarData,
-  buildCalendarState,
-  evaluateDay,
-  getPrevDayInfo
+  buildCalendarState
 };

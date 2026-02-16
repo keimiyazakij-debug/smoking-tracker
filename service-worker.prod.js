@@ -1,8 +1,17 @@
-const CACHE_NAME = "smoking-log-v1.2.24";
+const CACHE_NAME = "smoking-log-v1.2.27";
 const CACHE_FILES = [
   "./",
   "./index.html",
-  "./style.css",
+  "./css/common.css",
+  "./css/main.css",
+  "./css/calendar.css",
+  "./css/timeline.css",
+  "./css/edit.css",
+  "./css/badges.css",
+  "./css/daily-task.css",
+  "./css/stats.css",
+  "./css/settings.css",
+  "./css/premium.css",
   "./help.css",
   "./helpModal.js",
   "./manifest.json",
@@ -13,6 +22,7 @@ const CACHE_FILES = [
 
   // ===== Model =====
   "./model/logModel.js",
+  "./model/dailyDataModel.js",
   "./model/settingModel.js",
   "./model/editModel.js",
   "./model/dailyTaskModel.js",
@@ -74,6 +84,24 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
+  // Chrome の仕様: cross-origin な only-if-cached リクエストには respondWith しない
+  if (event.request.cache === "only-if-cached" && event.request.mode !== "same-origin") {
+    return;
+  }
+
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put("./index.html", copy));
+          return response;
+        })
+        .catch(() => caches.match("./index.html"))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(res => res || fetch(event.request))
   );

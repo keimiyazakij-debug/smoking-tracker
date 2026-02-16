@@ -117,6 +117,21 @@ function saveEdit() {
   if (window.editModel?.setDateKey) {
     window.editModel.setDateKey(targetDateKey);
   }
+  const hasChanges = window.editModel?.hasChanges
+    ? window.editModel.hasChanges(targetDateKey)
+    : true;
+  if (!hasChanges) {
+    window.editModel.close();
+    window.editView.close();
+    returnToMainOnSave = false;
+    currentDateKey = targetDateKey;
+    if (window.timelineController?.openTimeline) {
+      window.timelineController.openTimeline(targetDateKey);
+    } else if (typeof window.showTab === "function") {
+      window.showTab("timeline");
+    }
+    return;
+  }
   window.editModel.save();
 
   // 保存ロジックは維持し、保存後の遷移のみ変更
@@ -133,12 +148,21 @@ function saveEdit() {
   if (typeof window.onLogChanged === "function") {
     window.onLogChanged(targetDateKey);
   }
-  window.messageController.enqueue({ type: "msg", text: "修正しました", priority: -1});
+  window.messageController.enqueue({
+    type: "msg",
+    text: "修正しました",
+    priority: -1,
+    forceToast: true,
+    toastPosition: "top"
+  });
 }
 
 function refreshFromStorage() {
   if (!currentDateKey) return;
-  window.editModel.open(currentDateKey);
+  const state = window.editModel?.getState ? window.editModel.getState() : null;
+  const scopeHour = Number.isInteger(state?.scopeHour) ? state.scopeHour : null;
+  const openOptions = Number.isInteger(scopeHour) ? { hour: scopeHour } : {};
+  window.editModel.open(currentDateKey, openOptions);
   window.editView.render(buildEditViewState());
 }
 

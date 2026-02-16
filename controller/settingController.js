@@ -5,6 +5,9 @@ let settingsInputs = [];
 const DEBUG_SECTION_ID = "settingsDebugSection";
 const DEBUG_TOGGLE_ID = "debugPremiumToggle";
 const DEBUG_CACHE_ID = "debugCacheName";
+const EXPORT_BUTTON_ID = "exportDataBtn";
+const IMPORT_BUTTON_ID = "importDataBtn";
+const IMPORT_FILE_INPUT_ID = "importDataFile";
 const DEV_MODE_FALLBACK =
   (typeof location !== "undefined" && typeof location.hostname === "string" && location.hostname === "localhost") ||
   (typeof location !== "undefined" && typeof location.hostname === "string" && location.hostname.includes("github.io"));
@@ -52,11 +55,31 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   loadSettingsToInputs();
+  bindDataTransferActions();
   renderPlanInfo();
   if (window.isDevMode) {
     renderDebugSection();
   }
 });
+
+function bindDataTransferActions() {
+  const exportBtn = document.getElementById(EXPORT_BUTTON_ID);
+  if (exportBtn) {
+    exportBtn.addEventListener("click", exportData);
+  }
+
+  const importBtn = document.getElementById(IMPORT_BUTTON_ID);
+  const importFile = document.getElementById(IMPORT_FILE_INPUT_ID);
+  if (importBtn && importFile) {
+    importBtn.addEventListener("click", () => importFile.click());
+    importFile.addEventListener("change", () => {
+      const file = importFile.files && importFile.files[0] ? importFile.files[0] : null;
+      if (!file) return;
+      importData(file);
+      importFile.value = "";
+    });
+  }
+}
 
 function loadSettingsToInputs() {
   const s = window.settingModel.loadSettings();
@@ -165,8 +188,67 @@ function resetAll() {
   location.reload();
 }
 
+function exportData() {
+  try {
+    const data = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key) continue;
+      data[key] = localStorage.getItem(key);
+    }
+
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    a.href = url;
+    a.download = `smoking-tracker-backup-${date}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Export failed:", error);
+    alert("エクスポートに失敗しました。");
+  }
+}
+
+function importData(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function onLoad(event) {
+    try {
+      const raw = event?.target?.result;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        throw new Error("invalid format");
+      }
+
+      if (!confirm("現在のデータを上書きします。よろしいですか？")) {
+        return;
+      }
+
+      localStorage.clear();
+      Object.keys(parsed).forEach((key) => {
+        localStorage.setItem(key, String(parsed[key]));
+      });
+
+      alert("インポートが完了しました。再読み込みします。");
+      location.reload();
+    } catch (error) {
+      console.error("Import failed:", error);
+      alert("ファイル形式が正しくありません。");
+    }
+  };
+  reader.onerror = function onError() {
+    alert("ファイルの読み込みに失敗しました。");
+  };
+  reader.readAsText(file, "utf-8");
+}
+
 // インラインonclick/他Viewから使うため公開
 window.resetAll = resetAll;
+window.exportData = exportData;
+window.importData = importData;
 window.isPremium = () => window.getIsPremium();
 
 })();

@@ -212,7 +212,7 @@ function render(state) {
   if (state.times.length === 0) {
     const empty = document.createElement("div");
     empty.className = "time-empty";
-    empty.textContent = "時刻がありません";
+    empty.textContent = "記録がありません";
     container.appendChild(empty);
     updateDateLockState();
     return;

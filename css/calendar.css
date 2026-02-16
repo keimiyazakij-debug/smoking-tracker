@@ -1,0 +1,387 @@
+.timeline-card,
+.calendar-card {
+  margin-top: 0;
+}
+
+.calendar-card {
+  display: block;
+  flex: 0 0 auto;
+  padding: var(--spacing-tight);
+  height: auto;
+  overflow: visible;
+}
+
+
+/* ナビゲーション */
+nav { 
+  position: fixed; 
+  bottom:0; 
+  width:100%; 
+  display:flex; 
+  height: 56px;
+  background: var(--color-background); 
+  border-top:1px solid #e5e5e5; 
+  z-index: 2000; /* ← timelineOverlay より大きく */
+}
+
+nav button {
+  flex:1; 
+  height: 56px;
+  padding: 0; 
+  font-size: var(--text-h1);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+/* ------------------------------ */
+/* カレンダー画面                  */
+/* ------------------------------ */
+
+#calendar {
+  /* 横余白は維持し、縦方向は見切れ防止のためコンパクト化 */
+  padding: var(--spacing-tight) var(--space-page);
+  /* Chrome でも下部タブ分を常に除外する固定計算 */
+  height: calc(100dvh - var(--nav-height, 50px) - var(--header-height, 0px));
+  min-height: calc(100dvh - var(--nav-height, 50px) - var(--header-height, 0px));
+  box-sizing: border-box;
+  margin-bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#calendar.active {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-tight);
+  min-height: 100%;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-tight);
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+#calendarTitle {
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.calendar-header button {
+  border: 1px solid var(--card-bg);
+  background: transparent;
+  border-radius: var(--radius-small);
+  color: var(--text-primary);
+  font-size: var(--text-body);
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.calendar-header button:hover {
+  color: var(--primary);
+}
+
+/* カレンダー表示 */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: auto repeat(var(--calendar-rows, 6), minmax(72px, 1fr));
+  background: transparent;
+  border-radius: 0;
+  /* セル線を連続させる */
+  gap: 0;
+  border: 1px solid #bdbdbd;
+  border-radius: var(--radius-card);
+  padding: 0;
+  margin-bottom: 0;
+  align-content: stretch;
+  overflow: hidden;
+}
+
+.calendar-head {
+  font-weight: 400;
+  text-align: center;
+  padding: 0 0 8px;
+  line-height: 1.2;
+  font-size: var(--text-micro);
+  color: var(--text-secondary);
+  border-bottom: none;
+  border-left: 1px solid #bdbdbd;
+}
+
+.calendar-head:first-child {
+  border-left: 0;
+}
+
+/* 慣習色: 日曜/土曜 */
+.calendar-head.sunday {
+  color: var(--danger);
+}
+
+.calendar-head.saturday {
+  color: var(--saturday-blue);
+}
+
+.calendar-day {
+  /* 行高に合わせて描画し、見切れを防ぐ */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  /* 高行数月の見切れ防止: セル内余白を最小限に */
+  padding: 4px 3px;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  /* セル境界は calendar-day 側で管理 */
+  border: 0;
+  border-left: 1px solid #bdbdbd;
+  border-top: 1px solid #bdbdbd;
+  border-radius: 0;
+  background: var(--card-bg);
+  transition: transform 0.15s ease;
+}
+
+.calendar-grid .calendar-day:nth-child(7n+1) {
+  border-left: 0;
+}
+
+.calendar-day:active {
+  /* Design System v1.0: タップインタラクション */
+  transform: scale(0.95);
+}
+
+.day-number {
+  display: block;
+  /* calendar-day の左右 padding(3px) を打ち消してセル幅いっぱいにする */
+  width: calc(100% + 6px);
+  margin-left: -3px;
+  margin-right: -3px;
+  box-sizing: border-box;
+  padding-top: 4px;
+  text-align: center;
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #bdbdbd;
+  font-size: var(--text-body);
+  font-weight: 400;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+/* 本数背景はセル全体でなく count-bg のみ */
+.count-bg {
+  margin-top: 4px;
+  min-height: 1.2em;
+  padding: 1px 5px;
+  border-radius: var(--radius-small);
+  /* セル幅に合わせつつ、少し小さく見せる */
+  width: 88%;
+  max-width: 88%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.count-number {
+  font-size: var(--text-body);
+  line-height: 1;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.count-bg.empty {
+  background: transparent;
+}
+
+/* カレンダー専用の直感色 */
+.count-bg.count-achieved {
+  background: #E6F4EA;
+}
+
+.count-bg.count-exceeded {
+  background: #FFEBEE;
+}
+
+.calendar-day.gray { 
+  color: var(--text-secondary);
+  /* 当月外セルは背景との差を出すため少し濃いグレーに */
+  background: #E2E2E2;
+  opacity: 0.6;
+  pointer-events: none;
+}
+.calendar-day.red { color: var(--text-secondary); }
+.calendar-day.blue { color: var(--text-secondary); }
+
+.calendar-day.sunday .day-number {
+  color: var(--danger);
+}
+
+.calendar-day.saturday .day-number {
+  color: var(--saturday-blue);
+}
+
+.calendar-day.holiday .day-number {
+  color: var(--danger);
+}
+
+.calendar-day.today {
+  /* レイアウトを変えずにセル境界へ沿わせる */
+  outline: 1px solid var(--primary);
+  outline-offset: -1px;
+  background: none;
+}
+
+/* 選択日: 塗りつぶしではなく枠線のみ（従来today相当の強さ） */
+.calendar-day.selected {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+  background: none;
+}
+
+/* 今日かつ選択日: 選択日の強調を優先 */
+.calendar-day.today.selected {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+.calendar-day.past { opacity: 1;}
+.calendar-day.no-log { opacity: 1;}
+.calendar-day.locked {
+  opacity: 0.5;
+}
+.calendar-day.locked .count-bg {
+  background: transparent !important;
+}
+.lock-mark {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  font-size: var(--text-micro);
+  color: var(--text-secondary);
+}
+
+.memo-indicator {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-color);
+}
+
+.calendar-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: calc(var(--nav-height, 56px) + 12px);
+}
+
+.calendar-detail-link-wrap {
+  padding: 0 2px;
+}
+
+.calendar-detail-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-button);
+  border: 1px solid #cfe0ff;
+  background: #f4f8ff;
+  color: var(--primary);
+  font-size: var(--text-caption);
+  font-weight: 600;
+}
+
+.calendar-detail-link-btn:active {
+  transform: scale(0.97);
+  background: #ebf3ff;
+}
+
+.memo-card {
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--card-bg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.memo-status-line {
+  margin: 0 0 10px;
+  min-height: 1.2em;
+  font-size: var(--text-micro);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.memo-status-line--orange {
+  color: #d9822b;
+}
+
+.memo-status-line--blue {
+  color: #2f6fd6;
+}
+
+.memo-text {
+  margin: 0;
+  white-space: pre-wrap;
+  color: var(--text-primary);
+  font-size: var(--text-caption);
+}
+
+.memo-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.memo-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.memo-toggle-btn,
+.memo-edit-btn {
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font-size: var(--text-caption);
+  text-decoration: underline;
+}
+
+.memo-empty {
+  margin: 0 0 8px;
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+}
+
+.memo-editor {
+  width: 100%;
+  min-height: 120px;
+  border: 1px solid #d8d8d8;
+  border-radius: var(--radius-small);
+  padding: 10px;
+  font-size: var(--text-caption);
+  color: var(--text-primary);
+  background: #fff;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
