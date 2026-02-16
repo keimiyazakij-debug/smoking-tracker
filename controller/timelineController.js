@@ -41,9 +41,9 @@ function hasDrilldownContext() {
 
 function buildTimelineUrl(dateKey) {
   if (!hasDrilldownContext()) {
-    return `${ROUTE_BASE_PATH}timeline`;
+    return `${ROUTE_BASE_PATH}?view=timeline`;
   }
-  return `${ROUTE_BASE_PATH}timeline?date=${dateKey}&from=${routeSource}`;
+  return `${ROUTE_BASE_PATH}?view=timeline&date=${dateKey}&from=${routeSource}`;
 }
 
 function formatReturnDate(dateKey) {
@@ -57,7 +57,7 @@ function updateBackLink() {
   if (!link) return;
   if (!hasDrilldownContext()) {
     link.style.display = "none";
-    link.href = `${ROUTE_BASE_PATH}timeline`;
+    link.href = `${ROUTE_BASE_PATH}?view=timeline`;
     return;
   }
   link.style.display = "inline-block";
@@ -65,7 +65,7 @@ function updateBackLink() {
   if (routeSource === "calendar") {
     const dateText = formatReturnDate(sourceDateKey);
     link.textContent = `← ${dateText}に戻る`;
-    link.href = `${ROUTE_BASE_PATH}calendar?date=${sourceDateKey}`;
+    link.href = `${ROUTE_BASE_PATH}?view=calendar&date=${sourceDateKey}`;
     return;
   }
   link.textContent = "← メインに戻る";
@@ -261,7 +261,7 @@ function goBack() {
     window.history.replaceState(
       { view: "calendar", date: backDateKey },
       "",
-      `${ROUTE_BASE_PATH}calendar?date=${backDateKey}`
+      `${ROUTE_BASE_PATH}?view=calendar&date=${backDateKey}`
     );
     return;
   }

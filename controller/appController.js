@@ -1,11 +1,11 @@
 (function () {
 
 // controller/appController.js
-const APP_ENTRY_PATH = window.location.pathname.endsWith("/timeline")
-  ? window.location.pathname.replace(/\/timeline$/, "/")
-  : window.location.pathname.endsWith("/calendar")
-    ? window.location.pathname.replace(/\/calendar$/, "/")
-  : window.location.pathname;
+const APP_ENTRY_PATH = (() => {
+  const path = window.location.pathname || "/";
+  const normalized = path.endsWith("/") ? path : `${path}/`;
+  return normalized.replace(/index\.html\/?$/, "");
+})();
 
 // 初期化処理
 function bootstrap() {
@@ -242,11 +242,12 @@ window.addEventListener("popstate", (event) => {
 
 function parseRouteContext() {
   const params = new URLSearchParams(window.location.search);
+  const viewFromQuery = params.get("view");
   const dateFromQuery = params.get("date");
   const fromRaw = params.get("from");
   const from = fromRaw === "calendar" || fromRaw === "home" ? fromRaw : null;
-  const isTimelineRoute = window.location.pathname.endsWith("/timeline");
-  const isCalendarRoute = window.location.pathname.endsWith("/calendar");
+  const isTimelineRoute = viewFromQuery === "timeline";
+  const isCalendarRoute = viewFromQuery === "calendar";
   const hasDrilldown = !!dateFromQuery && !!from;
 
   return {

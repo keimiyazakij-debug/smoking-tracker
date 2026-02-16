@@ -1,4 +1,4 @@
-const CACHE_NAME = "smoking-log-v1.4";
+const CACHE_NAME = "smoking-log-v1.3.2";
 const APP_SHELL_PATH = "./index.html";
 const CACHE_FILES = [
   "./",
