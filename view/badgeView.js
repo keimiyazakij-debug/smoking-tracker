@@ -79,6 +79,10 @@ function render() {
   });
 }
 
-window.badgeView = { render };
+function grant() {
+  // 互換API: badgeController から呼ばれるが、描画は render で集約する
+}
+
+window.badgeView = { render, grant };
 
 })();

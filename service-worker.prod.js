@@ -1,4 +1,5 @@
-const CACHE_NAME = "smoking-log-v1.3";
+const CACHE_NAME = "smoking-log-v1.4";
+const APP_SHELL_PATH = "./index.html";
 const CACHE_FILES = [
   "./",
   "./index.html",
@@ -86,25 +87,27 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
+  const request = event.request;
+
   // Chrome の仕様: cross-origin な only-if-cached リクエストには respondWith しない
-  if (event.request.cache === "only-if-cached" && event.request.mode !== "same-origin") {
+  if (request.cache === "only-if-cached" && request.mode !== "same-origin") {
     return;
   }
 
-  if (event.request.mode === "navigate") {
+  if (request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request)
+      fetch(request)
         .then(response => {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put("./index.html", copy));
+          caches.open(CACHE_NAME).then(cache => cache.put(APP_SHELL_PATH, copy));
           return response;
         })
-        .catch(() => caches.match("./index.html"))
+        .catch(() => caches.match(APP_SHELL_PATH))
     );
     return;
   }
 
   event.respondWith(
-    caches.match(event.request).then(res => res || fetch(event.request))
+    caches.match(request).then(res => res || fetch(request))
   );
 });

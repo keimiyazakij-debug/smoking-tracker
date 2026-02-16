@@ -3,7 +3,11 @@
 const LOG_KEY = "dailyLogs";
 
 function loadLogs() {
-  return JSON.parse(localStorage.getItem(LOG_KEY)) || {};
+  try {
+    return JSON.parse(localStorage.getItem(LOG_KEY) || "{}");
+  } catch {
+    return {};
+  }
 }
 
 function saveLogs(logs) {
@@ -11,6 +15,10 @@ function saveLogs(logs) {
   if (typeof window !== "undefined" && typeof Event !== "undefined") {
     window.dispatchEvent(new Event("logs-changed"));
   }
+}
+
+function setLogs(logs) {
+  saveLogs(logs);
 }
 
 function addSmoke(date = new Date()) {
@@ -54,7 +62,7 @@ function getLastSmokeTime() {
 }
 
 function getConsecutiveLogDays() {
-  const logs = window.common.loadLogs();
+  const logs = loadLogs();
 
   // ログが1件以上ある日だけを抽出
   const dates = Object.keys(logs)
@@ -85,6 +93,7 @@ window.logModel = {
   addSmoke,
   removeLastSmoke,
   getLogs,
+  setLogs,
   getLastSmokeTime,
   getConsecutiveLogDays
 };

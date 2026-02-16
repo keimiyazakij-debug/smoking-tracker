@@ -1,77 +1,70 @@
 (function () {
 
-const DAILY_DATA_KEY = "dailyData";
+const MEMOS_KEY = "memos";
+const LEGACY_DAILY_DATA_KEY = "dailyData";
 
 function loadDailyData() {
   try {
-    const raw = JSON.parse(localStorage.getItem(DAILY_DATA_KEY) || "{}");
-    if (!raw || typeof raw !== "object") return {};
+    const rawText = localStorage.getItem(MEMOS_KEY);
+    if (rawText === null) return migrateLegacyDailyData();
+    const raw = JSON.parse(rawText);
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return migrateLegacyDailyData();
     return raw;
+  } catch {
+    return migrateLegacyDailyData();
+  }
+}
+
+function saveDailyData(data) {
+  const safe = data && typeof data === "object" && !Array.isArray(data) ? data : {};
+  localStorage.setItem(MEMOS_KEY, JSON.stringify(safe));
+}
+
+function migrateLegacyDailyData() {
+  try {
+    const legacy = JSON.parse(localStorage.getItem(LEGACY_DAILY_DATA_KEY) || "{}");
+    if (!legacy || typeof legacy !== "object" || Array.isArray(legacy)) {
+      return {};
+    }
+    const memos = {};
+    Object.keys(legacy).forEach((dateKey) => {
+      const memo = typeof legacy[dateKey]?.memo === "string" ? legacy[dateKey].memo : "";
+      if (memo.trim().length > 0) {
+        memos[dateKey] = memo;
+      }
+    });
+    saveDailyData(memos);
+    return memos;
   } catch {
     return {};
   }
 }
 
-function saveDailyData(data) {
-  localStorage.setItem(DAILY_DATA_KEY, JSON.stringify(data || {}));
-}
-
-function syncCountsFromLogs(logs = window.common.loadLogs()) {
-  const data = loadDailyData();
-  const allKeys = new Set([
-    ...Object.keys(data),
-    ...Object.keys(logs || {})
-  ]);
-
-  allKeys.forEach((dateKey) => {
-    const times = Array.isArray(logs?.[dateKey]) ? logs[dateKey] : [];
-    const current = data[dateKey] && typeof data[dateKey] === "object"
-      ? data[dateKey]
-      : {};
-    const memo = typeof current.memo === "string" ? current.memo : "";
-    const hasMemo = memo.trim().length > 0;
-    const count = times.length;
-
-    if (count === 0 && !hasMemo) {
-      delete data[dateKey];
-      return;
-    }
-
-    data[dateKey] = { count };
-    if (hasMemo) {
-      data[dateKey].memo = memo;
-    }
-  });
-
-  saveDailyData(data);
-  return data;
+// 旧API互換: 呼び出し側の破壊的変更を避けるため残す（memo専用構造では実質noop）
+function syncCountsFromLogs() {
+  return loadDailyData();
 }
 
 function getDailyInfo(dateKey) {
   if (!dateKey) return { count: 0, memo: "" };
-  const data = loadDailyData();
-  const entry = data[dateKey] || {};
+  const memos = loadDailyData();
+  const logs = window.logModel.getLogs();
   return {
-    count: Number.isInteger(entry.count) ? entry.count : 0,
-    memo: typeof entry.memo === "string" ? entry.memo : ""
+    count: Array.isArray(logs?.[dateKey]) ? logs[dateKey].length : 0,
+    memo: typeof memos[dateKey] === "string" ? memos[dateKey] : ""
   };
 }
 
 function upsertMemo(dateKey, memo) {
   if (!dateKey) return null;
-  const logs = window.common.loadLogs();
   const data = loadDailyData();
-  const count = Array.isArray(logs[dateKey]) ? logs[dateKey].length : 0;
   const normalizedMemo = typeof memo === "string" ? memo : "";
   const hasMemo = normalizedMemo.trim().length > 0;
 
-  if (!hasMemo && count === 0) {
+  if (!hasMemo) {
     delete data[dateKey];
   } else {
-    data[dateKey] = { count };
-    if (hasMemo) {
-      data[dateKey].memo = normalizedMemo;
-    }
+    data[dateKey] = normalizedMemo;
   }
 
   saveDailyData(data);

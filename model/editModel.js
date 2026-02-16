@@ -17,7 +17,7 @@ function open(dateKey, options = {}) {
   editState.scopeHour = hour;
   editState.untouchedTimes = [];
 
-  const logs = window.common.loadLogs();
+  const logs = window.logModel.getLogs();
   const times = logs[dateKey] || [];
 
   const scopedTimes = [];
@@ -59,7 +59,7 @@ function setDateKey(dateKey) {
 }
 
 function buildNextLogs(targetDateKey = null) {
-  const original = window.common.loadLogs();
+  const original = window.logModel.getLogs();
   const logs = JSON.parse(JSON.stringify(original || {}));
   const targetDate = targetDateKey || editState.dateKey;
   const sourceDate = editState.sourceDateKey || targetDate;
@@ -86,7 +86,8 @@ function buildNextLogs(targetDateKey = null) {
 }
 
 function hasChanges(targetDateKey = null) {
-  const current = normalizeLogs(window.common.loadLogs());
+  const currentSource = window.logModel.getLogs();
+  const current = normalizeLogs(currentSource);
   const next = normalizeLogs(buildNextLogs(targetDateKey));
   return JSON.stringify(current) !== JSON.stringify(next);
 }
@@ -104,7 +105,7 @@ function normalizeLogs(logs) {
 
 function save() {
   const logs = buildNextLogs(editState.dateKey);
-  window.common.saveLogs(logs);
+  window.logModel.setLogs(logs);
 }
 
 function getState() {

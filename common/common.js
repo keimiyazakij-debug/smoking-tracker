@@ -1,10 +1,5 @@
 window.common = window.common || {};
 
-// ===== カレンダー用の変数宣言 =====
-const today = new Date();
-let currentYear = today.getFullYear();
-let currentMonth = today.getMonth();
-
 // 日付取得用の関数
 function getDateKey(date = new Date()) {
   const tzOffset = date.getTimezoneOffset() * 60000;
@@ -66,22 +61,6 @@ function isDateLocked(dateInput) {
 
   const diffDays = differenceInDays(todayDate, targetDate);
   return diffDays > FREE_LIMIT_DAYS;
-}
-
-// 今日の喫煙データ
-function loadLogs() {
-  try {
-    return JSON.parse(localStorage.getItem("dailyLogs") || "{}");
-  } catch {
-    return {};
-  }
-}
-
-function saveLogs(logs) {
-  localStorage.setItem("dailyLogs", JSON.stringify(logs));
-  if (typeof window !== "undefined" && typeof Event !== "undefined") {
-    window.dispatchEvent(new Event("logs-changed"));
-  }
 }
 
 // 最新の喫煙データを取得
@@ -238,35 +217,32 @@ function parseDateKey(dateKey) {
   return new Date(y, m - 1, d);
 }
 
-// ===== private helper =====
-function isNextDay(dateKey, nextKey) {
-  const [y, m, d] = dateKey.split('-').map(Number);
-  const dt = new Date(y, m - 1, d + 1);
-  const y2 = dt.getFullYear();
-  const m2 = String(dt.getMonth() + 1).padStart(2, '0');
-  const d2 = String(dt.getDate()).padStart(2, '0');
-  return `${y2}-${m2}-${d2}` === nextKey;
+/**
+ * 日付の状態を返す
+ * - key未存在: 未記録
+ * - key存在 & length===0: 禁煙成功
+ * - key存在 & length>0: 喫煙日
+ */
+function getDayStatus(date, dailyLogs = {}) {
+  const logs = dailyLogs?.[date];
+  if (logs === undefined) return "unrecorded";
+  if (Array.isArray(logs) && logs.length > 0) return "smoke";
+  return "success";
 }
 
 function groupLogsByDate(logs) {
-  const dates = Object.keys(logs);
+  const dates = Object.keys(logs || {}).sort();
   if (dates.length === 0) return [];
 
-  const start = new Date(dates.sort()[0]);
-  const end = new Date(); // 今日
-
-
-  const result = [];
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    const key = getDateKey(d);
-    const times = logs[key] || [];
-
-    result.push({
+  return dates.map((key) => {
+    const times = Array.isArray(logs[key]) ? logs[key] : [];
+    const status = getDayStatus(key, logs);
+    return {
       date: key,
       smoke: times.length,
-      logged: times.length > 0
-    });
-  }  return result;
+      logged: status !== "unrecorded"
+    };
+  });
 }
 
 function getConsecutiveNoSmokeDays(logs, todayKey) {
@@ -280,8 +256,8 @@ function getConsecutiveNoSmokeDays(logs, todayKey) {
 
   while (d >= earliestDate) {
     const key = getDateKey(d);
-    const times = logs[key] || [];
-    if (times.length > 0) break;
+    const status = getDayStatus(key, logs);
+    if (status === "unrecorded" || status === "smoke") break;
     count++;
     d.setDate(d.getDate() - 1);
   }
@@ -294,6 +270,7 @@ window.common.getDateKey = getDateKey;
 window.common.formatDate = formatDate;
 window.common.formatDurationFromMinutes = formatDurationFromMinutes;
 window.common.parseDateKey = parseDateKey;
+window.common.getDayStatus = getDayStatus;
 window.common.differenceInDays = differenceInDays;
 window.common.isDateLocked = isDateLocked;
 window.common.FREE_LIMIT_DAYS = FREE_LIMIT_DAYS;
@@ -305,8 +282,6 @@ window.isPremium = () => getIsPremium();
 window.isDevMode = isDevMode;
 
 // ログ関連
-window.common.loadLogs = loadLogs;
-window.common.saveLogs = saveLogs;
 window.common.getLastSmokeTime = getLastSmokeTime;
 
 // 集計・文脈

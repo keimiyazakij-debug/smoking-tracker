@@ -2,6 +2,7 @@
 // view/editView.js
 const EDIT_LOCK_MESSAGE = "60日より前のデータはプレミアム版で編集できます";
 const EDIT_FUTURE_MESSAGE = "未来の日付・時刻は入力できません";
+const EDIT_EMPTY_MESSAGE = "時刻を1件以上入力してください";
 let lastRenderedState = null;
 
 // DOMの書き換え
@@ -154,16 +155,31 @@ function updateDateLockState() {
   const locked = isLockedDate(dateInput.value);
   const futureDate = isFutureDate(dateInput.value);
   const futureTime = hasFutureTimeInUi(dateInput.value);
-  saveBtn.disabled = locked || futureDate || futureTime;
+  const hasAnyTime = hasAnyTimeInUi();
+  saveBtn.disabled = locked || futureDate || futureTime || !hasAnyTime;
   if (notice) {
     if (locked) {
       notice.textContent = EDIT_LOCK_MESSAGE;
     } else if (futureDate || futureTime) {
       notice.textContent = EDIT_FUTURE_MESSAGE;
+    } else if (!hasAnyTime) {
+      notice.textContent = EDIT_EMPTY_MESSAGE;
     } else {
       notice.textContent = "";
     }
   }
+}
+
+function hasAnyTimeInUi() {
+  const rows = document.querySelectorAll(".time-tag");
+  if (!rows || rows.length === 0) return false;
+  return Array.from(rows).some((row) => {
+    const hourSelect = row.querySelector(".time-select-hour");
+    const minuteSelect = row.querySelector(".time-select-minute");
+    if (!hourSelect || !minuteSelect) return false;
+    return String(hourSelect.value || "").length > 0 &&
+      String(minuteSelect.value || "").length > 0;
+  });
 }
 
 function open(state) {

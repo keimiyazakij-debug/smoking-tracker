@@ -132,6 +132,17 @@
   text-align: center;
 }
 
+.timeline-delete-all-btn {
+  display: none;
+  align-self: flex-start;
+  font-size: var(--text-micro);
+  padding: 6px 10px;
+  border: 1px solid #f1c4c4;
+  background: #fff5f5;
+  color: #b44;
+  border-radius: var(--radius-small);
+}
+
 /* 今日の日付: 2px primary border */
 .today-date-highlight {
   border: 2px solid var(--primary);
@@ -403,4 +414,3 @@
   background: transparent;
   color: var(--color-primary);
 }
-

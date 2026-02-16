@@ -1,75 +1,158 @@
 window.statsView = {
-  chart: null,
+  charts: {},
 
   bind(controller) {
-    document.getElementById('stats-prev').onclick  = () => controller.movePrev();
-    document.getElementById('stats-next').onclick  = () => controller.moveNext();
-    document.getElementById('range-week').onclick  = () => controller.changeRange('week');
-    document.getElementById('range-month').onclick = () => controller.changeRange('month');
-    document.getElementById('graph-daily').onclick = () => controller.changeGraph('daily');
-    document.getElementById('graph-hourly').onclick = () => controller.changeGraph('hourly');
+    const prevBtn = document.getElementById('stats-prev');
+    const nextBtn = document.getElementById('stats-next');
+    const weekBtn = document.getElementById('range-week');
+    const monthBtn = document.getElementById('range-month');
+    const allBtn = document.getElementById('range-all');
+    const dailyBtn = document.getElementById('graph-daily');
+    const hourlyBtn = document.getElementById('graph-hourly');
+    const weekdayBtn = document.getElementById('graph-weekday');
+
+    if (prevBtn) prevBtn.onclick = () => controller.movePrev();
+    if (nextBtn) nextBtn.onclick = () => controller.moveNext();
+    if (weekBtn) weekBtn.onclick = () => controller.changeRange('week');
+    if (monthBtn) monthBtn.onclick = () => controller.changeRange('month');
+    if (allBtn) allBtn.onclick = () => controller.changeRange('all');
+    if (dailyBtn) dailyBtn.onclick = () => controller.changeGraph('primary');
+    if (hourlyBtn) hourlyBtn.onclick = () => controller.changeGraph('hourly');
+    if (weekdayBtn) weekdayBtn.onclick = () => controller.changeGraph('weekday');
   },
 
   render(state) {
     const titleEl = document.getElementById('stats-title');
     const labelEl = document.getElementById('stats-label');
-    const canvasEl = document.getElementById('stats-chart');
     const totalHighlightEl = document.getElementById('stats-total-highlight');
     const rangeWeekEl = document.getElementById('range-week');
     const rangeMonthEl = document.getElementById('range-month');
+    const rangeAllEl = document.getElementById('range-all');
+    const dailyBtn = document.getElementById('graph-daily');
+    const hourlyBtn = document.getElementById('graph-hourly');
+    const weekdayBtn = document.getElementById('graph-weekday');
     const curTotalEl = document.getElementById('stats-current-total');
     const curAvgEl = document.getElementById('stats-current-avg');
     const prevTotalEl = document.getElementById('stats-prev-total');
     const prevAvgEl = document.getElementById('stats-prev-avg');
     const freeNoticeEl = document.getElementById('statsFreeNotice');
-    if (!titleEl || !labelEl || !canvasEl) return;
+    const prevBtn = document.getElementById('stats-prev');
+    const nextBtn = document.getElementById('stats-next');
 
-    titleEl.textContent = state.title;
-    labelEl.textContent = state.label;
-    // Design System v1.0: 週/月 セグメントの選択状態
-    if (rangeWeekEl && rangeMonthEl) {
-      rangeWeekEl.classList.toggle('is-active', state.rangeType === 'week');
-      rangeMonthEl.classList.toggle('is-active', state.rangeType === 'month');
+    if (titleEl) {
+      titleEl.textContent = state.chart?.title || state.title || '';
     }
-    // Design System v1.0: 合計値主表示
+    if (labelEl) labelEl.textContent = state.label || '';
+
+    if (rangeWeekEl) rangeWeekEl.classList.toggle('is-active', state.rangeType === 'week');
+    if (rangeMonthEl) rangeMonthEl.classList.toggle('is-active', state.rangeType === 'month');
+    if (rangeAllEl) rangeAllEl.classList.toggle('is-active', state.rangeType === 'all');
+
+    if (dailyBtn) {
+      dailyBtn.textContent = state.graphLabels?.primary || '日別';
+      dailyBtn.classList.toggle('is-active', state.graphType === 'primary');
+    }
+    if (hourlyBtn) {
+      hourlyBtn.textContent = state.graphLabels?.hourly || '時間帯別';
+      hourlyBtn.classList.toggle('is-active', state.graphType === 'hourly');
+    }
+    if (weekdayBtn) {
+      weekdayBtn.textContent = state.graphLabels?.weekday || '曜日別';
+      weekdayBtn.disabled = !state.showWeekdayButton;
+      weekdayBtn.classList.toggle('is-active', state.graphType === 'weekday');
+    }
+
+    if (prevBtn) prevBtn.style.visibility = state.showNavigation ? 'visible' : 'hidden';
+    if (nextBtn) nextBtn.style.visibility = state.showNavigation ? 'visible' : 'hidden';
+
     if (totalHighlightEl && state.summary) {
-      const periodLabel = state.rangeType === 'month' ? '今月合計' : '今週合計';
-      totalHighlightEl.innerHTML = `${periodLabel} <strong>${state.summary.total}本</strong>`;
+      const prefix = state.rangeType === 'week'
+        ? '今週合計'
+        : state.rangeType === 'month'
+          ? '今月合計'
+          : '全期間合計';
+      totalHighlightEl.innerHTML = `${prefix} <strong>${state.summary.total}本</strong>`;
     }
 
-    if (state.summary && curTotalEl && curAvgEl && prevTotalEl && prevAvgEl) {
-      const avg = state.summary.avg.toFixed(1);
-      const prevAvg = state.summary.prevAvg.toFixed(1);
-      const isMonth = state.rangeType === 'month';
-      const currentLabel = isMonth ? '月間' : '週間';
-      const prevLabel = isMonth ? '前月' : '前週';
-      curTotalEl.textContent = `${currentLabel}合計: ${state.summary.total}本`;
-      curAvgEl.textContent = `${currentLabel}平均: ${avg}本/日`;
-      prevTotalEl.textContent = `${prevLabel}合計: ${state.summary.prevTotal}本`;
-      prevAvgEl.textContent = `${prevLabel}平均: ${prevAvg}本/日`;
+    if (curTotalEl && state.summary) {
+      curTotalEl.textContent = `合計: ${state.summary.total}本`;
+    }
+
+    if (curAvgEl && state.summary) {
+      if (state.summary.showPrev) {
+        if (state.summary.percent === null) {
+          curAvgEl.textContent = `前期間比較: ${state.summary.diff >= 0 ? '+' : ''}${state.summary.diff}本`;
+        } else {
+          curAvgEl.textContent = `前期間比較: ${state.summary.diff >= 0 ? '+' : ''}${state.summary.diff}本 (${state.summary.percent}%)`;
+        }
+      } else {
+        curAvgEl.textContent = '前期間比較: -';
+      }
+    }
+
+    if (prevTotalEl && state.summary) {
+      prevTotalEl.textContent = state.summary.maxDate
+        ? `最大: ${state.summary.max}本（${state.summary.maxDate}）`
+        : '最大: -';
+    }
+    if (prevAvgEl && state.summary) {
+      prevAvgEl.textContent = state.summary.minDate
+        ? `最小: ${state.summary.min}本（${state.summary.minDate}）`
+        : '最小: -';
     }
     if (freeNoticeEl) {
       freeNoticeEl.textContent = state.freeNotice || '';
     }
 
-    if (!this.chart) {
-      const ctx = canvasEl.getContext('2d');
-      const getStyle = window.getComputedStyle
-        ? window.getComputedStyle.bind(window)
-        : null;
-      const rootStyle = getStyle
-        ? getStyle(document.documentElement)
-        : { getPropertyValue: () => '' };
-      const primary = rootStyle.getPropertyValue('--primary').trim() || '#0066FF';
-      const secondary = rootStyle.getPropertyValue('--text-secondary').trim() || '#6E6E6E';
-      const grid = rootStyle.getPropertyValue('--card-bg').trim() || '#F8F8F8';
-      const microTextSize = parseInt(rootStyle.getPropertyValue('--text-micro'), 10) || 14;
-      this.chart = new window.Chart(ctx, {
+    this.renderSection(1, state.chart || null);
+    this.renderSection(2, null);
+    this.renderSection(3, null);
+  },
+
+  renderSection(index, section) {
+    const sectionEl = document.getElementById(`stats-chart-${index}-section`);
+    const wrapEl = document.getElementById(`stats-chart-${index}-wrap`);
+    const canvasEl = document.getElementById(`stats-chart-${index}`);
+    if (!sectionEl || !wrapEl || !canvasEl) return;
+
+    if (!section) {
+      sectionEl.style.display = 'none';
+      return;
+    }
+
+    sectionEl.style.display = 'block';
+    wrapEl.classList.toggle('is-scroll', !!section.scrollable);
+
+    if (section.scrollable) {
+      const width = Math.max(640, (section.labels?.length || 1) * 56);
+      canvasEl.style.width = `${width}px`;
+    } else {
+      canvasEl.style.width = '100%';
+    }
+
+    this.renderChart(index, canvasEl, section);
+  },
+
+  renderChart(index, canvasEl, section) {
+    if (!window.Chart || !canvasEl?.getContext) return;
+
+    const ctx = canvasEl.getContext('2d');
+    if (!ctx) return;
+
+    const primary = getCssVar('--primary', '#0066FF');
+    const secondary = getCssVar('--text-secondary', '#6E6E6E');
+    const grid = getCssVar('--card-bg', '#F8F8F8');
+    const microTextSize = parseInt(getCssVar('--text-micro', '14'), 10) || 14;
+    const xTickOptions = buildXAxisTickOptions(section.labels);
+
+    const existing = this.charts[index];
+    if (!existing) {
+      this.charts[index] = new window.Chart(ctx, {
         type: 'bar',
         data: {
-          labels: state.labels,
+          labels: section.labels,
           datasets: [{
-            data: state.values,
+            data: section.values,
             backgroundColor: primary,
             borderColor: primary,
             borderWidth: 1
@@ -83,10 +166,10 @@ window.statsView = {
           scales: {
             y: {
               beginAtZero: true,
-              max: state.yMax,
+              max: section.yMax,
               ticks: {
-                precision: 0,
-                maxTicksLimit: 4,
+                precision: 1,
+                maxTicksLimit: 5,
                 font: { size: microTextSize },
                 color: secondary
               },
@@ -97,6 +180,8 @@ window.statsView = {
             },
             x: {
               ticks: {
+                autoSkip: xTickOptions.autoSkip,
+                maxTicksLimit: xTickOptions.maxTicksLimit,
                 font: { size: microTextSize },
                 color: secondary
               },
@@ -111,24 +196,34 @@ window.statsView = {
       return;
     }
 
-    this.chart.data.labels = state.labels;
-    this.chart.data.datasets[0].data = state.values;
-    const getStyle = window.getComputedStyle
-      ? window.getComputedStyle.bind(window)
-      : null;
-    const rootStyle = getStyle
-      ? getStyle(document.documentElement)
-      : { getPropertyValue: () => '' };
-    const primary = rootStyle.getPropertyValue('--primary').trim() || '#0066FF';
-    const secondary = rootStyle.getPropertyValue('--text-secondary').trim() || '#6E6E6E';
-    const microTextSize = parseInt(rootStyle.getPropertyValue('--text-micro'), 10) || 14;
-    this.chart.data.datasets[0].backgroundColor = primary;
-    this.chart.data.datasets[0].borderColor = primary;
-    this.chart.options.scales.y.max = state.yMax;
-    this.chart.options.scales.y.ticks.font.size = microTextSize;
-    this.chart.options.scales.y.ticks.color = secondary;
-    this.chart.options.scales.x.ticks.font.size = microTextSize;
-    this.chart.options.scales.x.ticks.color = secondary;
-    this.chart.update('none');
+    existing.data.labels = section.labels;
+    existing.data.datasets[0].data = section.values;
+    existing.data.datasets[0].backgroundColor = primary;
+    existing.data.datasets[0].borderColor = primary;
+    existing.options.scales.y.max = section.yMax;
+    existing.options.scales.y.ticks.color = secondary;
+    existing.options.scales.y.ticks.font.size = microTextSize;
+    existing.options.scales.x.ticks.color = secondary;
+    existing.options.scales.x.ticks.font.size = microTextSize;
+    existing.options.scales.x.ticks.autoSkip = xTickOptions.autoSkip;
+    existing.options.scales.x.ticks.maxTicksLimit = xTickOptions.maxTicksLimit;
+    existing.update('none');
   }
 };
+
+function buildXAxisTickOptions(labels) {
+  const count = Array.isArray(labels) ? labels.length : 0;
+  if (count <= 12) {
+    return { autoSkip: false, maxTicksLimit: 12 };
+  }
+  if (count <= 24) {
+    return { autoSkip: true, maxTicksLimit: 12 };
+  }
+  return { autoSkip: true, maxTicksLimit: 10 };
+}
+
+function getCssVar(name, fallback) {
+  if (!window.getComputedStyle) return fallback;
+  const style = window.getComputedStyle(document.documentElement);
+  return style.getPropertyValue(name).trim() || fallback;
+}

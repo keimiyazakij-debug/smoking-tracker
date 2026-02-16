@@ -30,34 +30,7 @@ function bootstrap() {
 document.addEventListener("DOMContentLoaded", bootstrap);
 
 function openInitialRoute() {
-  const params = new URLSearchParams(window.location.search);
-  const dateFromQuery = params.get("date");
-  const fromRaw = params.get("from");
-  const from = fromRaw === "calendar" || fromRaw === "home" ? fromRaw : null;
-  const isTimelineRoute = window.location.pathname.endsWith("/timeline");
-  const isCalendarRoute = window.location.pathname.endsWith("/calendar");
-
-  if (isTimelineRoute) {
-    const hasDrilldown = !!dateFromQuery && !!from;
-    const dateKey = dateFromQuery || window.common.getDateKey(new Date());
-    if (window.timelineController?.openTimeline) {
-      window.timelineController.openTimeline(dateKey, {
-        from: hasDrilldown ? from : null,
-        sourceDateKey: hasDrilldown ? dateKey : null,
-        resetDrilldown: !hasDrilldown,
-        updateHistory: false
-      });
-    }
-    return;
-  }
-
-  if (isCalendarRoute) {
-    showTab("calendar", { updateHistory: false });
-    if (window.calendarController?.refresh) {
-      window.calendarController.refresh();
-    }
-    return;
-  }
+  applyRouteFromLocation();
 }
 
 function updateLayoutHeights() {
@@ -209,8 +182,13 @@ function showTab(tabId, options = {}) {
     }
   }
   if (tabId === 'timeline' && window.timelineController?.ensureRendered) {
+    const preferredDateKey =
+      activeTab?.id === "calendar" && window.calendarController?.getSelectedDateKey
+        ? window.calendarController.getSelectedDateKey()
+        : null;
     window.timelineController.ensureRendered({
-      resetDrilldown: options.resetTimelineContext === true
+      resetDrilldown: options.resetTimelineContext === true,
+      preferredDateKey
     });
   }
   if (tabId === "calendar" && window.calendarController?.restoreViewState) {
@@ -255,31 +233,49 @@ window.addEventListener("storage", (e) => {
   if (e && e.key === "dailyLogs") onLogChanged();
 });
 window.addEventListener("popstate", (event) => {
+  if (applyRouteFromLocation()) {
+    return;
+  }
+  const nextView = event?.state?.view || "calendar";
+  showTab(nextView, { updateHistory: false });
+});
+
+function parseRouteContext() {
   const params = new URLSearchParams(window.location.search);
   const dateFromQuery = params.get("date");
   const fromRaw = params.get("from");
   const from = fromRaw === "calendar" || fromRaw === "home" ? fromRaw : null;
   const isTimelineRoute = window.location.pathname.endsWith("/timeline");
   const isCalendarRoute = window.location.pathname.endsWith("/calendar");
-  if (isTimelineRoute) {
-    const hasDrilldown = !!dateFromQuery && !!from;
-    const dateKey = dateFromQuery || window.common.getDateKey(new Date());
-    window.timelineController?.openTimeline?.(dateKey, {
-      from: hasDrilldown ? from : null,
-      sourceDateKey: hasDrilldown ? dateKey : null,
-      resetDrilldown: !hasDrilldown,
+  const hasDrilldown = !!dateFromQuery && !!from;
+
+  return {
+    isTimelineRoute,
+    isCalendarRoute,
+    hasDrilldown,
+    dateKey: dateFromQuery || window.common.getDateKey(new Date()),
+    from
+  };
+}
+
+function applyRouteFromLocation() {
+  const route = parseRouteContext();
+  if (route.isTimelineRoute) {
+    window.timelineController?.openTimeline?.(route.dateKey, {
+      from: route.hasDrilldown ? route.from : null,
+      sourceDateKey: route.hasDrilldown ? route.dateKey : null,
+      resetDrilldown: !route.hasDrilldown,
       updateHistory: false
     });
-    return;
+    return true;
   }
-  if (isCalendarRoute) {
+  if (route.isCalendarRoute) {
     showTab("calendar", { updateHistory: false });
     window.calendarController?.refresh?.();
-    return;
+    return true;
   }
-  const nextView = event?.state?.view || "calendar";
-  showTab(nextView, { updateHistory: false });
-});
+  return false;
+}
 
 // ★ テスト用に公開
 window.appController = { bootstrap,};

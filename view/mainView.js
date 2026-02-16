@@ -89,6 +89,17 @@ function render(ctx) {
     }
   }
 
+  const successWrap = document.getElementById("yesterdaySuccessWrap");
+  const logsForSuccess = window.logModel?.getLogs ? window.logModel.getLogs() : {};
+  const todayDate = window.common.parseDateKey(todayKey);
+  const yesterdayDate = new Date(todayDate);
+  yesterdayDate.setDate(todayDate.getDate() - 1);
+  const yesterdayKey = window.common.getDateKey(yesterdayDate);
+  const showSuccessBtn = logsForSuccess?.[yesterdayKey] === undefined;
+  if (successWrap) {
+    successWrap.style.display = showSuccessBtn ? "block" : "none";
+  }
+
   // プログレスバーを更新
   const pct = Math.min(100, count / s.dailyTarget * 100);
   const progressEl = document.getElementById("progress");

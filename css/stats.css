@@ -38,23 +38,7 @@
 .stats-graph-buttons {
   display: flex;
   gap: var(--spacing-tight);
-  flex-wrap: wrap;
-}
-
-#stats-chart {
-  width: 100%;
-  height: 280px;
-}
-
-#stats-chart-wrap {
-  height: 280px;
-  width: 100%;
-  margin-top: var(--spacing-tight); /* 合計値との間: 16px */
-}
-
-#stats-chart {
-  width: 100%;
-  height: 100%;
+  flex-wrap: nowrap;
 }
 
 /* stats summary card */
@@ -114,7 +98,8 @@
 }
 
 #stats #range-week,
-#stats #range-month {
+#stats #range-month,
+#stats #range-all {
   min-height: 40px;
   height: 40px;
   padding: 0 16px;
@@ -129,17 +114,32 @@
 }
 
 #stats #range-week.is-active,
-#stats #range-month.is-active {
+#stats #range-month.is-active,
+#stats #range-all.is-active {
   background: var(--primary);
   color: #FFFFFF;
 }
 
-/* 集計内容ボタンは secondary を維持しつつ階層を抑える */
 #stats #graph-daily,
-#stats #graph-hourly {
+#stats #graph-hourly,
+#stats #graph-weekday {
   min-height: 40px;
   height: 40px;
   font-size: var(--text-caption);
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+#stats #graph-daily.is-active,
+#stats #graph-hourly.is-active,
+#stats #graph-weekday.is-active {
+  background: var(--primary);
+  color: #FFFFFF;
+}
+
+#stats #graph-weekday:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* Design System v1.0: 合計値主表示 */
@@ -151,6 +151,30 @@
 
 .stats-total-highlight strong {
   font-weight: 700;
+}
+
+.stats-chart-section {
+  margin-top: var(--space-tight);
+}
+
+.stats-chart-subtitle {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  margin: 0 0 6px;
+}
+
+.stats-chart-wrap {
+  width: 100%;
+  height: 220px;
+}
+
+.stats-chart-wrap.is-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.stats-chart-wrap canvas {
+  height: 220px;
 }
 
 .stats-summary-card {

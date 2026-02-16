@@ -1,10 +1,28 @@
 (function () {
 let currentDateKey = null;
-let returnToMainOnSave = false;
 let routeSource = null; // "home" | "calendar" | null
 let sourceDateKey = null;
 const LOCKED_MSG = "60日より前のデータはプレミアム版で閲覧できます。";
 const ROUTE_BASE_PATH = getRouteBasePath();
+
+function buildHistoryState(dateKey) {
+  return {
+    view: "timeline",
+    date: dateKey,
+    from: routeSource,
+    sourceDateKey
+  };
+}
+
+function notifyPremiumLock() {
+  if (window.messageController?.enqueue) {
+    window.messageController.enqueue({
+      type: "premium_lock",
+      text: LOCKED_MSG,
+      priority: -1
+    });
+  }
+}
 
 function isLocked(dateKey) {
   if (!window.common?.isDateLocked) return false;
@@ -54,10 +72,21 @@ function updateBackLink() {
   link.href = ROUTE_BASE_PATH;
 }
 
+function applyTimelineMap(dateKey, map) {
+  updateTimelineHeader(dateKey, map);
+  if (window.timelineView?.setDateKey) {
+    window.timelineView.setDateKey(dateKey);
+  }
+  if (window.timelineView?.setSelectedSummary) {
+    const total = Object.values(map).reduce((sum, arr) => sum + arr.length, 0);
+    window.timelineView.setSelectedSummary(dateKey, total);
+  }
+  window.timelineView.render(map);
+}
+
 // ===== タイムライン画面の表示 =====
 function openTimeline(dateKey, options = {}) {
   currentDateKey = dateKey;
-  returnToMainOnSave = !!options.returnToMainOnSave;
   const nextFrom = resolveFrom(options.from);
   const nextSourceDateKey =
     typeof options.sourceDateKey === "string" ? options.sourceDateKey : null;
@@ -78,12 +107,7 @@ function openTimeline(dateKey, options = {}) {
   if (shouldUpdateHistory) {
     const url = buildTimelineUrl(dateKey);
     window.history.pushState(
-      {
-        view: "timeline",
-        date: dateKey,
-        from: routeSource,
-        sourceDateKey
-      },
+      buildHistoryState(dateKey),
       "",
       url
     );
@@ -95,15 +119,7 @@ function openTimeline(dateKey, options = {}) {
   }
 
   const map = buildTimelineMap(dateKey);
-  updateTimelineHeader(dateKey, map);
-  if (window.timelineView?.setDateKey) {
-    window.timelineView.setDateKey(dateKey);
-  }
-  if (window.timelineView?.setSelectedSummary) {
-    const total = Object.values(map).reduce((sum, arr) => sum + arr.length, 0);
-    window.timelineView.setSelectedSummary(dateKey, total);
-  }
-  window.timelineView.render(map);
+  applyTimelineMap(dateKey, map);
 }
 
 // ===== タイムライン画面の再表示 =====
@@ -114,15 +130,7 @@ function refreshTimeline(dateKey) {
   }
 
   const map = buildTimelineMap(dateKey);
-  updateTimelineHeader(dateKey, map);
-  if (window.timelineView?.setDateKey) {
-    window.timelineView.setDateKey(dateKey);
-  }
-  if (window.timelineView?.setSelectedSummary) {
-    const total = Object.values(map).reduce((sum, arr) => sum + arr.length, 0);
-    window.timelineView.setSelectedSummary(dateKey, total);
-  }
-  window.timelineView.render(map);
+  applyTimelineMap(dateKey, map);
 }
 
 function refreshCurrent() {
@@ -136,17 +144,15 @@ function ensureRendered(options = {}) {
     routeSource = null;
     sourceDateKey = null;
   }
+  if (typeof options.preferredDateKey === "string" && options.preferredDateKey) {
+    currentDateKey = options.preferredDateKey;
+  }
   if (!currentDateKey) {
     currentDateKey = window.common.getDateKey(new Date());
   }
   updateBackLink();
   window.history.replaceState(
-    {
-      view: "timeline",
-      date: currentDateKey,
-      from: routeSource,
-      sourceDateKey
-    },
+    buildHistoryState(currentDateKey),
     "",
     buildTimelineUrl(currentDateKey)
   );
@@ -158,7 +164,7 @@ function ensureRendered(options = {}) {
 }
 
 function buildTimelineMap(dateKey) {
-  const logs = window.common.loadLogs();
+  const logs = window.logModel.getLogs();
   const times = logs[dateKey] || [];
   const map = {};
 
@@ -180,6 +186,7 @@ function updateTimelineHeader(dateKey, map) {
   const title = document.getElementById("timelineTitle");
   const summary = document.getElementById("timelineSummary");
   const nextBtn = document.getElementById("nextTimelineDay");
+  const deleteAllBtn = document.getElementById("timelineDeleteAllBtn");
   const todayKey = window.common.getDateKey(new Date());
   if (title) {
     title.textContent = `${dateKey.replaceAll("-", "/")}`;
@@ -191,6 +198,11 @@ function updateTimelineHeader(dateKey, map) {
   if (nextBtn) {
     nextBtn.style.visibility = dateKey >= todayKey ? "hidden" : "visible";
   }
+  if (deleteAllBtn) {
+    const logs = window.logModel.getLogs();
+    const hasLogsEntry = Object.prototype.hasOwnProperty.call(logs, dateKey);
+    deleteAllBtn.style.display = hasLogsEntry ? "inline-block" : "none";
+  }
 }
 
 function goPrevDay() {
@@ -199,23 +211,12 @@ function goPrevDay() {
   d.setDate(d.getDate() - 1);
   const prevKey = window.common.getDateKey(d);
   if (isLocked(prevKey)) {
-    if (window.messageController?.enqueue) {
-      window.messageController.enqueue({
-        type: "premium_lock",
-        text: LOCKED_MSG,
-        priority: -1
-      });
-    }
+    notifyPremiumLock();
     return;
   }
   currentDateKey = prevKey;
   window.history.replaceState(
-    {
-      view: "timeline",
-      date: prevKey,
-      from: routeSource,
-      sourceDateKey
-    },
+    buildHistoryState(prevKey),
     "",
     buildTimelineUrl(prevKey)
   );
@@ -230,23 +231,12 @@ function goNextDay() {
   const todayKey = window.common.getDateKey(new Date());
   if (nextKey > todayKey) return;
   if (isLocked(nextKey)) {
-    if (window.messageController?.enqueue) {
-      window.messageController.enqueue({
-        type: "premium_lock",
-        text: LOCKED_MSG,
-        priority: -1
-      });
-    }
+    notifyPremiumLock();
     return;
   }
   currentDateKey = nextKey;
   window.history.replaceState(
-    {
-      view: "timeline",
-      date: nextKey,
-      from: routeSource,
-      sourceDateKey
-    },
+    buildHistoryState(nextKey),
     "",
     buildTimelineUrl(nextKey)
   );
@@ -299,18 +289,10 @@ function getRouteBasePath() {
 function openEditFromTimeline(hour = null) {
   if (!currentDateKey) return;
   if (isLocked(currentDateKey)) {
-    if (window.messageController?.enqueue) {
-      window.messageController.enqueue({
-        type: "premium_lock",
-        text: LOCKED_MSG,
-        priority: -1
-      });
-    }
+    notifyPremiumLock();
     return;
   }
-  const options = {
-    returnToMainOnSave
-  };
+  const options = {};
   if (Number.isInteger(hour) && hour >= 0 && hour <= 23) {
     options.hour = hour;
   }
@@ -319,6 +301,23 @@ function openEditFromTimeline(hour = null) {
 
 function openEditForHour(hour) {
   openEditFromTimeline(hour);
+}
+
+function deleteAllForDate(dateKey) {
+  if (!dateKey) return;
+  const logs = window.logModel.getLogs();
+  if (!Object.prototype.hasOwnProperty.call(logs, dateKey)) return;
+  delete logs[dateKey];
+  window.logModel.setLogs(logs);
+  if (typeof window.onLogChanged === "function") {
+    window.onLogChanged(dateKey);
+  }
+  refreshTimeline(dateKey);
+}
+
+function deleteAllForCurrentDate() {
+  if (!currentDateKey) return;
+  deleteAllForDate(currentDateKey);
 }
 
 function renderLockedTimeline(dateKey) {
@@ -365,6 +364,8 @@ window.timelineController = {
   goBack,
   openEditFromTimeline,
   openEditForHour,
+  deleteAllForDate,
+  deleteAllForCurrentDate,
   refreshTimeline,
   refreshCurrent,
   ensureRendered,

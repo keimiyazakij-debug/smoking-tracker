@@ -226,6 +226,10 @@
   margin-top: 0;
 }
 
+#yesterdaySuccessWrap {
+  display: none;
+}
+
 .smoke-help {
   font-size: var(--text-caption);
   color: var(--color-text-secondary);

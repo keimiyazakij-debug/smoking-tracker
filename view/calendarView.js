@@ -78,7 +78,9 @@ function decorate(cell, day, ctx) {
   if (day.dateKey === ctx.selectedDateKey) cell.classList.add("selected");
   if (day.dateKey===ctx.todayKey) cell.classList.add("today");
   if (day.dateKey<ctx.todayKey) cell.classList.add("past");
-  if (!day.hasLog) cell.classList.add("no-log");
+  if (day.status === "unrecorded") cell.classList.add("unrecorded");
+  if (day.status === "success") cell.classList.add("success");
+  if (day.status === "smoke") cell.classList.add("smoke");
   if (day.isLocked) cell.classList.add("locked");
   // Design System v1.0: 本数は数字のみ（単位なし）+ count-bg を子要素化
   cell.innerHTML = `
@@ -104,12 +106,15 @@ function decorate(cell, day, ctx) {
   }
 
   const countBgEl = cell.querySelector(".count-bg");
-  if (countBgEl && day.count != null) {
-    // 本数背景ルール: 目標達成(<=target)は薄緑、超過(>target)は薄赤
-    if (day.count <= (ctx.target ?? 0)) {
-      countBgEl.classList.add("count-achieved");
-    } else {
-      countBgEl.classList.add("count-exceeded");
+  if (countBgEl) {
+    if (day.status === "unrecorded") {
+      countBgEl.classList.add("count-unrecorded");
+    } else if (day.count != null) {
+      if (day.count <= (ctx.target ?? 0)) {
+        countBgEl.classList.add("count-achieved");
+      } else {
+        countBgEl.classList.add("count-exceeded");
+      }
     }
   }
 }

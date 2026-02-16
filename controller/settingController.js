@@ -1,7 +1,4 @@
 (function () {
-
-const holidays = {};
-let settingsInputs = [];
 const DEBUG_SECTION_ID = "settingsDebugSection";
 const DEBUG_TOGGLE_ID = "debugPremiumToggle";
 const DEBUG_CACHE_ID = "debugCacheName";
@@ -11,6 +8,22 @@ const IMPORT_FILE_INPUT_ID = "importDataFile";
 const DEV_MODE_FALLBACK =
   (typeof location !== "undefined" && typeof location.hostname === "string" && location.hostname === "localhost") ||
   (typeof location !== "undefined" && typeof location.hostname === "string" && location.hostname.includes("github.io"));
+
+function notifyLogChanged(dateKey) {
+  if (typeof window.onLogChanged === "function") {
+    window.onLogChanged(dateKey);
+  }
+}
+
+function saveSettingInputValue(input) {
+  const settings = window.settingModel.loadSettings();
+  settings[input.id] = Number(input.value);
+  window.settingModel.saveSettings(settings);
+}
+
+function getSettingInputs() {
+  return Array.from(document.querySelectorAll(".setting-input"));
+}
 
 function ensurePremiumApi() {
   // common.js が先に読み込まれる前提だが、テスト環境ではフォールバックを用意
@@ -40,17 +53,13 @@ function ensurePremiumApi() {
 // ===== 設定画面 =====
 document.addEventListener("DOMContentLoaded", () => {
   ensurePremiumApi();
-  settingsInputs = Array.from(document.querySelectorAll(".setting-input"));
+  const settingsInputs = getSettingInputs();
 
   settingsInputs.forEach(input => {
     input.addEventListener("input", () => {
-      const s = window.settingModel.loadSettings();
-      s[input.id] = Number(input.value);
-      window.settingModel.saveSettings(s);
+      saveSettingInputValue(input);
       // 旧 updateMainDisplay は廃止。現在は onLogChanged で全画面再描画する
-      if (typeof window.onLogChanged === "function") {
-        window.onLogChanged();
-      }
+      notifyLogChanged();
     });
   });
 
@@ -84,19 +93,13 @@ function bindDataTransferActions() {
 function loadSettingsToInputs() {
   const s = window.settingModel.loadSettings();
 
-  document.querySelectorAll(".setting-input")
+  getSettingInputs()
     .forEach(input => input.value = s[input.id]);
 
   // カレンダー評価設定
   document
     .querySelectorAll("input[name='calendarEvaluation']")
     .forEach(r => r.checked = (r.value === s.calendarEvaluation));
-}
-
-function saveCurrentSettings() {
-  const s = window.settingModel.loadSettings();
-  settingsInputs.forEach(input => s[input.id] = Number(input.value));
-  window.settingModel.saveSettings(s);
 }
 
 function renderPlanInfo() {
@@ -153,9 +156,7 @@ function renderDebugSection() {
   toggle.addEventListener("change", () => {
     window.setIsPremium(toggle.checked);
     renderPlanInfo();
-    if (typeof window.onLogChanged === "function") {
-      window.onLogChanged();
-    }
+    notifyLogChanged();
   });
 
   renderSwCacheName();

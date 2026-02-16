@@ -1,7 +1,7 @@
 window.statsModel = {
   // 日別：dateKey ベース
   aggregateDailyByDateKeys(dateKeys) {
-    const logs = window.common.loadLogs();
+    const logs = window.logModel.getLogs();
     return dateKeys.map(key => ({
       x: key,
       y: (logs[key] || []).length
@@ -10,7 +10,7 @@ window.statsModel = {
 
   // 時間帯別：対象期間(dateKeys)のログを hour 集計し、1日あたり平均を返す
   aggregateHourlyByDateKeys(dateKeys) {
-    const logs = window.common.loadLogs();
+    const logs = window.logModel.getLogs();
 
     // 分母：Controller で未来日除外済み
     const days = Math.max(1, dateKeys.length);

@@ -30,41 +30,26 @@ function buildCalendarData(logs, todayKey, dailyData = {}) {
   const map = {};
   if (Array.isArray(logs)) {
     logs.forEach(l => {
-      map[l.date] = { count: l.count };
+      if (!l?.date) return;
+      map[l.date] = {
+        count: Number.isInteger(l.count) ? l.count : null,
+        status: typeof l.status === "string" ? l.status : "unrecorded"
+      };
     });
   }
 
   if (dailyData && typeof dailyData === "object") {
     Object.keys(dailyData).forEach((key) => {
-      const entry = dailyData[key];
+      const memo = typeof dailyData[key] === "string" ? dailyData[key] : "";
+      if (memo.trim().length === 0) return;
       if (!map[key]) {
         map[key] = {
-          count: Number.isInteger(entry?.count) ? entry.count : 0
+          count: null,
+          status: "unrecorded"
         };
       }
-      if (typeof entry?.memo === "string" && entry.memo.trim().length > 0) {
-        map[key].memo = entry.memo;
-      }
+      map[key].memo = memo;
     });
-  }
-
-  const keys = Object.keys(map).sort();
-  if (keys.length === 0) return {};
-  
-  const start = window.common.parseDateKey(keys[0]);
-  const end = window.common.parseDateKey(
-    todayKey || keys[keys.length - 1]
-  );
-
-  for (
-    let d = new Date(start);
-    d <= end;
-    d.setDate(d.getDate() + 1)
-  ) {
-    const key = window.common.getDateKey(d);
-    if (!map[key]) {
-      map[key] = { count: 0 };
-    }
   }
 
   return Object.keys(map)
@@ -77,7 +62,7 @@ function buildCalendarData(logs, todayKey, dailyData = {}) {
 
 
 function buildCalendarState(ctx) {
-  const logs = window.common.loadLogs();
+  const logs = window.logModel.getLogs();
   const target = window.settingModel.loadSettings().dailyTarget;
   const todayKey = window.appState.todayKey;
 

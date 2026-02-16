@@ -36,11 +36,14 @@ function renderCalendar() {
   const dailyData = window.dailyDataModel?.loadDailyData
     ? window.dailyDataModel.loadDailyData()
     : {};
-  const grouped = window.common.groupLogsByDate(state.logs);
-  const logsForCalendar = grouped.map(d => ({
-    date: d.date,
-    count: d.smoke
-  }));
+  const logsForCalendar = Object.keys(state.logs || {}).map((dateKey) => {
+    const times = Array.isArray(state.logs[dateKey]) ? state.logs[dateKey] : [];
+    return {
+      date: dateKey,
+      count: times.length,
+      status: window.common.getDayStatus(dateKey, state.logs)
+    };
+  });
 
   const calendarData =
     window.calendarModel.buildCalendarData(
@@ -109,20 +112,25 @@ function buildCalendarDays(state, calendarData, holidays = []) {
 
   for (let d = 1; d <= state.lastDate; d++) {
     const dateKey = `${state.year}-${String(state.month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    const count = calendarData[dateKey]?.count ?? null;
+    const dayData = calendarData[dateKey];
+    const count = Number.isInteger(dayData?.count) ? dayData.count : null;
+    const status = typeof dayData?.status === "string"
+      ? dayData.status
+      : "unrecorded";
     const holidayName = holidayMap[dateKey] || "";
 
     days.push({
       day: d,
       dateKey,
       count,
+      status,
       isHoliday: isHoliday(dateKey, holidays),
       holidayName,
       // 無料版60日ロック判定（共通ロジック）
       isLocked: isLockedDate(dateKey),
-      hasLog: (count ?? 0) > 0,
-      hasMemo: typeof calendarData[dateKey]?.memo === "string" &&
-        calendarData[dateKey].memo.trim().length > 0
+      hasLog: status === "smoke",
+      hasMemo: typeof dayData?.memo === "string" &&
+        dayData.memo.trim().length > 0
     });
   }
 
@@ -238,6 +246,10 @@ function onDayClick(dateKey) {
   saveViewState();
 }
 
+function getSelectedDateKey() {
+  return selectedDateKey;
+}
+
 function renderDayDetail(calendarData) {
   const container = document.getElementById("calendarDetail");
   if (!container) return;
@@ -247,7 +259,7 @@ function renderDayDetail(calendarData) {
     return;
   }
 
-  const selected = calendarData[selectedDateKey] || { count: 0, memo: "" };
+  const selected = calendarData[selectedDateKey] || { count: null, status: "unrecorded", memo: "" };
   const memo = typeof selected.memo === "string" ? selected.memo : "";
   const hasMemo = memo.trim().length > 0;
   const isEditing = memoEditingDateKey === selectedDateKey;
@@ -273,6 +285,17 @@ function renderDayDetail(calendarData) {
     });
   });
   linkWrap.appendChild(linkBtn);
+
+  if (shouldShowConfirmSuccessButton(selectedDateKey)) {
+    const successBtn = document.createElement("button");
+    successBtn.type = "button";
+    successBtn.className = "calendar-detail-success-btn";
+    successBtn.textContent = "禁煙成功で確定";
+    successBtn.addEventListener("click", () => {
+      confirmSuccessForDate(selectedDateKey);
+    });
+    linkWrap.appendChild(successBtn);
+  }
   container.appendChild(linkWrap);
 
   const card = document.createElement("article");
@@ -441,9 +464,13 @@ function getDayDeltaFromPrev(dateKey, calendarData) {
   if (dateKey > todayKey) return null;
   if (!Object.prototype.hasOwnProperty.call(calendarData || {}, dateKey)) return null;
 
+  const currentStatus = getCalendarDayStatus(dateKey, calendarData);
+  if (currentStatus === "unrecorded") return null;
   const currentCount = Number(calendarData?.[dateKey]?.count ?? 0);
   const prevKey = getPrevDateKey(dateKey);
   if (!Object.prototype.hasOwnProperty.call(calendarData || {}, prevKey)) return null;
+  const prevStatus = getCalendarDayStatus(prevKey, calendarData);
+  if (prevStatus === "unrecorded") return null;
   const prevCount = Number(calendarData?.[prevKey]?.count ?? 0);
   if (!Number.isFinite(currentCount) || !Number.isFinite(prevCount)) return null;
   return prevCount - currentCount;
@@ -455,11 +482,10 @@ function getPastDayStatus(dateKey, calendarData) {
     return getTodayStatus(dateKey, calendarData);
   }
   if (dateKey > todayKey) return null;
-  if (!Object.prototype.hasOwnProperty.call(calendarData || {}, dateKey)) return null;
+  const dayStatus = getCalendarDayStatus(dateKey, calendarData);
+  if (dayStatus === "unrecorded") return null;
 
-  const currentCount = Number(calendarData?.[dateKey]?.count ?? 0);
-  if (!Number.isFinite(currentCount)) return null;
-  if (currentCount === 0) {
+  if (dayStatus === "success") {
     return {
       text: "🏆今日は禁煙達成です",
       tone: "blue"
@@ -500,9 +526,10 @@ function getPastDayStatus(dateKey, calendarData) {
 }
 
 function getTodayStatus(dateKey, calendarData) {
-  if (!Object.prototype.hasOwnProperty.call(calendarData || {}, dateKey)) return null;
+  const dayStatus = getCalendarDayStatus(dateKey, calendarData);
+  if (dayStatus === "unrecorded") return null;
   const currentCount = Number(calendarData?.[dateKey]?.count ?? 0);
-  if (!Number.isFinite(currentCount) || currentCount === 0) return null;
+  if (!Number.isFinite(currentCount) || dayStatus === "success") return null;
 
   const dayDelta = getDayDeltaFromPrev(dateKey, calendarData);
   if (!Number.isFinite(dayDelta) || dayDelta === 0) return null;
@@ -518,6 +545,20 @@ function getTodayStatus(dateKey, calendarData) {
     text: `☆前日より -${dayDelta}本`,
     tone: "blue"
   };
+}
+
+function getCalendarDayStatus(dateKey, calendarData) {
+  if (!calendarData || !Object.prototype.hasOwnProperty.call(calendarData, dateKey)) {
+    return "unrecorded";
+  }
+  const status = calendarData[dateKey]?.status;
+  if (status === "smoke" || status === "success" || status === "unrecorded") {
+    return status;
+  }
+  const count = calendarData[dateKey]?.count;
+  if (count === null || count === undefined) return "unrecorded";
+  if (count > 0) return "smoke";
+  return "success";
 }
 
 function resolveTodayKey() {
@@ -619,16 +660,42 @@ function clearInlineMessage() {
   renderCalendar();
 }
 
+function shouldShowConfirmSuccessButton(dateKey) {
+  if (!dateKey) return false;
+  const logs = window.logModel?.getLogs ? window.logModel.getLogs() : {};
+  const keys = Object.keys(logs || {}).sort();
+  if (keys.length === 0) return false;
+  const firstRecordedKey = keys[0];
+  const todayKey = resolveTodayKey();
+  const hasLogEntry = Object.prototype.hasOwnProperty.call(logs, dateKey);
+  return !hasLogEntry && dateKey >= firstRecordedKey && dateKey <= todayKey;
+}
+
+function confirmSuccessForDate(dateKey) {
+  if (!dateKey) return;
+  const logs = window.logModel?.getLogs ? window.logModel.getLogs() : {};
+  if (Object.prototype.hasOwnProperty.call(logs, dateKey)) return;
+  logs[dateKey] = [];
+  window.logModel?.setLogs?.(logs);
+  if (typeof window.onLogChanged === "function") {
+    window.onLogChanged(dateKey);
+  } else {
+    renderCalendar();
+  }
+}
+
 window.calendarController = {
   showCalendar,
   prevMonth,
   nextMonth,
   onDayClick,
+  getSelectedDateKey,
   refresh,
   saveViewState,
   restoreViewState,
   setInlineMessage,
   clearInlineMessage,
+  confirmSuccessForDate,
   fetchHolidays,
   isHoliday
 };

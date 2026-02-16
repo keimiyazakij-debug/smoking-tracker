@@ -6,6 +6,15 @@ function initMain() {
   document.getElementById("smokeBtn").onclick = addSmoke;
   const undoBtn = document.getElementById("undoSmokeBtn");
   if (undoBtn) undoBtn.onclick = undoLastSmoke;
+  const yesterdaySuccessBtn = document.getElementById("yesterdaySuccessBtn");
+  if (yesterdaySuccessBtn) {
+    yesterdaySuccessBtn.onclick = () => {
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      markSuccess(window.common.getDateKey(yesterday));
+    };
+  }
 
   const todayTimelineLink = document.getElementById("todayTimelineLink");
   if (todayTimelineLink) {
@@ -13,8 +22,7 @@ function initMain() {
       const todayKey = window.common.getDateKey(new Date());
       window.timelineController.openTimeline(todayKey, {
         from: "home",
-        sourceDateKey: todayKey,
-        returnToMainOnSave: true
+        sourceDateKey: todayKey
       });
     };
   }
@@ -76,8 +84,19 @@ function undoLastSmoke() {
   }
 }
 
+function markSuccess(dateKey) {
+  if (!dateKey) return;
+  const logs = window.logModel.getLogs();
+  logs[dateKey] = [];
+  window.logModel.setLogs(logs);
+  if (typeof window.onLogChanged === "function") {
+    window.onLogChanged(dateKey);
+  }
+}
+
 window.mainController = { initMain };
 window.addSmoke = addSmoke;
+window.markSuccess = markSuccess;
 
 function updateSmokeHelp(message) {
   const help = document.getElementById("smokeHelp");

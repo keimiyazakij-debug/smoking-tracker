@@ -3,7 +3,6 @@
 // controller/editController.js
 
 let currentDateKey;
-let returnToMainOnSave = false;
 
 function openEdit(dateKey, options = {}) {
   const locked = window.common?.isDateLocked
@@ -27,7 +26,6 @@ function openEdit(dateKey, options = {}) {
     return;
   }
   currentDateKey=dateKey;
-  returnToMainOnSave = !!options.returnToMainOnSave;
   editModel.open(dateKey, options);
   editView.open(buildEditViewState());
 }
@@ -37,7 +35,6 @@ function closeEdit() {
   const originalDateKey = currentDateKey;
   window.editModel.close();
   window.editView.close();
-  returnToMainOnSave = false;
   if (originalDateKey && window.timelineController?.openTimeline) {
     window.timelineController.openTimeline(originalDateKey);
   } else if (typeof window.showTab === "function") {
@@ -83,6 +80,17 @@ function saveEdit() {
   }
 
   const state = window.editModel?.getState ? window.editModel.getState() : null;
+  const validTimes = state && Array.isArray(state.times)
+    ? state.times.filter((time) => typeof time === "string" && time.trim().length > 0)
+    : [];
+  if (validTimes.length === 0) {
+    window.messageController.enqueue({
+      type: "msg",
+      text: "時刻を1件以上入力してください",
+      priority: -1
+    });
+    return;
+  }
   if (state && Array.isArray(state.times) && targetDateKey === todayKey) {
     const now = new Date();
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
@@ -123,7 +131,6 @@ function saveEdit() {
   if (!hasChanges) {
     window.editModel.close();
     window.editView.close();
-    returnToMainOnSave = false;
     currentDateKey = targetDateKey;
     if (window.timelineController?.openTimeline) {
       window.timelineController.openTimeline(targetDateKey);
@@ -137,7 +144,6 @@ function saveEdit() {
   // 保存ロジックは維持し、保存後の遷移のみ変更
   window.editModel.close();
   window.editView.close();
-  returnToMainOnSave = false;
   currentDateKey = targetDateKey;
   if (window.timelineController?.openTimeline) {
     window.timelineController.openTimeline(targetDateKey);

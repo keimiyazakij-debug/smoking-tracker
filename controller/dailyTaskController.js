@@ -24,7 +24,7 @@ function openToday() {
 
 function open(dateKey) {
   currentDateKey = dateKey;
-  const logs = window.common.loadLogs();
+  const logs = window.logModel.getLogs();
   const settings = window.settingModel?.loadSettings
     ? window.settingModel.loadSettings()
     : (window.appSettings || {});
@@ -76,7 +76,7 @@ function checkAchievement(ctx) {
   if (!achieved || lastAchievedDateKey === ctx.todayKey) return;
 
   const tasks = window.dailyTaskModel.evaluateTasks(ctx);
-  const logs = window.common.loadLogs();
+  const logs = window.logModel.getLogs();
   const recommendedTaskId = getRecommendedTaskId(ctx.todayKey, logs);
   const viewState =
     buildDailyTaskViewState(

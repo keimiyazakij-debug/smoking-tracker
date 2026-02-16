@@ -24,6 +24,13 @@ if (backLink) {
   });
 }
 
+const deleteAllBtn = document.getElementById("timelineDeleteAllBtn");
+if (deleteAllBtn) {
+  deleteAllBtn.addEventListener("click", () => {
+    window.timelineController?.deleteAllForCurrentDate?.();
+  });
+}
+
   // ===== タイムライン画面の描画 =====
 function renderTimelineForDate(map) {
   const container = document.getElementById("timelineList");

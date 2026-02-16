@@ -116,6 +116,11 @@
             <button id="undoSmokeBtn" class="text-link">直前の記録を戻す</button>
           </div>
         </div>
+        <div class="undo-row">
+          <div id="yesterdaySuccessWrap" class="undo-center">
+            <button id="yesterdaySuccessBtn" class="text-link">昨日は禁煙成功</button>
+          </div>
+        </div>
       </section>
 
       <section class="history-cta">
@@ -150,6 +155,7 @@
       <button id="nextTimelineDay" class="timeline-nav">▶</button>
     </div>
     <div id="timelineSummary" class="timeline-title-sub"></div>
+    <button id="timelineDeleteAllBtn" class="timeline-delete-all-btn" type="button">この日の記録を全削除</button>
   </header>
   <!-- card: timeline -->
   <div class="card timeline-card">
@@ -391,17 +397,18 @@
     <div class="stats-range-buttons">
       <button id="range-week">週</button>
       <button id="range-month">月</button>
+      <button id="range-all">全期間</button>
+    </div>
+  </div>
+  <div class="stats-section stats-row">
+    <span class="stats-label">集計種別:</span>
+    <div class="stats-graph-buttons">
+      <button id="graph-daily">日別</button>
+      <button id="graph-hourly">時間帯別</button>
+      <button id="graph-weekday">曜日別</button>
     </div>
   </div>
 
-  <!-- 集計内容 -->
-  <div class="stats-section stats-row">
-    <span class="stats-label">集計内容:</span>
-    <div class="stats-graph-buttons">
-      <button id="graph-daily">合計本数</button>
-      <button id="graph-hourly">平均本数</button>
-    </div>
-  </div>
 </div>
 
 <div class="card stats-chart-card">
@@ -416,8 +423,20 @@
     </div>
     <button id="stats-next">▶</button>
   </div>
-  <div id="stats-chart-wrap">
-    <canvas id="stats-chart"></canvas>
+  <div id="stats-chart-1-section" class="stats-chart-section">
+    <div id="stats-chart-1-wrap" class="stats-chart-wrap">
+      <canvas id="stats-chart-1"></canvas>
+    </div>
+  </div>
+  <div id="stats-chart-2-section" class="stats-chart-section">
+    <div id="stats-chart-2-wrap" class="stats-chart-wrap">
+      <canvas id="stats-chart-2"></canvas>
+    </div>
+  </div>
+  <div id="stats-chart-3-section" class="stats-chart-section">
+    <div id="stats-chart-3-wrap" class="stats-chart-wrap">
+      <canvas id="stats-chart-3"></canvas>
+    </div>
   </div>
 </div>
 </div>

@@ -25,8 +25,6 @@ function upgrade() {
       text: "アップグレード機能は準備中です。",
       priority: -1
     });
-  } else {
-    console.log("Upgrade clicked");
   }
 }
 
@@ -44,4 +42,3 @@ window.premiumController = {
 };
 window.navigateTo = navigateTo;
 })();
-
