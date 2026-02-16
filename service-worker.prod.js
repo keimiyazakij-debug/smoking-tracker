@@ -1,4 +1,4 @@
-const CACHE_NAME = "smoking-log-v1.2.27";
+const CACHE_NAME = "smoking-log-v1.3";
 const CACHE_FILES = [
   "./",
   "./index.html",
@@ -14,6 +14,8 @@ const CACHE_FILES = [
   "./css/premium.css",
   "./help.css",
   "./helpModal.js",
+  "./smoking_gap_banner.png",
+  "./backimage.JPG",
   "./manifest.json",
 
   // ===== 定数・共通 =====

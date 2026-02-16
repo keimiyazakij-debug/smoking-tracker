@@ -215,7 +215,7 @@ button:active {
 #calendar .calendar-header button,
 #settings button {
   border: 1px solid var(--color-primary);
-  background: transparent;
+  background: #ffffff;
   color: var(--color-primary);
   border-radius: var(--radius-card);
   padding: var(--spacing-tight) 12px;
@@ -293,4 +293,3 @@ nav button.is-active {
 #history h2 {
   margin: 0 0 var(--spacing-tight);
 }
-

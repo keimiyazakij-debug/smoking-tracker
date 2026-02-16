@@ -15,6 +15,18 @@
 .stats-section {
   margin-bottom: var(--space-section);
 }
+.stats-controls-card {
+  margin: 0 0 var(--space-section);
+}
+.stats-controls-card .stats-section {
+  margin-bottom: var(--spacing-tight);
+}
+.stats-controls-card .stats-section:last-child {
+  margin-bottom: 0;
+}
+.stats-chart-card {
+  margin: 0 0 var(--space-section);
+}
 
 .stats-label {
   font-size: var(--text-micro);

@@ -30,7 +30,10 @@
 
   function bind() {
     if (!getElements()) return;
-    openBtnEl.addEventListener("click", showHelp);
+    openBtnEl.addEventListener("click", (event) => {
+      event.preventDefault();
+      showHelp();
+    });
     closeBtnEl.addEventListener("click", hideHelp);
     modalEl.addEventListener("click", (event) => {
       if (event.target === modalEl) {

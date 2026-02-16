@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>SmokingTracker</title>
+  <title>SmokingGap</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
@@ -51,7 +51,7 @@
         .catch(err => console.error("SW error", err));
     }
   }
-  const BUILD = "2026-02-13-0.0.3";
+  const BUILD = "2026-02-16-0.1.0";
   console.log("BUILD:", BUILD);
   window.APP_BUILD = BUILD;
   window.APP_SW_FILE = sw;
@@ -61,8 +61,14 @@
   <header>
     <div class="title-bar">
       <div class="title-bar-inner">
-        <h1>SmokingTracker</h1>
-        <button id="openHelpBtn" class="help-trigger" aria-label="操作ガイドを開く">？</button>
+        <h1 class="header-brand">
+          <img
+            src="./smoking_gap_banner.png"
+            alt="SmokingGap"
+            class="header-banner-img"
+          >
+          <a id="openHelpBtn" class="help-hit-area" href="#helpModal" aria-label="操作ガイドを開く"></a>
+        </h1>
       </div>
     </div>
   </header>
@@ -182,19 +188,19 @@
         <h3>記録のしかた</h3>
         <p><strong>吸ったボタン</strong><br>タップで現在時刻を記録します。直前の記録からの間隔が自動計算されます。</p>
         <p><strong>UNDO</strong><br>直前の記録を取り消します。</p>
-        <p><strong>今日の履歴</strong><br>その日の喫煙記録一覧を表示します。タップで編集画面へ移動します。</p>
+        <p><strong>この日の記録を見る</strong><br>カレンダーの選択日からタイムラインを開き、記録を確認・編集できます。</p>
       </section>
 
       <section class="help-section">
         <h3>タイムライン</h3>
-        <p>1日の喫煙記録を時系列で表示します。</p>
-        <p>過去日も確認でき、日付指定で移動できます。</p>
+        <p>1日の喫煙本数を時間帯別に表示します。</p>
+        <p>前日・翌日へ移動でき、必要に応じて編集画面で時刻を修正できます。</p>
       </section>
 
       <section class="help-section">
         <h3>統計</h3>
         <p>週表示 / 月表示に対応しています。</p>
-        <p>平均間隔、最大間隔、記録回数を確認できます。</p>
+        <p>期間合計と1日あたり平均本数を確認できます。</p>
       </section>
 
       <section class="help-section">
@@ -205,7 +211,8 @@
 
       <section class="help-section">
         <h3>よくある質問</h3>
-        <p><strong>Q. 記録を修正できますか？</strong><br>A. 履歴一覧から編集できます。</p>
+        <p><strong>Q. 記録を修正できますか？</strong><br>A. カレンダーで日付を選択し、「この日の記録を見る」から編集できます。</p>
+        <p><strong>Q. データをバックアップできますか？</strong><br>A. 設定画面の「データをエクスポート / インポート」を利用できます。</p>
         <p><strong>Q. データはどこに保存されますか？</strong><br>A. 端末内（ローカルストレージ）に保存されます。</p>
       </section>
 
@@ -261,14 +268,6 @@
     <button id="premiumLaterBtn" class="text-link premium-later-btn">あとで検討する</button>
   </div>
 </div>
-
-  <!-- 成果画面 
-  <div id="achievements" class="tab">
-    <h2>成果</h2>
-    <div id="streakDisplay">連続禁煙：0日</div>
-    <ul id="badges"></ul>
-  </div>
-  -->
 
   <!-- ゲーミフィケーション画面 -->
   <div id="game" class="tab">
@@ -386,22 +385,26 @@
   <div id="statsFreeNotice" class="stats-free-notice"></div>
 
 <!-- 集計期間 -->
-<div class="stats-section stats-row">
-  <span class="stats-label">集計期間:</span>
-  <div class="stats-range-buttons">
-    <button id="range-week">週</button>
-    <button id="range-month">月</button>
+<div class="card stats-controls-card">
+  <div class="stats-section stats-row">
+    <span class="stats-label">集計期間:</span>
+    <div class="stats-range-buttons">
+      <button id="range-week">週</button>
+      <button id="range-month">月</button>
+    </div>
+  </div>
+
+  <!-- 集計内容 -->
+  <div class="stats-section stats-row">
+    <span class="stats-label">集計内容:</span>
+    <div class="stats-graph-buttons">
+      <button id="graph-daily">合計本数</button>
+      <button id="graph-hourly">平均本数</button>
+    </div>
   </div>
 </div>
 
-<!-- 集計内容 -->
-<div class="stats-section stats-row">
-  <span class="stats-label">集計内容:</span>
-  <div class="stats-graph-buttons">
-    <button id="graph-daily">合計本数</button>
-    <button id="graph-hourly">平均本数</button>
-  </div>
-</div>
+<div class="card stats-chart-card">
   <!-- Design System v1.0: 合計値の主表示 -->
   <div id="stats-total-highlight" class="stats-total-highlight"></div>
   <!-- グラフ直上: タイトル/期間を2行表示 -->
@@ -416,6 +419,7 @@
   <div id="stats-chart-wrap">
     <canvas id="stats-chart"></canvas>
   </div>
+</div>
 </div>
 
 <!-- 下部タブ -->

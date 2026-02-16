@@ -74,10 +74,7 @@ nav button {
 }
 
 .calendar-header button {
-  border: 1px solid var(--card-bg);
-  background: transparent;
   border-radius: var(--radius-small);
-  color: var(--text-primary);
   font-size: var(--text-body);
   min-width: 36px;
   min-height: 36px;
@@ -384,4 +381,3 @@ nav button {
   box-sizing: border-box;
   resize: vertical;
 }
-
