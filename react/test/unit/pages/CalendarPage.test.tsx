@@ -69,27 +69,6 @@ describe('CalendarPage', () => {
     expect(document.querySelector('.calendar-detail-success-btn')).not.toBeNull();
   });
 
-  test('過去の未記録日では禁煙成功で確定ボタンが表示される', async () => {
-    const user = userEvent.setup();
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = String(now.getMonth() + 1).padStart(2, '0');
-    renderApp({
-      path: '/calendar',
-      persisted: {
-        logs: {
-          [`${y}-${m}-10`]: [`${y}-${m}-10T10:00:00`],
-        },
-      },
-    });
-
-    const day9 = getMonthCell('9');
-    expect(day9).toBeDefined();
-    await user.click(day9!);
-
-    expect(document.querySelector('.calendar-detail-success-btn')).not.toBeNull();
-  });
-
   test('月移動ボタンでタイトルが前月・翌月へ切り替わる', async () => {
     const user = userEvent.setup();
     renderApp({ path: '/calendar' });

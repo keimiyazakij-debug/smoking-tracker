@@ -40,6 +40,23 @@ describe('TimelinePage', () => {
     expect(link?.textContent).toBe('← カレンダーに戻る');
   });
 
+  test('ホーム経由で開くと戻る文言が「メインに戻る」になる', () => {
+    const now = new Date();
+    const dayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+    renderApp({
+      path: `/timeline?date=${dayKey}&from=home&sourceDate=${dayKey}`,
+      persisted: {
+        logs: {
+          [dayKey]: [`${dayKey}T10:00:00`],
+        },
+      },
+    });
+
+    const link = document.getElementById('timelineBackLink');
+    expect(link?.textContent).toBe('← メインに戻る');
+  });
+
   test('今日のタイムラインでは次へボタンがhiddenになる', () => {
     renderApp({ path: '/timeline' });
     const nextBtn = document.getElementById('nextTimelineDay') as HTMLButtonElement | null;

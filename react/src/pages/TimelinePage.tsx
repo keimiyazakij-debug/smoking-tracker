@@ -1,24 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getDateKey, isDateLocked, parseDateKey } from '../domain/date';
 import { useAppContext } from '../state/AppContext';
-import { TimeSelectRow } from '../components/TimeSelectRow';
 import { useLocation, useNavigate } from 'react-router-dom';
-
-function getHeatClass(count: number): string {
-  if (count >= 4) return 'count-4';
-  if (count === 3) return 'count-3';
-  if (count === 2) return 'count-2';
-  if (count === 1) return 'count-1';
-  return '';
-}
-
-type EditState = {
-  sourceDateKey: string;
-  dateKey: string;
-  hour: number;
-  times: string[];
-  untouchedTimes: string[];
-};
+import { TimelineEditModal, type EditState } from '../components/timeline/TimelineEditModal';
+import { TimelineHeader } from '../components/timeline/TimelineHeader';
+import { TimelineGrid } from '../components/timeline/TimelineGrid';
 
 function toHHMM(ts: string): string | null {
   const d = new Date(ts);
@@ -184,64 +170,37 @@ export function TimelinePage() {
 
   return (
     <div id="timeline" className="tab active">
-      <header className="timeline-header">
-        {timelineSource ? (
-          <button
-            id="timelineBackLink"
-            className="timeline-back-link"
-            onClick={() => navigate(timelineSource === 'calendar' ? `/calendar?date=${timelineSourceDateKey || dateKey}` : '/main')}
-          >
-            {timelineSource === 'calendar' ? '← カレンダーに戻る' : '← メインに戻る'}
-          </button>
-        ) : null}
-        <div className="timeline-header-date">
-          <button
-            id="prevTimelineDay"
-            className="timeline-nav"
-            style={{ visibility: isPrevLocked ? 'hidden' : 'visible' }}
-            onClick={() => {
-              if (isPrevLocked) return;
-              const d = parseDateKey(dateKey);
-              d.setDate(d.getDate() - 1);
-              const nextKey = getDateKey(d);
-              setDateKey(nextKey);
-              const next = new URLSearchParams(location.search);
-              next.set('date', nextKey);
-              navigate(`/timeline?${next.toString()}`, { replace: true });
-            }}
-          >
-            ◀
-          </button>
-          <div id="timelineTitle" className="timeline-title-main">{dateKey.replaceAll('-', '/')}</div>
-          <button
-            id="nextTimelineDay"
-            className="timeline-nav"
-            style={{ visibility: dateKey >= todayKey ? 'hidden' : 'visible' }}
-            onClick={() => {
-              const d = parseDateKey(dateKey);
-              d.setDate(d.getDate() + 1);
-              const nextKey = getDateKey(d);
-              if (nextKey > todayKey) return;
-              setDateKey(nextKey);
-              const next = new URLSearchParams(location.search);
-              next.set('date', nextKey);
-              navigate(`/timeline?${next.toString()}`, { replace: true });
-            }}
-          >
-            ▶
-          </button>
-        </div>
-        <div id="timelineSummary" className="timeline-title-sub">合計 {total}本</div>
-        <button
-          id="timelineDeleteAllBtn"
-          className="timeline-delete-all-btn"
-          type="button"
-          style={{ display: hasLogsEntry ? 'inline-block' : 'none' }}
-          onClick={deleteAllForCurrentDate}
-        >
-          この日の記録を全削除
-        </button>
-      </header>
+      <TimelineHeader
+        dateKey={dateKey}
+        total={total}
+        hasLogsEntry={hasLogsEntry}
+        isPrevLocked={isPrevLocked}
+        isNextHidden={dateKey >= todayKey}
+        source={timelineSource}
+        sourceDateKey={timelineSourceDateKey}
+        onPrev={() => {
+          if (isPrevLocked) return;
+          const d = parseDateKey(dateKey);
+          d.setDate(d.getDate() - 1);
+          const nextKey = getDateKey(d);
+          setDateKey(nextKey);
+          const next = new URLSearchParams(location.search);
+          next.set('date', nextKey);
+          navigate(`/timeline?${next.toString()}`, { replace: true });
+        }}
+        onNext={() => {
+          const d = parseDateKey(dateKey);
+          d.setDate(d.getDate() + 1);
+          const nextKey = getDateKey(d);
+          if (nextKey > todayKey) return;
+          setDateKey(nextKey);
+          const next = new URLSearchParams(location.search);
+          next.set('date', nextKey);
+          navigate(`/timeline?${next.toString()}`, { replace: true });
+        }}
+        onBack={() => navigate(timelineSource === 'calendar' ? `/calendar?date=${timelineSourceDateKey || dateKey}` : '/main')}
+        onDeleteAll={deleteAllForCurrentDate}
+      />
 
       <div className="card timeline-card">
         <h2 className="timeline-page-title">時間帯別本数</h2>
@@ -253,51 +212,23 @@ export function TimelinePage() {
           <span className="legend-chip legend-3" />
           <span className="legend-label">多</span>
         </div>
-        <div id="timelineList" className="timeline-grid">
-          {Array.from({ length: 24 }, (_, h) => {
-            const count = map[h]?.length ?? 0;
-            return (
-              <div key={h} className={`timeline-cell ${getHeatClass(count)}`}>
-                <button type="button" onClick={() => openEdit(h)}>
-                  <div className="timeline-hour">{h}時</div>
-                  <div className={`timeline-count ${count === 0 ? 'empty' : ''}`}>{count === 0 ? '' : `${count}本`}</div>
-                </button>
-              </div>
-            );
-          })}
-        </div>
+        <TimelineGrid map={map} onEditHour={openEdit} />
       </div>
 
-      <div id="editOverlay" className={`modal-overlay ${edit ? '' : 'hidden'}`}>
-        <div className="modal-card edit-body">
-          <h2 id="editTitle" className="edit-page-title">{edit ? `記録を編集（${edit.hour}時台）` : '記録を編集'}</h2>
-          <label className="edit-field">
-            <span className="edit-field-label">日付</span>
-            <input
-              id="editDateInput"
-              type="date"
-              max={todayKey}
-              value={edit?.dateKey ?? ''}
-              onChange={(e) => edit && setEdit({ ...edit, dateKey: e.target.value })}
-            />
-          </label>
-          <div id="timeTags" className="time-tags">
-            {(edit?.times || []).map((time, i) => (
-              <TimeSelectRow
-                key={`${i}-${time}`}
-                value={time}
-                onChange={(next) => updateTime(i, next)}
-                onRemove={() => removeTime(i)}
-              />
-            ))}
-            {(edit?.times || []).length === 0 ? <div className="time-empty">記録がありません</div> : null}
-          </div>
-          <button id="addTimeTagBtn" type="button" onClick={addTime}>時刻を追加</button>
-          <div id="editDateLockNotice" className="edit-field-help">{error}</div>
-          <button id="saveEditBtn" type="button" className="edit-save-btn" onClick={saveEdit}>保存</button>
-          <button id="closeEditBtn" type="button" onClick={() => { setError(''); setEdit(null); }}>閉じる</button>
-        </div>
-      </div>
+      <TimelineEditModal
+        edit={edit}
+        todayKey={todayKey}
+        error={error}
+        onChangeDate={(d) => edit && setEdit({ ...edit, dateKey: d })}
+        onChangeTime={updateTime}
+        onAddTime={addTime}
+        onRemoveTime={removeTime}
+        onSave={saveEdit}
+        onClose={() => {
+          setError('');
+          setEdit(null);
+        }}
+      />
     </div>
   );
 }
