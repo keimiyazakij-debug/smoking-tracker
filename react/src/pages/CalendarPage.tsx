@@ -1,0 +1,214 @@
+import { useEffect, useMemo, useState } from 'react';
+import { buildCalendarCells } from '../domain/calendar';
+import { getDateKey, isDateLocked, parseDateKey } from '../domain/date';
+import { useAppContext } from '../state/AppContext';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { CalendarHeader } from '../components/calendar/CalendarHeader';
+import { CalendarGrid } from '../components/calendar/CalendarGrid';
+import { CalendarDetailPanel } from '../components/calendar/CalendarDetailPanel';
+const HOLIDAY_CACHE_PREFIX = 'holidays_';
+const HOLIDAY_API_BASE = 'https://date.nager.at/api/v3/PublicHolidays';
+
+type Holiday = {
+  date: string;
+  localName: string;
+  name: string;
+};
+
+export function CalendarPage() {
+  const { state, dispatch } = useAppContext();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [memoEditingDateKey, setMemoEditingDateKey] = useState<string | null>(null);
+  const [memoDraft, setMemoDraft] = useState('');
+  const [holidays, setHolidays] = useState<Holiday[]>([]);
+  const initialDate = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('date');
+    if (q && /^\d{4}-\d{2}-\d{2}$/.test(q)) return parseDateKey(q);
+    return new Date();
+  }, [location.search]);
+  const [calendarYear, setCalendarYear] = useState(() => initialDate.getFullYear());
+  const [calendarMonth, setCalendarMonth] = useState(() => initialDate.getMonth());
+  const [calendarSelectedDateKey, setCalendarSelectedDateKey] = useState(() => getDateKey(initialDate));
+  const todayKey = getDateKey(new Date());
+  const cells = useMemo(
+    () => buildCalendarCells(calendarYear, calendarMonth, todayKey, state.logs),
+    [calendarYear, calendarMonth, todayKey, state.logs],
+  );
+
+  const selected = cells.find((c) => c.dateKey === calendarSelectedDateKey);
+  const fallbackSelected = cells.find((c) => c.inMonth && c.day === 1) ?? null;
+  const detailCell = selected ?? fallbackSelected;
+  const detailDateKey = detailCell?.dateKey ?? null;
+  const isDetailLocked = detailDateKey ? isDateLocked(detailDateKey, state.isPremium) : false;
+  const hasLogsEntry = detailDateKey ? Object.prototype.hasOwnProperty.call(state.logs, detailDateKey) : false;
+  const showConfirmBtn = !!detailDateKey && !isDetailLocked && !hasLogsEntry && detailDateKey < todayKey;
+  const memoText = detailDateKey ? (state.memos[detailDateKey] || '') : '';
+  const isEditingMemo = !!detailDateKey && memoEditingDateKey === detailDateKey;
+  const holidayMap = useMemo(
+    () =>
+      holidays.reduce<Record<string, string>>((acc, h) => {
+        acc[h.date] = h.localName || h.name || '';
+        return acc;
+      }, {}),
+    [holidays],
+  );
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('date');
+    if (!q || !/^\d{4}-\d{2}-\d{2}$/.test(q)) return;
+    const d = parseDateKey(q);
+    setCalendarYear(d.getFullYear());
+    setCalendarMonth(d.getMonth());
+    setCalendarSelectedDateKey(getDateKey(d));
+  }, [location.search]);
+
+  useEffect(() => {
+    if ((!selected || !selected.inMonth) && fallbackSelected) {
+      const today = parseDateKey(todayKey);
+      if (today.getFullYear() === calendarYear && today.getMonth() === calendarMonth) {
+        setCalendarSelectedDateKey(todayKey);
+      } else {
+        setCalendarSelectedDateKey(fallbackSelected.dateKey);
+      }
+    }
+  }, [selected, fallbackSelected, todayKey, calendarYear, calendarMonth]);
+
+  useEffect(() => {
+    if (!detailDateKey) {
+      setMemoEditingDateKey(null);
+      setMemoDraft('');
+      return;
+    }
+    if (memoEditingDateKey && memoEditingDateKey !== detailDateKey) {
+      setMemoEditingDateKey(null);
+      setMemoDraft('');
+    }
+  }, [detailDateKey, memoEditingDateKey]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const key = `${HOLIDAY_CACHE_PREFIX}${calendarYear}`;
+    const fromCache = window.localStorage.getItem(key);
+    if (fromCache) {
+      try {
+        const parsed = JSON.parse(fromCache) as Holiday[];
+        if (!cancelled) setHolidays(Array.isArray(parsed) ? parsed : []);
+      } catch {
+        window.localStorage.removeItem(key);
+      }
+    } else {
+      setHolidays([]);
+    }
+
+    (async () => {
+      try {
+        const response = await fetch(`${HOLIDAY_API_BASE}/${calendarYear}/JP`, { cache: 'no-store' });
+        if (!response.ok) return;
+        const data = (await response.json()) as Holiday[];
+        const normalized = Array.isArray(data)
+          ? data
+              .filter((x) => typeof x?.date === 'string')
+              .map((x) => ({ date: x.date, localName: String(x.localName || ''), name: String(x.name || '') }))
+          : [];
+        window.localStorage.setItem(key, JSON.stringify(normalized));
+        if (!cancelled) setHolidays(normalized);
+      } catch {
+        // noop: offline/blocked environment
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [calendarYear]);
+
+  const statusLine = useMemo(() => {
+    if (!detailDateKey) return { text: ' ', tone: '' as '' | 'orange' | 'blue' };
+    const current = state.logs[detailDateKey];
+    if (current === undefined) return { text: ' ', tone: '' as '' | 'orange' | 'blue' };
+    if (current.length === 0) return { text: '🏆今日は禁煙達成です', tone: 'blue' as const };
+    const prev = parseDateKey(detailDateKey);
+    prev.setDate(prev.getDate() - 1);
+    const prevKey = getDateKey(prev);
+    const prevLogs = state.logs[prevKey];
+    if (prevLogs === undefined) return { text: ' ', tone: '' as '' | 'orange' | 'blue' };
+    const diff = prevLogs.length - current.length;
+    if (diff < 0) return { text: `⚠前日より +${Math.abs(diff)}本`, tone: 'orange' as const };
+    if (diff > 0) return { text: `☆前日より -${diff}本`, tone: 'blue' as const };
+    return { text: ' ', tone: '' as '' | 'orange' | 'blue' };
+  }, [detailDateKey, state.logs]);
+
+  const beginMemoEdit = () => {
+    if (!detailDateKey || isDetailLocked) return;
+    setMemoEditingDateKey(detailDateKey);
+    setMemoDraft(memoText);
+  };
+
+  const saveMemo = () => {
+    if (!detailDateKey || isDetailLocked) return;
+    dispatch({ type: 'SET_MEMO', dateKey: detailDateKey, memo: memoDraft });
+    setMemoEditingDateKey(null);
+    setMemoDraft('');
+  };
+
+  const goPrevMonth = () => {
+    const d = new Date(calendarYear, calendarMonth, 1);
+    d.setMonth(d.getMonth() - 1);
+    setCalendarYear(d.getFullYear());
+    setCalendarMonth(d.getMonth());
+    setCalendarSelectedDateKey(getDateKey(new Date(d.getFullYear(), d.getMonth(), 1)));
+  };
+
+  const goNextMonth = () => {
+    const d = new Date(calendarYear, calendarMonth, 1);
+    d.setMonth(d.getMonth() + 1);
+    setCalendarYear(d.getFullYear());
+    setCalendarMonth(d.getMonth());
+    setCalendarSelectedDateKey(getDateKey(new Date(d.getFullYear(), d.getMonth(), 1)));
+  };
+
+  return (
+    <div id="calendar" className="tab active">
+      <CalendarHeader year={calendarYear} month={calendarMonth} onPrev={goPrevMonth} onNext={goNextMonth} />
+
+      <div className="card calendar-card">
+        <CalendarGrid
+          cells={cells}
+          selectedDateKey={calendarSelectedDateKey}
+          todayKey={todayKey}
+          holidayMap={holidayMap}
+          memos={state.memos}
+          logs={state.logs}
+          dailyTarget={state.settings.dailyTarget}
+          isPremium={state.isPremium}
+          onSelect={setCalendarSelectedDateKey}
+        />
+      </div>
+
+      <CalendarDetailPanel
+        detailCell={detailCell}
+        detailDateKey={detailDateKey}
+        isLocked={isDetailLocked}
+        showConfirmBtn={showConfirmBtn}
+        memoText={memoText}
+        statusLine={statusLine}
+        isEditing={isEditingMemo}
+        memoDraft={memoDraft}
+        onEdit={beginMemoEdit}
+        onChangeMemo={setMemoDraft}
+        onSaveMemo={saveMemo}
+        onMarkSuccess={() => {
+          if (!detailDateKey) return;
+          dispatch({ type: 'MARK_SUCCESS', dateKey: detailDateKey });
+        }}
+        onOpenTimeline={() => {
+          if (!detailDateKey) return;
+          navigate(`/timeline?date=${detailDateKey}&from=calendar&sourceDate=${detailDateKey}`);
+        }}
+      />
+    </div>
+  );
+}

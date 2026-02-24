@@ -1,0 +1,256 @@
+/* ============================== */
+/* 設定画面 UI (Design System v1.0) */
+/* ============================== */
+#settings {
+  padding: var(--space-page);
+}
+
+.settings-page-title {
+  /* ページタイトル */
+  margin: 0 0 var(--space-section);
+  font-size: var(--text-h1);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.settings-card {
+  /* セクションカード */
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  padding: var(--space-card);
+  margin-bottom: var(--space-section);
+}
+
+.settings-section-title {
+  margin: 0 0 var(--spacing-card);
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.settings-item {
+  min-height: 48px;
+  padding: 0 var(--space-page);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--text-secondary);
+}
+
+.settings-item:last-child {
+  border-bottom: 0;
+}
+
+.settings-item-label {
+  font-size: var(--text-body);
+  color: var(--text-primary);
+}
+
+.settings-item-help {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  margin: var(--spacing-tight) 0 0;
+}
+
+.settings-item-input {
+  gap: var(--spacing-tight);
+}
+
+.settings-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settings-time-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settings-time-clear {
+  min-width: 52px;
+}
+
+#settings .setting-input {
+  /* 数値入力統一 */
+  width: 96px;
+  min-height: 40px;
+  border: 1px solid var(--text-secondary);
+  border-radius: var(--radius-small);
+  font-size: var(--text-body);
+  color: var(--text-primary);
+  padding: 8px;
+  box-sizing: border-box;
+  background: var(--background);
+}
+
+#settings .setting-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.settings-input-unit {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+/* トグルUI統一 */
+.settings-item-toggle {
+  position: relative;
+}
+
+.settings-toggle-wrap {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+.settings-toggle-wrap input[type="radio"] {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.settings-toggle-ui {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: var(--text-secondary);
+  transition: all 0.15s ease;
+}
+
+.settings-toggle-ui::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  transition: transform 0.15s ease;
+}
+
+.settings-toggle-wrap input[type="radio"]:checked + .settings-toggle-ui {
+  background: var(--primary);
+}
+
+.settings-toggle-wrap input[type="radio"]:checked + .settings-toggle-ui::after {
+  transform: translateX(20px);
+}
+
+.settings-item-plan {
+  min-height: auto;
+  align-items: flex-start;
+  padding-top: var(--spacing-tight);
+  padding-bottom: var(--spacing-tight);
+}
+
+.settings-data-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-tight);
+  margin-top: var(--spacing-card);
+}
+
+#settings .settings-secondary-btn {
+  width: 100%;
+  min-height: 44px;
+}
+
+.settings-plan-info {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  text-align: right;
+  max-width: 68%;
+}
+
+#settings .settings-danger-btn {
+  /* 危険操作を明確化 */
+  margin-top: var(--spacing-card);
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-card);
+  background: transparent;
+  color: var(--danger);
+  font-size: var(--text-body);
+  font-weight: 600;
+}
+
+.settings-note {
+  margin: var(--spacing-tight) 0 0;
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+.settings-premium-card {
+  cursor: pointer;
+}
+
+.settings-premium-card:active {
+  transform: scale(0.99);
+}
+
+/* 開発モード専用デバッグカード */
+.settings-debug-card {
+  margin-top: var(--space-section);
+}
+
+.settings-item-debug {
+  min-height: 48px;
+}
+
+.settings-debug-cache {
+  margin: var(--spacing-tight) 0 0;
+  font-size: var(--text-micro);
+}
+
+.settings-debug-toggle-wrap {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+.settings-debug-toggle-wrap input[type="checkbox"] {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.settings-debug-toggle-ui {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: var(--text-secondary);
+  transition: all 0.15s ease;
+}
+
+.settings-debug-toggle-ui::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  transition: transform 0.15s ease;
+}
+
+.settings-debug-toggle-wrap input[type="checkbox"]:checked + .settings-debug-toggle-ui {
+  background: var(--primary);
+}
+
+.settings-debug-toggle-wrap input[type="checkbox"]:checked + .settings-debug-toggle-ui::after {
+  transform: translateX(20px);
+}

@@ -1,0 +1,90 @@
+/* ------------------------------ */
+/* バッジ一覧画面　　               */
+/* ------------------------------ */
+
+/* バッジ管理画面 */
+.badge-category { margin-bottom: 24px; }
+.badge-list { display: block;}
+
+/* 共通 */
+.badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+/* 取得済（共通） */
+.badge.earned {
+  background: #eef9f0;
+}
+
+/* カテゴリ別の“控えめ枠色” */
+.badge.earned.time {
+  border-color: #9fd3c7;   /* 淡いグリーン */
+}
+
+.badge.earned.nosmoke {
+  border-color: #9fd3c7;   /* 淡いグリーン */
+}
+
+.badge.earned.daily_streak {
+  border-color: #f6c177;   /* 淡いオレンジ */
+}
+
+.badge.earned.daily_hist {
+  border-color: #f6c177;   /* 淡いオレンジ */
+}
+
+.badge.earned.goal_streak {
+  border-color: #a7c7e7;   /* 淡いブルー */
+}
+
+.badge.earned.goal_total {
+  border-color: #a7c7e7;   /* 淡いブルー */
+}
+
+.badge.earned.down_streak {
+  border-color: #c3aed6;   /* 淡いパープル */
+}
+
+.badge.earned.down_total {
+  border-color: #c3aed6;   /* 淡いパープル */
+}
+
+/* 未取得は枠線なし（差を明確に） */
+.badge.locked {
+  border: 1px dashed #ddd;
+  background: #f8f8f8;
+}
+
+.badge-date {
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
+}
+
+.badge-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: var(--radius-small);
+  background: #f8f8f8;
+}
+
+.badge-icon {
+  width: 1.4em;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.badge-card.earned {
+  background: #eef9f0;
+}
+
+.badge-card.locked {
+  border: 1px dashed #ddd;
+  background: #f8f8f8;
+}

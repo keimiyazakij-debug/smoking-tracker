@@ -1,0 +1,448 @@
+/* ------------------------------ */
+/* タイムライン画面                */
+/* ------------------------------ */
+
+/* タイムライン表示 */
+#timeline {
+  /* タブ画面として表示: ナビは常時表示 */
+  padding: var(--space-page) var(--space-page) var(--space-page);
+  margin-bottom: 0;
+  height: calc(100svh - var(--header-height, 0px) - var(--nav-height, 56px));
+  min-height: calc(100svh - var(--header-height, 0px) - var(--nav-height, 56px));
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+@supports not (height: 100svh) {
+  #timeline {
+    height: calc(100dvh - var(--header-height, 0px) - var(--nav-height, 56px));
+    min-height: calc(100dvh - var(--header-height, 0px) - var(--nav-height, 56px));
+  }
+}
+
+#timeline.active {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+}
+
+.timeline-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  background: var(--color-background);
+  z-index: 2100;
+  overflow-y: auto;
+  /* 余白統一: 左右 16px */
+  padding: var(--space-page) var(--space-page) calc(var(--nav-height, 56px) + var(--space-page));
+  box-sizing: border-box;
+}
+
+.timeline-overlay.hidden {
+  display: none;
+}
+
+.timeline-header {
+  position: sticky;
+  top: 0;
+  background: var(--color-card-bg);
+  padding: var(--spacing-tight) var(--spacing-card);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-bottom: 1px solid #ececec;
+  border-radius: var(--radius-card);
+  box-shadow: none;
+}
+
+.timeline-back-link {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.timeline-back-link:hover {
+  text-decoration: underline;
+}
+
+.timeline-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.timeline-header-date {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.timeline-nav {
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  border-radius: var(--radius-card);
+  padding: 4px 8px;
+  font-size: var(--text-caption);
+}
+
+/* 期間移動の左右三角ボタンを全画面で統一 */
+#calendar .calendar-header button,
+#prevTimelineDay,
+#nextTimelineDay,
+#dcPrev,
+#dcNext,
+#stats-prev,
+#stats-next {
+  width: 56px;
+  min-width: 56px;
+  min-height: 44px;
+  height: 44px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.timeline-title-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  margin: 0 8px;
+}
+
+.timeline-title-main {
+  font-size: var(--text-body);
+  color: var(--color-text-primary);
+}
+
+.timeline-title-sub {
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.timeline-delete-all-btn {
+  display: none;
+  align-self: flex-start;
+  font-size: var(--text-micro);
+  padding: 6px 10px;
+  border: 1px solid #f1c4c4;
+  background: #fff5f5;
+  color: #b44;
+  border-radius: var(--radius-small);
+}
+
+/* 今日の日付: 2px primary border */
+.today-date-highlight {
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-small);
+  padding: 2px 8px;
+}
+
+/* タイムライン画面タイトル */
+.timeline-page-title {
+  font-size: var(--text-h1);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* 選択日サマリー */
+.timeline-selection-summary {
+  font-size: var(--text-body);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-section);
+}
+
+.timeline-selection-summary strong {
+  font-weight: 700;
+}
+
+/* ------------------------------ */
+/* 24時間ヒートグリッド            */
+/* ------------------------------ */
+.timeline-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+  /* セル間隔 */
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  height: auto;
+  min-height: 0;
+}
+
+.timeline-grid.is-locked {
+  display: block;
+  height: auto;
+  flex: 0 0 auto;
+}
+.timeline-locked-message {
+  min-height: 120px;
+  padding: var(--space-card);
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+  text-align: center;
+}
+
+.timeline-cell {
+  /* 6行で高さに収める */
+  background: var(--card-bg);
+  border: 1px solid #cfcfcf;
+  border-radius: var(--radius-small);
+  padding: 8px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+  transition: transform 0.15s ease;
+}
+
+.timeline-hour {
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+  width: auto;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-count {
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.timeline-count.empty {
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
+  min-height: 1em;
+}
+
+/* primary ベース濃淡 */
+.timeline-cell.count-1 {
+  background: color-mix(in srgb, var(--primary) 20%, var(--card-bg) 80%);
+  border-color: color-mix(in srgb, var(--primary) 20%, var(--card-bg) 80%);
+}
+.timeline-cell.count-2 {
+  background: color-mix(in srgb, var(--primary) 50%, var(--card-bg) 50%);
+  border-color: color-mix(in srgb, var(--primary) 50%, var(--card-bg) 50%);
+}
+.timeline-cell.count-3,
+.timeline-cell.count-4 {
+  background: color-mix(in srgb, var(--primary) 80%, var(--card-bg) 20%);
+  border-color: color-mix(in srgb, var(--primary) 80%, var(--card-bg) 20%);
+}
+
+.timeline-cell button {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+}
+
+.timeline-cell button:active {
+  transform: scale(0.95);
+  transition: transform 0.15s ease;
+}
+
+.timeline-cell:active {
+  /* インタラクション指定 */
+  transform: scale(0.95);
+  transition: transform 0.15s ease;
+}
+
+/* 凡例 */
+.timeline-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0;
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+}
+
+.timeline-card {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: var(--spacing-tight);
+  height: auto;
+  flex: 0 0 auto;
+  min-height: 0;
+  align-self: stretch;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.legend-chip {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-small);
+  display: inline-block;
+  border: 1px solid #ececec;
+  background: var(--card-bg);
+}
+
+.legend-chip.legend-0 { background: var(--card-bg); }
+.legend-chip.legend-1 { background: color-mix(in srgb, var(--primary) 20%, var(--card-bg) 80%); }
+.legend-chip.legend-2 { background: color-mix(in srgb, var(--primary) 50%, var(--card-bg) 50%); }
+.legend-chip.legend-3 { background: color-mix(in srgb, var(--primary) 80%, var(--card-bg) 20%); }
+
+/* 複数月表示時の月タイトル */
+.timeline-month-title {
+  margin-top: var(--space-section);
+  font-size: var(--text-body);
+  color: var(--text-secondary);
+}
+
+/* ------------------------------ */
+/* 詳細モーダル                    */
+/* ------------------------------ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2200;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-card {
+  background: var(--color-card-bg);
+  border-radius: var(--radius-card);
+  width: min(92vw, 400px);
+  padding: var(--spacing-card);
+  box-shadow: none;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.modal-title {
+  font-size: var(--text-body);
+  color: var(--color-text-primary);
+}
+
+.modal-close {
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  border-radius: var(--radius-card);
+  padding: 6px 10px;
+  font-size: var(--text-micro);
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--color-text-primary);
+  font-size: var(--text-caption);
+}
+
+.timeline-table {
+  display: grid;
+  grid-template-columns: 104px 1fr;
+}
+
+.timeline-table .timeline-row {
+  display: contents;
+}
+
+.timeline-table .timeline-hour {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+  background: var(--color-card-bg);
+  font-weight: bold;
+  white-space: nowrap;      /* ← 折り返し禁止 */
+  width: 104px;              /* ← 列幅固定 */
+  box-sizing: border-box;
+  font-size: var(--text-caption);
+}
+
+.timeline-table .timeline-log {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.timeline-table .timeline-log span {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 2px 6px;
+  background: #eef4ff;
+  border-radius: var(--radius-small);
+  font-size: var(--text-caption);
+}
+
+.edit-btn {
+  margin-left: auto;
+  padding: 6px 12px;
+  font-size: var(--text-caption);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+}
+
+/* Safari ではセル内テキストが大きくなりやすいため、グリッド内だけ圧縮 */
+@supports (-webkit-touch-callout: none) {
+  .timeline-grid {
+    gap: 6px;
+  }
+
+  .timeline-cell {
+    padding: 6px;
+    gap: 4px;
+  }
+
+  .timeline-cell button {
+    gap: 4px;
+    min-height: 0;
+  }
+
+  .timeline-hour {
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  .timeline-count {
+    font-size: 15px;
+    line-height: 1.2;
+  }
+
+  .timeline-count.empty {
+    font-size: 13px;
+  }
+}

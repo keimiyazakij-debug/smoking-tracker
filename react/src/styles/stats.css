@@ -1,0 +1,256 @@
+/* 統計情報画面 */
+.stats-section-title {
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+.stats-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+/* Design System v1.0: セクション間 24px */
+.stats-section {
+  margin-bottom: var(--space-section);
+}
+.stats-controls-card {
+  margin: 0 0 var(--space-section);
+}
+.stats-controls-card .stats-section {
+  margin-bottom: var(--spacing-tight);
+}
+.stats-controls-card .stats-section:last-child {
+  margin-bottom: 0;
+}
+.stats-chart-card {
+  margin: 0 0 var(--space-section);
+}
+
+.stats-label {
+  font-size: var(--text-micro);
+  color: var(--text-secondary);
+  min-width: 4.5em; /* ラベル幅を固定して揃える */
+}
+
+.stats-range-buttons,
+.stats-graph-buttons {
+  display: flex;
+  gap: var(--spacing-tight);
+  flex-wrap: nowrap;
+}
+
+/* stats summary card */
+.stats-summary-card {
+  margin-top: 20px;
+}
+
+.stats-summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.stats-summary-item {
+  font-size: var(--text-micro);
+  color: var(--color-text-secondary);
+}
+
+#stats {
+  font-size: var(--text-caption);
+  padding: var(--space-page);
+  overflow-y: auto;
+}
+
+#stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-tight);
+  margin-bottom: var(--spacing-tight);
+}
+
+.stats-header-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+#stats-title {
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+#stats-label {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+/* Design System v1.0: 週/月 セグメント */
+.stats-range-buttons {
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-button);
+  overflow: hidden;
+}
+
+#stats #range-week,
+#stats #range-month,
+#stats #range-all {
+  min-height: 40px;
+  height: 40px;
+  padding: 0 16px;
+  border: 0;
+  /* 月選択時のみ縦線が目立つ問題を避けるため、内部仕切り線は使わない */
+  border-right: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-body);
+  transition: all 0.15s ease;
+}
+
+#stats #range-week.is-active,
+#stats #range-month.is-active,
+#stats #range-all.is-active {
+  background: var(--primary);
+  color: #FFFFFF;
+}
+
+#stats #graph-daily,
+#stats #graph-hourly,
+#stats #graph-weekday {
+  min-height: 40px;
+  height: 40px;
+  font-size: var(--text-caption);
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+#stats #graph-daily.is-active,
+#stats #graph-hourly.is-active,
+#stats #graph-weekday.is-active {
+  background: var(--primary);
+  color: #FFFFFF;
+}
+
+#stats #graph-weekday:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Design System v1.0: 合計値主表示 */
+.stats-total-highlight {
+  font-size: var(--text-h1);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-tight);
+}
+
+.stats-total-highlight strong {
+  font-weight: 700;
+}
+
+.stats-chart-section {
+  margin-top: var(--space-tight);
+}
+
+.stats-chart-subtitle {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  margin: 0 0 6px;
+}
+
+.stats-chart-wrap {
+  width: 100%;
+  height: 220px;
+  overflow-x: auto;
+}
+
+.stats-chart-wrap.is-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.stats-chart-wrap canvas {
+  height: 220px;
+}
+
+.stats-summary-card {
+  /* 統計サマリーを主役化 */
+  margin: 0 0 var(--space-section);
+  padding: var(--space-card);
+  background: var(--card-bg);
+  border-radius: var(--radius-card);
+  border: 1px solid #E5E5E5;
+}
+.stats-free-notice {
+  margin: 0 0 var(--space-tight);
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+.stats-summary-item {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+/* 現在期間の値を強く表示 */
+#stats-current-total {
+  font-size: var(--text-h1);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+#stats-current-avg {
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 前期間は補助情報として抑える */
+#stats-prev-total,
+#stats-prev-avg {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+/* Safari のみ適用 */
+@supports (-webkit-touch-callout: none) {
+  .time-reset-btn {
+    display: none;
+  }
+ /* 左の時間帯ラベル */
+  .timeline-time {
+    min-width: 3.5em;     /* 時刻表示の横幅を保証 */
+    text-align: right;
+    line-height: 1.4;
+  }
+
+  /* 右の喫煙ログ本文 */
+  .timeline-item {
+    padding-left: 0.5em;  /* ラベルとの間隔を確保 */
+  }
+}
+
+@media (max-width: 520px) {
+  .stats-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .stats-range-buttons,
+  .stats-graph-buttons {
+    flex-wrap: wrap;
+  }
+
+  #stats #graph-daily,
+  #stats #graph-hourly,
+  #stats #graph-weekday {
+    flex: 1 1 auto;
+  }
+}

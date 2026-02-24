@@ -1,3 +1,13 @@
 .DS_Store
-node_modules
 *.log
+
+node_modules/
+
+react/node_modules/
+react/dist/
+react/.vite/
+react/.tmp/
+
+test/node_modules/
+test/coverage/
+

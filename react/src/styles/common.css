@@ -1,0 +1,298 @@
+/* =========================================================
+   Design System v1.0 tokens
+   ========================================================= */
+:root {
+  /* color palette */
+  --color-primary: #0066FF;
+  --color-background: #FFFFFF;
+  --color-card-bg: #F8F8F8;
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #6E6E6E;
+  --color-danger: #FF3B30;
+  --saturday-blue: #4A7BFF;
+  /* alias: 指示書の変数名に合わせる */
+  --primary: var(--color-primary);
+  --background: var(--color-background);
+  --card-bg: var(--color-card-bg);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --danger: var(--color-danger);
+  --accent-color: var(--color-primary);
+
+  /* typography */
+  --text-hero: 60px;
+  --text-h1: 24px;
+  --text-body: 18px;
+  --text-caption: 15px;
+  --text-micro: 14px;
+  /* alias: 指示書の変数名に合わせる */
+  --space-page: 16px;
+  --space-section: 24px;
+  --space-card: 16px;
+  --space-tight: 16px;
+
+  /* spacing */
+  --spacing-page: 16px;
+  --spacing-section: 24px;
+  --spacing-card: 16px;
+  --spacing-tight: 8px;
+
+  /* radius */
+  --radius-small: 8px;
+  --radius-card: 12px;
+  --radius-button: 24px;
+
+  --header-height: 0px;
+  --nav-height: 56px;
+  --timeline-header-height: 0px;
+  --calendar-grid-height: auto;
+  --font-family-base: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+}
+
+/* メイン部分 */
+body { 
+  font-family: var(--font-family-base);
+  font-size: var(--text-body);
+  line-height: 1.5;
+  margin:0; 
+  padding:0; 
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  height: 100dvh;
+  overflow: hidden;
+}
+
+header { 
+  text-align:center; 
+  padding:0; 
+  background: var(--color-background); 
+}
+
+.title-bar {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid #e5e5e5;
+  text-align: left;
+}
+
+.title-bar h1 {
+  margin: 0;
+  padding: var(--spacing-tight) var(--spacing-page);
+  font-family: var(--font-family-base);
+  font-size: 22px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.title-version {
+  font-size: var(--text-micro);
+  letter-spacing: 0.02em;
+  opacity: 0.7;
+}
+
+h2,
+h3 {
+  font-size: var(--text-h1);
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+/* イベント通知（トースト） */
+.app-toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  bottom: calc(var(--nav-height, 56px) + 12px);
+  max-width: calc(100% - 32px);
+  padding: var(--spacing-tight) 12px;
+  background: var(--color-card-bg);
+  color: var(--color-text-primary);
+  border: 1px solid #e5e5e5;
+  border-radius: var(--radius-card);
+  font-size: var(--text-caption);
+  line-height: 1.3;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease-out, transform 180ms ease-out;
+  z-index: 2100;
+  text-align: center;
+}
+
+.app-toast.app-toast--top {
+  top: calc(var(--header-height, 0px) + 12px);
+  bottom: auto;
+  transform: translateX(-50%) translateY(-6px);
+}
+
+.app-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.daily-challenge-link {
+  text-align: center;
+}
+
+.daily-challenge-link.spaced {
+  margin-top: 24px;
+}
+
+.history-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--text-secondary);
+}
+
+.history-cta {
+  padding: 0;
+}
+
+.timeline-card,
+.calendar-card {
+  margin-top: 0;
+}
+
+.calendar-card {
+  display: block;
+  flex: 0 0 auto;
+  padding: var(--spacing-tight);
+  height: auto;
+  overflow: visible;
+}
+
+
+/* ナビゲーション */
+nav { 
+  position: fixed; 
+  bottom:0; 
+  width:100%; 
+  display:flex; 
+  height: 56px;
+  background: var(--color-background); 
+  border-top:1px solid #e5e5e5; 
+  z-index: 2000; /* ← timelineOverlay より大きく */
+}
+
+nav button {
+  flex:1; 
+  height: 56px;
+  padding: 0; 
+  font-size: var(--text-h1);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+/* =========================================================
+   Design System v1.0 component unification
+   ========================================================= */
+button {
+  font-size: var(--text-body);
+  border-radius: var(--radius-card);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+/* secondary button style */
+.text-link,
+#closeEditBtn,
+#addTimeTagBtn,
+#dcBack,
+#badgeBackBtn,
+#dcPrev,
+#dcNext,
+#stats-prev,
+#stats-next,
+#range-week,
+#range-month,
+#graph-daily,
+#graph-hourly,
+#graph-weekday,
+#calendar .calendar-header button,
+#settings button {
+  border: 1px solid var(--color-primary);
+  background: #ffffff;
+  color: var(--color-primary);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-tight) 12px;
+  font-size: var(--text-caption);
+}
+
+.text-link {
+  min-height: 36px;
+}
+
+/* メイン導線: List Item コンポーネント */
+#main .history-section {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
+#main .history-actions .text-link {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 16px;
+  font-size: var(--text-body);
+  color: var(--text-primary);
+  border: 0;
+  border-bottom: 1px solid var(--text-secondary);
+  border-radius: 0;
+  background: transparent;
+}
+
+/* UNDO: 装飾なし + タップ領域確保 */
+#undoSmokeBtn {
+  min-height: 40px;
+  padding: 0;
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+#undoSmokeBtn:hover,
+#undoSmokeBtn:active {
+  color: var(--primary);
+}
+
+/* tabs */
+nav button.is-active {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* toast undo emphasis */
+.app-toast .toast-undo {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.app-toast .toast-action {
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font-size: var(--text-caption);
+  font-weight: 700;
+  margin-left: 8px;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* settings / stats layout spacing */
+#gameBadges h2,
+#history h2 {
+  margin: 0 0 var(--spacing-tight);
+}
