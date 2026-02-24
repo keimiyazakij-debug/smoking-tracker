@@ -668,11 +668,13 @@ function shouldShowConfirmSuccessButton(dateKey) {
   const firstRecordedKey = keys[0];
   const todayKey = resolveTodayKey();
   const hasLogEntry = Object.prototype.hasOwnProperty.call(logs, dateKey);
-  return !hasLogEntry && dateKey >= firstRecordedKey && dateKey <= todayKey;
+  return !hasLogEntry && dateKey >= firstRecordedKey && dateKey < todayKey;
 }
 
 function confirmSuccessForDate(dateKey) {
   if (!dateKey) return;
+  const todayKey = resolveTodayKey();
+  if (dateKey >= todayKey) return;
   const logs = window.logModel?.getLogs ? window.logModel.getLogs() : {};
   if (Object.prototype.hasOwnProperty.call(logs, dateKey)) return;
   logs[dateKey] = [];

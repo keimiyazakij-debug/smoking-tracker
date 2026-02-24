@@ -414,3 +414,34 @@
   background: transparent;
   color: var(--color-primary);
 }
+
+/* Safari ではセル内テキストが大きくなりやすいため、グリッド内だけ圧縮 */
+@supports (-webkit-touch-callout: none) {
+  .timeline-grid {
+    gap: 6px;
+  }
+
+  .timeline-cell {
+    padding: 6px;
+    gap: 4px;
+  }
+
+  .timeline-cell button {
+    gap: 4px;
+    min-height: 0;
+  }
+
+  .timeline-hour {
+    font-size: 13px;
+    line-height: 1.2;
+  }
+
+  .timeline-count {
+    font-size: 15px;
+    line-height: 1.2;
+  }
+
+  .timeline-count.empty {
+    font-size: 13px;
+  }
+}

@@ -149,7 +149,7 @@ function buildGraphMap({ rangeType, logs, periodDateKeys, recordedDateKeys }) {
   if (rangeType === 'month') {
     return {
       primary: buildChartSection('日別本数', buildDailySeries(periodDateKeys, logs), false),
-      hourly: buildChartSection('時間帯別本数（合計）', buildHourSeries(recordedDateKeys, logs, false), false),
+      hourly: buildChartSection('時間帯別平均本数', buildHourSeries(recordedDateKeys, logs, true), false),
       weekday: buildChartSection('曜日別平均本数', buildWeekdaySeries(recordedDateKeys, logs), false)
     };
   }

@@ -46,30 +46,32 @@ function buildTimelineUrl(dateKey) {
   return `${ROUTE_BASE_PATH}?view=timeline&date=${dateKey}&from=${routeSource}`;
 }
 
-function formatReturnDate(dateKey) {
-  if (!dateKey) return "";
-  const d = window.common.parseDateKey(dateKey);
-  return `${d.getMonth() + 1}月${d.getDate()}日`;
-}
-
 function updateBackLink() {
   const link = document.getElementById("timelineBackLink");
   if (!link) return;
   if (!hasDrilldownContext()) {
     link.style.display = "none";
     link.href = `${ROUTE_BASE_PATH}?view=timeline`;
+    if (typeof window.updateLayoutHeights === "function") {
+      window.updateLayoutHeights();
+    }
     return;
   }
   link.style.display = "inline-block";
 
   if (routeSource === "calendar") {
-    const dateText = formatReturnDate(sourceDateKey);
-    link.textContent = `← ${dateText}に戻る`;
+    link.textContent = "← カレンダーに戻る";
     link.href = `${ROUTE_BASE_PATH}?view=calendar&date=${sourceDateKey}`;
+    if (typeof window.updateLayoutHeights === "function") {
+      window.updateLayoutHeights();
+    }
     return;
   }
   link.textContent = "← メインに戻る";
   link.href = ROUTE_BASE_PATH;
+  if (typeof window.updateLayoutHeights === "function") {
+    window.updateLayoutHeights();
+  }
 }
 
 function applyTimelineMap(dateKey, map) {
