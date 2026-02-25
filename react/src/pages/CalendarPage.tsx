@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { buildCalendarCells } from '../domain/calendar';
 import { getDateKey, isDateLocked, parseDateKey } from '../domain/date';
-import { useAppContext } from '../state/AppContext';
+import { useLogsContext } from '../state/logs/LogsContext';
+import { useSettingsContext } from '../state/settings/SettingsContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CalendarHeader } from '../components/calendar/CalendarHeader';
 import { CalendarGrid } from '../components/calendar/CalendarGrid';
@@ -16,7 +17,8 @@ type Holiday = {
 };
 
 export function CalendarPage() {
-  const { state, dispatch } = useAppContext();
+  const { state: logsState, dispatch: logsDispatch } = useLogsContext();
+  const { state: settingsState } = useSettingsContext();
   const location = useLocation();
   const navigate = useNavigate();
   const [memoEditingDateKey, setMemoEditingDateKey] = useState<string | null>(null);
@@ -33,18 +35,18 @@ export function CalendarPage() {
   const [calendarSelectedDateKey, setCalendarSelectedDateKey] = useState(() => getDateKey(initialDate));
   const todayKey = getDateKey(new Date());
   const cells = useMemo(
-    () => buildCalendarCells(calendarYear, calendarMonth, todayKey, state.logs),
-    [calendarYear, calendarMonth, todayKey, state.logs],
+    () => buildCalendarCells(calendarYear, calendarMonth, todayKey, logsState.logs),
+    [calendarYear, calendarMonth, todayKey, logsState.logs],
   );
 
   const selected = cells.find((c) => c.dateKey === calendarSelectedDateKey);
   const fallbackSelected = cells.find((c) => c.inMonth && c.day === 1) ?? null;
   const detailCell = selected ?? fallbackSelected;
   const detailDateKey = detailCell?.dateKey ?? null;
-  const isDetailLocked = detailDateKey ? isDateLocked(detailDateKey, state.isPremium) : false;
-  const hasLogsEntry = detailDateKey ? Object.prototype.hasOwnProperty.call(state.logs, detailDateKey) : false;
+  const isDetailLocked = detailDateKey ? isDateLocked(detailDateKey, settingsState.isPremium) : false;
+  const hasLogsEntry = detailDateKey ? Object.prototype.hasOwnProperty.call(logsState.logs, detailDateKey) : false;
   const showConfirmBtn = !!detailDateKey && !isDetailLocked && !hasLogsEntry && detailDateKey < todayKey;
-  const memoText = detailDateKey ? (state.memos[detailDateKey] || '') : '';
+  const memoText = detailDateKey ? (logsState.memos[detailDateKey] || '') : '';
   const isEditingMemo = !!detailDateKey && memoEditingDateKey === detailDateKey;
   const holidayMap = useMemo(
     () =>
@@ -127,19 +129,19 @@ export function CalendarPage() {
 
   const statusLine = useMemo(() => {
     if (!detailDateKey) return { text: ' ', tone: '' as '' | 'orange' | 'blue' };
-    const current = state.logs[detailDateKey];
+    const current = logsState.logs[detailDateKey];
     if (current === undefined) return { text: ' ', tone: '' as '' | 'orange' | 'blue' };
     if (current.length === 0) return { text: '🏆今日は禁煙達成です', tone: 'blue' as const };
     const prev = parseDateKey(detailDateKey);
     prev.setDate(prev.getDate() - 1);
     const prevKey = getDateKey(prev);
-    const prevLogs = state.logs[prevKey];
+    const prevLogs = logsState.logs[prevKey];
     if (prevLogs === undefined) return { text: ' ', tone: '' as '' | 'orange' | 'blue' };
     const diff = prevLogs.length - current.length;
     if (diff < 0) return { text: `⚠前日より +${Math.abs(diff)}本`, tone: 'orange' as const };
     if (diff > 0) return { text: `☆前日より -${diff}本`, tone: 'blue' as const };
     return { text: ' ', tone: '' as '' | 'orange' | 'blue' };
-  }, [detailDateKey, state.logs]);
+  }, [detailDateKey, logsState.logs]);
 
   const beginMemoEdit = () => {
     if (!detailDateKey || isDetailLocked) return;
@@ -149,7 +151,7 @@ export function CalendarPage() {
 
   const saveMemo = () => {
     if (!detailDateKey || isDetailLocked) return;
-    dispatch({ type: 'SET_MEMO', dateKey: detailDateKey, memo: memoDraft });
+    logsDispatch({ type: 'SET_MEMO', dateKey: detailDateKey, memo: memoDraft });
     setMemoEditingDateKey(null);
     setMemoDraft('');
   };
@@ -180,10 +182,10 @@ export function CalendarPage() {
           selectedDateKey={calendarSelectedDateKey}
           todayKey={todayKey}
           holidayMap={holidayMap}
-          memos={state.memos}
-          logs={state.logs}
-          dailyTarget={state.settings.dailyTarget}
-          isPremium={state.isPremium}
+          memos={logsState.memos}
+          logs={logsState.logs}
+          dailyTarget={settingsState.settings.dailyTarget}
+          isPremium={settingsState.isPremium}
           onSelect={setCalendarSelectedDateKey}
         />
       </div>
@@ -202,7 +204,7 @@ export function CalendarPage() {
         onSaveMemo={saveMemo}
         onMarkSuccess={() => {
           if (!detailDateKey) return;
-          dispatch({ type: 'MARK_SUCCESS', dateKey: detailDateKey });
+          logsDispatch({ type: 'MARK_SUCCESS', dateKey: detailDateKey });
         }}
         onOpenTimeline={() => {
           if (!detailDateKey) return;

@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, type ChangeEvent } from 'react';
-import { useAppContext } from '../state/AppContext';
+import { useLogsContext } from '../state/logs/LogsContext';
+import { useSettingsContext } from '../state/settings/SettingsContext';
 import { SettingsHeader } from '../components/settings/SettingsHeader';
 import { TargetSettingsCard } from '../components/settings/TargetSettingsCard';
 import { SleepSettingsCard } from '../components/settings/SleepSettingsCard';
@@ -7,7 +8,8 @@ import { PremiumSettingsCard } from '../components/settings/PremiumSettingsCard'
 import { DataManagementCard } from '../components/settings/DataManagementCard';
 
 export function SettingsPage() {
-  const { state, dispatch } = useAppContext();
+  const { state: logsState, dispatch: logsDispatch } = useLogsContext();
+  const { state: settingsState, dispatch: settingsDispatch } = useSettingsContext();
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [message, setMessage] = useState('');
   const isDevMode = useMemo(() => {
@@ -84,7 +86,7 @@ export function SettingsPage() {
   };
 
   const handleExport = () => {
-    const blob = new Blob([JSON.stringify({ logs: state.logs, settings: state.settings, memos: state.memos }, null, 2)], {
+    const blob = new Blob([JSON.stringify({ logs: logsState.logs, settings: settingsState.settings, memos: logsState.memos }, null, 2)], {
       type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
@@ -110,24 +112,24 @@ export function SettingsPage() {
       const ok = window.confirm('現在のデータを上書きします。よろしいですか？');
       if (!ok) return;
       if (parsed.logs) {
-        dispatch({ type: 'SET_LOGS', logs: parsed.logs });
+        logsDispatch({ type: 'SET_LOGS', logs: parsed.logs });
       }
       if (parsed.settings?.dailyTarget != null) {
-        dispatch({ type: 'SET_DAILY_TARGET', dailyTarget: Number(parsed.settings.dailyTarget || 0) });
+        settingsDispatch({ type: 'SET_DAILY_TARGET', dailyTarget: Number(parsed.settings.dailyTarget || 0) });
       }
       if (parsed.settings) {
-        dispatch({
+        settingsDispatch({
           type: 'SET_SLEEP_HOURS',
           sleepStart: parsed.settings.sleepStart ?? null,
           sleepEnd: parsed.settings.sleepEnd ?? null,
         });
       }
       if (typeof parsed.isPremium === 'boolean') {
-        dispatch({ type: 'SET_PREMIUM', isPremium: parsed.isPremium });
+        settingsDispatch({ type: 'SET_PREMIUM', isPremium: parsed.isPremium });
       }
       if (parsed.memos) {
-        Object.keys(state.memos).forEach((k) => dispatch({ type: 'SET_MEMO', dateKey: k, memo: '' }));
-        Object.entries(parsed.memos).forEach(([k, v]) => dispatch({ type: 'SET_MEMO', dateKey: k, memo: v }));
+        Object.keys(logsState.memos).forEach((k) => logsDispatch({ type: 'SET_MEMO', dateKey: k, memo: '' }));
+        Object.entries(parsed.memos).forEach(([k, v]) => logsDispatch({ type: 'SET_MEMO', dateKey: k, memo: v }));
       }
       setMessage('インポートが完了しました。');
     } catch {
@@ -138,20 +140,20 @@ export function SettingsPage() {
 
   const handleReset = () => {
     if (!window.confirm('すべての記録をリセットします。よろしいですか？')) return;
-    dispatch({ type: 'SET_LOGS', logs: {} });
-    Object.keys(state.memos).forEach((k) => dispatch({ type: 'SET_MEMO', dateKey: k, memo: '' }));
+    logsDispatch({ type: 'SET_LOGS', logs: {} });
+    Object.keys(logsState.memos).forEach((k) => logsDispatch({ type: 'SET_MEMO', dateKey: k, memo: '' }));
     setMessage('全データをリセットしました。');
   };
 
   return (
     <div id="settings" className="tab active">
       <SettingsHeader title="設定" />
-      <PremiumSettingsCard isPremium={state.isPremium} onTogglePremium={(v) => dispatch({ type: 'SET_PREMIUM', isPremium: v })} />
-      <TargetSettingsCard dailyTarget={state.settings.dailyTarget} onChangeTarget={(value) => dispatch({ type: 'SET_DAILY_TARGET', dailyTarget: value })} />
+      <PremiumSettingsCard isPremium={settingsState.isPremium} onTogglePremium={(v) => settingsDispatch({ type: 'SET_PREMIUM', isPremium: v })} />
+      <TargetSettingsCard dailyTarget={settingsState.settings.dailyTarget} onChangeTarget={(value) => settingsDispatch({ type: 'SET_DAILY_TARGET', dailyTarget: value })} />
       <SleepSettingsCard
-        sleepStart={state.settings.sleepStart ?? null}
-        sleepEnd={state.settings.sleepEnd ?? null}
-        onChangeSleep={(sleepStart, sleepEnd) => dispatch({ type: 'SET_SLEEP_HOURS', sleepStart, sleepEnd })}
+        sleepStart={settingsState.settings.sleepStart ?? null}
+        sleepEnd={settingsState.settings.sleepEnd ?? null}
+        onChangeSleep={(sleepStart, sleepEnd) => settingsDispatch({ type: 'SET_SLEEP_HOURS', sleepStart, sleepEnd })}
       />
       <DataManagementCard
         fileRef={fileRef}
@@ -163,8 +165,8 @@ export function SettingsPage() {
       />
       {isDevMode ? (
         <PremiumSettingsCard
-          isPremium={state.isPremium}
-          onTogglePremium={(v) => dispatch({ type: 'SET_PREMIUM', isPremium: v })}
+          isPremium={settingsState.isPremium}
+          onTogglePremium={(v) => settingsDispatch({ type: 'SET_PREMIUM', isPremium: v })}
           showPlan={false}
           showDebug
         />

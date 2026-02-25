@@ -10,10 +10,11 @@ const defaultPersisted: PersistedState = {
 };
 
 export function renderApp(options?: { path?: string; persisted?: Partial<PersistedState> }) {
-  const path = options?.path ?? '/main';
+  const path = options?.path ?? '/';
   const persisted = { ...defaultPersisted, ...(options?.persisted || {}) };
 
-  window.history.pushState({}, '', path);
+  window.history.pushState({}, '', '/');
+  window.location.hash = `#${path}`;
   window.localStorage.setItem('smoking_tracker_react_state', JSON.stringify(persisted));
 
   return render(<App />);

@@ -2,6 +2,10 @@ import { beforeEach, describe, expect, test } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from '../../helpers/renderApp';
 
+function currentHashPath() {
+  return window.location.hash.replace(/^#/, '') || '/';
+}
+
 describe('App navigation sync', () => {
   beforeEach(() => {
     window.localStorage.clear();
@@ -15,14 +19,14 @@ describe('App navigation sync', () => {
     expect(statsTab).not.toBeNull();
     await user.click(statsTab!);
 
-    expect(window.location.pathname).toBe('/stats');
+    expect(currentHashPath()).toBe('/stats');
     expect(statsTab?.getAttribute('aria-selected')).toBe('true');
 
     const calendarTab = document.querySelector('nav button[data-tab="/calendar"]') as HTMLButtonElement | null;
     expect(calendarTab).not.toBeNull();
     await user.click(calendarTab!);
 
-    expect(window.location.pathname).toBe('/calendar');
+    expect(currentHashPath()).toBe('/calendar');
     expect(calendarTab?.getAttribute('aria-selected')).toBe('true');
   });
 

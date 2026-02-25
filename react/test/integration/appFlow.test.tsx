@@ -2,6 +2,10 @@ import { beforeEach, describe, expect, test } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from '../helpers/renderApp';
 
+function currentHashPath() {
+  return window.location.hash.replace(/^#/, '') || '/';
+}
+
 function getMonthCell(day: string): HTMLButtonElement | undefined {
   const cells = Array.from(document.querySelectorAll('.calendar-day:not(.gray)')) as HTMLButtonElement[];
   return cells.find((cell) => cell.querySelector('.day-number')?.textContent?.trim() === day);
@@ -21,13 +25,13 @@ describe('integration/appFlow', () => {
     await user.click(document.getElementById('smokeBtn') as HTMLButtonElement);
     await user.click(document.getElementById('todayTimelineLink') as HTMLButtonElement);
 
-    expect(window.location.pathname).toBe('/timeline');
+    expect(currentHashPath().startsWith('/timeline')).toBe(true);
     expect(document.getElementById('timelineTitle')?.textContent).toBe(todayKey.replaceAll('-', '/'));
     expect(document.getElementById('timelineSummary')?.textContent).toBe('合計 1本');
     expect(document.getElementById('timelineBackLink')?.textContent).toBe('← メインに戻る');
 
     await user.click(document.getElementById('timelineBackLink') as HTMLButtonElement);
-    expect(window.location.pathname).toBe('/main');
+    expect(currentHashPath()).toBe('/main');
   });
 
   test('calendarから任意日timelineを開き、カレンダーに戻れる', async () => {
@@ -52,11 +56,11 @@ describe('integration/appFlow', () => {
     await user.click(cell!);
     await user.click(document.querySelector('.calendar-detail-link-btn') as HTMLButtonElement);
 
-    expect(window.location.pathname).toBe('/timeline');
+    expect(currentHashPath().startsWith('/timeline')).toBe(true);
     expect(document.getElementById('timelineSummary')?.textContent).toBe('合計 2本');
     expect(document.getElementById('timelineBackLink')?.textContent).toBe('← カレンダーに戻る');
 
     await user.click(document.getElementById('timelineBackLink') as HTMLButtonElement);
-    expect(window.location.pathname).toBe('/calendar');
+    expect(currentHashPath().startsWith('/calendar')).toBe(true);
   });
 });

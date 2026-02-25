@@ -6,8 +6,8 @@ import { TimelinePage } from './pages/TimelinePage';
 import { StatsPage } from './pages/StatsPage';
 import { GameBadgesPage, GameChallengePage, GamePage } from './pages/GamePage';
 import { SettingsPage } from './pages/SettingsPage';
-import { AppProvider } from './state/AppContext';
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import { AppProviders } from './state/AppProviders';
+import { HashRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 
 function AppLayout() {
   return (
@@ -23,7 +23,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route path="/" element={<Navigate to="/main" />} />
+        <Route path="/" element={<MainPage />} />
         <Route path="/main" element={<MainPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/timeline" element={<TimelinePage />} />
@@ -33,17 +33,17 @@ function AppRoutes() {
         <Route path="/stats" element={<StatsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/main" />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
 
 export default function App() {
   return (
-    <AppProvider>
-      <BrowserRouter>
+    <AppProviders>
+      <HashRouter>
         <AppRoutes />
-      </BrowserRouter>
-    </AppProvider>
+      </HashRouter>
+    </AppProviders>
   );
 }

@@ -3,19 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { buildSmokeMessage, getTodayCount, getYesterdayCount, getYesterdayKey } from '../domain/app';
 import { getDateKey, parseDateKey } from '../domain/date';
 import { useSmokingIntervals } from '../hooks/useSmokingIntervals';
-import { useAppContext } from '../state/AppContext';
+import { useLogsContext } from '../state/logs/LogsContext';
+import { useSettingsContext } from '../state/settings/SettingsContext';
 import { SmokingIntervalCard } from '../components/main/SmokingIntervalCard';
 import { TodayStatusCard } from '../components/main/TodayStatusCard';
 import { SmokeActionCard } from '../components/main/SmokeActionCard';
 import { HistoryCTA } from '../components/main/HistoryCTA';
 
 export function MainPage() {
-  const { state, dispatch } = useAppContext();
+  const { state: logsState, dispatch: logsDispatch } = useLogsContext();
+  const { state: settingsState } = useSettingsContext();
   const navigate = useNavigate();
   const todayKey = getDateKey(new Date());
-  const todayCount = getTodayCount(state.logs, todayKey);
-  const yesterdayCount = getYesterdayCount(state.logs, todayKey);
-  const smokingIntervals = useSmokingIntervals(state.logs, state.settings);
+  const todayCount = getTodayCount(logsState.logs, todayKey);
+  const yesterdayCount = getYesterdayCount(logsState.logs, todayKey);
+  const smokingIntervals = useSmokingIntervals(logsState.logs, settingsState.settings);
   const [smokeHelp, setSmokeHelp] = useState('');
 
   const diffText = useMemo(() => {
@@ -26,11 +28,11 @@ export function MainPage() {
     return { text: '昨日と同じ', className: '' };
   }, [todayCount, yesterdayCount]);
 
-  const target = state.settings.dailyTarget;
+  const target = settingsState.settings.dailyTarget;
   const progress = Math.min(100, target > 0 ? (todayCount / target) * 100 : 0);
 
   const yesterdayKey = getYesterdayKey(todayKey);
-  const showYesterdaySuccessBtn = state.logs[yesterdayKey] === undefined;
+  const showYesterdaySuccessBtn = logsState.logs[yesterdayKey] === undefined;
 
   return (
     <div id="main" className="tab active">
@@ -56,14 +58,14 @@ export function MainPage() {
           smokeHelp={smokeHelp}
           showYesterdaySuccessBtn={showYesterdaySuccessBtn}
           onAdd={() => {
-            dispatch({ type: 'ADD_SMOKE' });
+            logsDispatch({ type: 'ADD_SMOKE' });
             setSmokeHelp(buildSmokeMessage(todayCount + 1, target));
           }}
-          onUndo={() => dispatch({ type: 'UNDO_LAST_SMOKE' })}
+          onUndo={() => logsDispatch({ type: 'UNDO_LAST_SMOKE' })}
           onMarkYesterdaySuccess={() => {
             const d = parseDateKey(todayKey);
             d.setDate(d.getDate() - 1);
-            dispatch({ type: 'MARK_SUCCESS', dateKey: getDateKey(d) });
+            logsDispatch({ type: 'MARK_SUCCESS', dateKey: getDateKey(d) });
           }}
         />
 

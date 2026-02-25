@@ -1,6 +1,9 @@
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useUIContext } from '../state/ui/UIContext';
+import type { UIActiveTab } from '../state/ui/uiReducer';
 
-const tabs: Array<{ path: string; icon: string }> = [
+const tabs: Array<{ path: UIActiveTab; icon: string }> = [
   { path: '/main', icon: '⌂' },
   { path: '/calendar', icon: '📅' },
   { path: '/timeline', icon: '🕒' },
@@ -12,9 +15,19 @@ const tabs: Array<{ path: string; icon: string }> = [
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const goTab = (path: string) => {
+  const { dispatch } = useUIContext();
+
+  useEffect(() => {
+    const matched = tabs.find((tab) => tab.path === location.pathname);
+    if (!matched) return;
+    dispatch({ type: 'SET_ACTIVE_TAB', tab: matched.path });
+  }, [dispatch, location.pathname]);
+
+  const goTab = (path: UIActiveTab) => {
+    dispatch({ type: 'SET_ACTIVE_TAB', tab: path });
     navigate({ pathname: path, search: '' });
   };
+
   return (
     <nav>
       {tabs.map((tab) => (

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { buildStatsState, normalizeGraphType } from '../domain/stats';
-import { useAppContext } from '../state/AppContext';
+import { useLogsContext } from '../state/logs/LogsContext';
+import { useSettingsContext } from '../state/settings/SettingsContext';
 import { moveBaseDate } from '../domain/date';
 import type { GraphType, RangeType } from '../types/app';
 import { StatsHeader } from '../components/stats/StatsHeader';
@@ -10,7 +11,8 @@ import { StatsSummary } from '../components/stats/StatsSummary';
 import { StatsChart } from '../components/stats/StatsChart';
 
 export function StatsPage() {
-  const { state } = useAppContext();
+  const { state: logsState } = useLogsContext();
+  const { state: settingsState } = useSettingsContext();
   const [statsRangeType, setStatsRangeType] = useState<RangeType>('week');
   const [statsGraphType, setStatsGraphType] = useState<GraphType>('primary');
   const [statsBaseDateISO, setStatsBaseDateISO] = useState(() => new Date().toISOString());
@@ -20,8 +22,8 @@ export function StatsPage() {
     setStatsGraphType((prev) => normalizeGraphType(prev, statsRangeType));
   }, [statsRangeType]);
   const stats = useMemo(
-    () => buildStatsState(statsRangeType, graphType, new Date(statsBaseDateISO), state.logs, state.isPremium),
-    [statsRangeType, graphType, statsBaseDateISO, state.logs, state.isPremium],
+    () => buildStatsState(statsRangeType, graphType, new Date(statsBaseDateISO), logsState.logs, settingsState.isPremium),
+    [statsRangeType, graphType, statsBaseDateISO, logsState.logs, settingsState.isPremium],
   );
 
   return (
@@ -40,7 +42,7 @@ export function StatsPage() {
       />
 
       <div id="statsFreeNotice" className="stats-free-notice">
-        {!state.isPremium ? '無料版では直近60日分のデータを表示しています' : ''}
+        {!settingsState.isPremium ? '無料版では直近60日分のデータを表示しています' : ''}
       </div>
 
       <StatsRangeSelector

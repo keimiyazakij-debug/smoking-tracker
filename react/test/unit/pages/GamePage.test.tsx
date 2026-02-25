@@ -3,6 +3,10 @@ import userEvent from '@testing-library/user-event';
 import { waitFor } from '@testing-library/react';
 import { renderApp } from '../../helpers/renderApp';
 
+function currentHashPath() {
+  return window.location.hash.replace(/^#/, '') || '/';
+}
+
 describe('GamePage', () => {
   beforeEach(() => {
     window.localStorage.clear();
@@ -11,18 +15,18 @@ describe('GamePage', () => {
   test('チャレンジ画面に遷移して戻るできる', async () => {
     const user = userEvent.setup();
     renderApp({ path: '/game' });
-    expect(window.location.pathname).toBe('/game');
+    expect(currentHashPath()).toBe('/game');
     expect(document.getElementById('game')).not.toBeNull();
 
     await user.click(document.getElementById('gameChallengeLink') as HTMLButtonElement);
     await waitFor(() => {
-      expect(window.location.pathname).toBe('/game/challenge');
+      expect(currentHashPath()).toBe('/game/challenge');
       expect(document.getElementById('gameChallenge')).not.toBeNull();
     });
 
     await user.click(document.getElementById('dcBack') as HTMLButtonElement);
     await waitFor(() => {
-      expect(window.location.pathname).toBe('/game');
+      expect(currentHashPath()).toBe('/game');
       expect(document.getElementById('game')).not.toBeNull();
     });
   });
@@ -30,18 +34,18 @@ describe('GamePage', () => {
   test('バッジ画面に遷移して戻るできる', async () => {
     const user = userEvent.setup();
     renderApp({ path: '/game' });
-    expect(window.location.pathname).toBe('/game');
+    expect(currentHashPath()).toBe('/game');
     expect(document.getElementById('game')).not.toBeNull();
 
     await user.click(document.getElementById('gameBadgeLink') as HTMLButtonElement);
     await waitFor(() => {
-      expect(window.location.pathname).toBe('/game/badges');
+      expect(currentHashPath()).toBe('/game/badges');
       expect(document.getElementById('gameBadges')).not.toBeNull();
     });
 
     await user.click(document.getElementById('badgeBackBtn') as HTMLButtonElement);
     await waitFor(() => {
-      expect(window.location.pathname).toBe('/game');
+      expect(currentHashPath()).toBe('/game');
       expect(document.getElementById('game')).not.toBeNull();
     });
   });

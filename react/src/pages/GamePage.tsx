@@ -1,6 +1,6 @@
-import { useAppContext } from '../state/AppContext';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLogsContext } from '../state/logs/LogsContext';
 
 type BadgeDef = {
   id: string;
@@ -63,7 +63,7 @@ export function GameChallengePage() {
 }
 
 export function GameBadgesPage() {
-  const { state } = useAppContext();
+  const { state } = useLogsContext();
   const navigate = useNavigate();
   const earned = useMemo(() => {
     try {

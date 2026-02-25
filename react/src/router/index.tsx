@@ -16,7 +16,7 @@ type RouterCtx = {
 
 const Ctx = createContext<RouterCtx | null>(null);
 
-export function BrowserRouter({ children }: PropsWithChildren) {
+export function AppRouter({ children }: PropsWithChildren) {
   const [pathname, setPathname] = useState(() => window.location.pathname || '/');
 
   useEffect(() => {
@@ -37,13 +37,13 @@ export function BrowserRouter({ children }: PropsWithChildren) {
 
 export function useNavigate() {
   const ctx = useContext(Ctx);
-  if (!ctx) throw new Error('useNavigate must be used inside BrowserRouter');
+  if (!ctx) throw new Error('useNavigate must be used inside AppRouter');
   return ctx.navigate;
 }
 
 export function useLocation() {
   const ctx = useContext(Ctx);
-  if (!ctx) throw new Error('useLocation must be used inside BrowserRouter');
+  if (!ctx) throw new Error('useLocation must be used inside AppRouter');
   return { pathname: ctx.pathname };
 }
 

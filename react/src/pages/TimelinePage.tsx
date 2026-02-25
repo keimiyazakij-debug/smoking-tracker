@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getDateKey, isDateLocked, parseDateKey } from '../domain/date';
-import { useAppContext } from '../state/AppContext';
+import { useLogsContext } from '../state/logs/LogsContext';
+import { useSettingsContext } from '../state/settings/SettingsContext';
+import { useUIContext } from '../state/ui/UIContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { TimelineEditModal, type EditState } from '../components/timeline/TimelineEditModal';
 import { TimelineHeader } from '../components/timeline/TimelineHeader';
@@ -22,7 +24,9 @@ function toIsoAt(dateKey: string, hhmm: string): string | null {
 }
 
 export function TimelinePage() {
-  const { state, dispatch } = useAppContext();
+  const { state: logsState, dispatch: logsDispatch } = useLogsContext();
+  const { state: settingsState } = useSettingsContext();
+  const { dispatch: uiDispatch } = useUIContext();
   const location = useLocation();
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
@@ -31,8 +35,8 @@ export function TimelinePage() {
   const [dateKey, setDateKey] = useState(initialDateKey);
   const timelineSource = params.get('from') === 'calendar' ? 'calendar' : params.get('from') === 'home' ? 'home' : null;
   const timelineSourceDateKey = params.get('sourceDate');
-  const list = state.logs[dateKey] || [];
-  const hasLogsEntry = Object.prototype.hasOwnProperty.call(state.logs, dateKey);
+  const list = logsState.logs[dateKey] || [];
+  const hasLogsEntry = Object.prototype.hasOwnProperty.call(logsState.logs, dateKey);
   const [edit, setEdit] = useState<EditState | null>(null);
   const [error, setError] = useState('');
 
@@ -53,6 +57,13 @@ export function TimelinePage() {
 
   const total = Object.values(map).reduce((sum, arr) => sum + arr.length, 0);
   const todayKey = getDateKey(new Date());
+  useEffect(
+    () => () => {
+      uiDispatch({ type: 'CLOSE_TIMELINE_MODAL' });
+    },
+    [uiDispatch],
+  );
+
   useEffect(() => {
     if (initialDateKey !== dateKey) {
       setDateKey(initialDateKey);
@@ -61,10 +72,10 @@ export function TimelinePage() {
   const prevDate = parseDateKey(dateKey);
   prevDate.setDate(prevDate.getDate() - 1);
   const prevKey = getDateKey(prevDate);
-  const isPrevLocked = isDateLocked(prevKey, state.isPremium);
+  const isPrevLocked = isDateLocked(prevKey, settingsState.isPremium);
 
   const openEdit = (hour: number) => {
-    const source = state.logs[dateKey] || [];
+    const source = logsState.logs[dateKey] || [];
     const scoped: string[] = [];
     const untouched: string[] = [];
     source.forEach((ts) => {
@@ -85,6 +96,7 @@ export function TimelinePage() {
       times: scoped.sort(),
       untouchedTimes: untouched,
     });
+    uiDispatch({ type: 'OPEN_TIMELINE_MODAL' });
   };
 
   const updateTime = (index: number, value: string) => {
@@ -138,7 +150,7 @@ export function TimelinePage() {
       return;
     }
 
-    const nextLogs = { ...state.logs };
+    const nextLogs = { ...logsState.logs };
     if (edit.dateKey === edit.sourceDateKey) {
       const merged = [...edit.untouchedTimes, ...scopedIso].sort();
       if (merged.length === 0) delete nextLogs[edit.dateKey];
@@ -150,7 +162,7 @@ export function TimelinePage() {
       nextLogs[edit.dateKey] = [...targetExisting, ...scopedIso].sort();
     }
 
-    dispatch({ type: 'SET_LOGS', logs: nextLogs });
+    logsDispatch({ type: 'SET_LOGS', logs: nextLogs });
     if (edit.dateKey !== dateKey) {
       setDateKey(edit.dateKey);
       const next = new URLSearchParams(location.search);
@@ -159,13 +171,14 @@ export function TimelinePage() {
     }
     setError('');
     setEdit(null);
+    uiDispatch({ type: 'CLOSE_TIMELINE_MODAL' });
   };
 
   const deleteAllForCurrentDate = () => {
     if (!hasLogsEntry) return;
-    const nextLogs = { ...state.logs };
+    const nextLogs = { ...logsState.logs };
     delete nextLogs[dateKey];
-    dispatch({ type: 'SET_LOGS', logs: nextLogs });
+    logsDispatch({ type: 'SET_LOGS', logs: nextLogs });
   };
 
   return (
@@ -227,6 +240,7 @@ export function TimelinePage() {
         onClose={() => {
           setError('');
           setEdit(null);
+          uiDispatch({ type: 'CLOSE_TIMELINE_MODAL' });
         }}
       />
     </div>

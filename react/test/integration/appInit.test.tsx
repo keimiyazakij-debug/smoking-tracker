@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, test } from 'vitest';
 import { renderApp } from '../helpers/renderApp';
 
+function currentHashPath() {
+  return window.location.hash.replace(/^#/, '') || '/';
+}
+
 describe('integration/appInit', () => {
   beforeEach(() => {
     window.localStorage.clear();
@@ -29,7 +33,7 @@ describe('integration/appInit', () => {
 
   test('URLパスに応じて対応タブで初期表示される', () => {
     renderApp({ path: '/settings' });
-    expect(window.location.pathname).toBe('/settings');
+    expect(currentHashPath()).toBe('/settings');
     expect(document.getElementById('settings')).not.toBeNull();
     expect(document.querySelector('nav button[data-tab="/settings"]')?.getAttribute('aria-selected')).toBe('true');
   });
