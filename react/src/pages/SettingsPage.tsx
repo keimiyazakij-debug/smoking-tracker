@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { useMemo, useState } from 'react';
 import { useLogsContext } from '../state/logs/LogsContext';
 import { useSettingsContext } from '../state/settings/SettingsContext';
 import { SettingsHeader } from '../components/settings/SettingsHeader';
@@ -6,6 +6,7 @@ import { TargetSettingsCard } from '../components/settings/TargetSettingsCard';
 import { SleepSettingsCard } from '../components/settings/SleepSettingsCard';
 import { PremiumSettingsCard } from '../components/settings/PremiumSettingsCard';
 import { DataManagementCard } from '../components/settings/DataManagementCard';
+import { exportTextFile, importTextFile, isFilePickCancelled } from '../platform/dataTransfer';
 import { storage } from '../platform/storage';
 
 export function isDevModeEnabled(host: string, devModeFlag: string | null): boolean {
@@ -15,7 +16,6 @@ export function isDevModeEnabled(host: string, devModeFlag: string | null): bool
 export function SettingsPage() {
   const { state: logsState, dispatch: logsDispatch } = useLogsContext();
   const { state: settingsState, dispatch: settingsDispatch } = useSettingsContext();
-  const fileRef = useRef<HTMLInputElement | null>(null);
   const [message, setMessage] = useState('');
   const isDevMode = useMemo(() => {
     const host = window.location.hostname;
@@ -90,28 +90,19 @@ export function SettingsPage() {
     return merged;
   };
 
-  const handleExport = () => {
-    const blob = new Blob([JSON.stringify({ logs: logsState.logs, settings: settingsState.settings, memos: logsState.memos }, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `smoking-tracker-backup-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleExport = async () => {
+    await exportTextFile(
+      `smoking-tracker-backup-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}.json`,
+      JSON.stringify({ logs: logsState.logs, settings: settingsState.settings, memos: logsState.memos }, null, 2),
+    );
   };
 
-  const handleImportChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const inputEl = e.target as HTMLInputElement;
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const text = await file.text();
+  const handleImport = async () => {
     try {
+      const text = await importTextFile('application/json,.json');
       const parsed = normalizeImport(JSON.parse(text));
       if (!parsed) {
         setMessage('ファイル形式が正しくありません。');
-        inputEl.value = '';
         return;
       }
       const ok = window.confirm('現在のデータを上書きします。よろしいですか？');
@@ -137,10 +128,10 @@ export function SettingsPage() {
         Object.entries(parsed.memos).forEach(([k, v]) => logsDispatch({ type: 'SET_MEMO', dateKey: k, memo: v }));
       }
       setMessage('インポートが完了しました。');
-    } catch {
+    } catch (error) {
+      if (isFilePickCancelled(error)) return;
       setMessage('ファイル形式が正しくありません。');
     }
-    inputEl.value = '';
   };
 
   const handleReset = () => {
@@ -161,11 +152,9 @@ export function SettingsPage() {
         onChangeSleep={(sleepStart, sleepEnd) => settingsDispatch({ type: 'SET_SLEEP_HOURS', sleepStart, sleepEnd })}
       />
       <DataManagementCard
-        fileRef={fileRef}
         message={message}
         onExport={handleExport}
-        onImportClick={() => fileRef.current?.click()}
-        onImportChange={handleImportChange}
+        onImport={handleImport}
         onReset={handleReset}
       />
       {isDevMode ? (

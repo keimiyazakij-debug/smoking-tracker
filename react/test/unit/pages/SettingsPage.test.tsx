@@ -3,11 +3,16 @@ import userEvent from '@testing-library/user-event';
 import { waitFor } from '@testing-library/react';
 import { isDevModeEnabled } from '../../../src/pages/SettingsPage';
 import { renderApp } from '../../helpers/renderApp';
+import * as dataTransfer from '../../../src/platform/dataTransfer';
 
 describe('SettingsPage', () => {
   beforeEach(() => {
     window.localStorage.clear();
     vi.spyOn(window, 'confirm').mockImplementation(() => true);
+    vi.spyOn(dataTransfer, 'importTextFile').mockReset();
+    vi.spyOn(dataTransfer, 'exportTextFile').mockReset();
+    vi.spyOn(dataTransfer, 'isFilePickCancelled').mockReset();
+    vi.mocked(dataTransfer.isFilePickCancelled).mockReturnValue(false);
   });
 
   test('目標本数変更がlocalStorageへ永続化される', async () => {
@@ -66,10 +71,8 @@ describe('SettingsPage', () => {
     const importLogs = {
       '2026-02-01': ['2026-02-01T09:00:00', '2026-02-01T10:00:00'],
     };
-    const file = new File([JSON.stringify({ logs: importLogs })], 'backup.json', { type: 'application/json' });
-    const input = document.getElementById('importDataFile') as HTMLInputElement;
-
-    await user.upload(input, file);
+    vi.mocked(dataTransfer.importTextFile).mockResolvedValueOnce(JSON.stringify({ logs: importLogs }));
+    await user.click(document.getElementById('importDataBtn') as HTMLButtonElement);
 
     await waitFor(() => {
       const raw = window.localStorage.getItem('smoking_tracker_react_state');
@@ -90,19 +93,14 @@ describe('SettingsPage', () => {
       },
     });
 
-    const file = new File(
-      [
-        JSON.stringify({
-          dailyLogs: JSON.stringify({
-            '2026-02-01': ['2026-02-01T09:00:00'],
-          }),
+    vi.mocked(dataTransfer.importTextFile).mockResolvedValueOnce(
+      JSON.stringify({
+        dailyLogs: JSON.stringify({
+          '2026-02-01': ['2026-02-01T09:00:00'],
         }),
-      ],
-      'legacy-backup.json',
-      { type: 'application/json' },
+      }),
     );
-    const input = document.getElementById('importDataFile') as HTMLInputElement;
-    await user.upload(input, file);
+    await user.click(document.getElementById('importDataBtn') as HTMLButtonElement);
 
     await waitFor(() => {
       const raw = window.localStorage.getItem('smoking_tracker_react_state');
@@ -120,18 +118,13 @@ describe('SettingsPage', () => {
       persisted: { logs: {} },
     });
 
-    const file = new File(
-      [
-        JSON.stringify({
-          dailyLogs: JSON.stringify({ '2026-02-06': ['2026-02-06T05:09:49.285Z'] }),
-          memos: '{}',
-        }),
-      ],
-      'legacy-mixed.json',
-      { type: 'application/json' },
+    vi.mocked(dataTransfer.importTextFile).mockResolvedValueOnce(
+      JSON.stringify({
+        dailyLogs: JSON.stringify({ '2026-02-06': ['2026-02-06T05:09:49.285Z'] }),
+        memos: '{}',
+      }),
     );
-    const input = document.getElementById('importDataFile') as HTMLInputElement;
-    await user.upload(input, file);
+    await user.click(document.getElementById('importDataBtn') as HTMLButtonElement);
 
     await waitFor(() => {
       const raw = window.localStorage.getItem('smoking_tracker_react_state');
@@ -153,9 +146,8 @@ describe('SettingsPage', () => {
       },
     });
 
-    const file = new File(['{invalid json'], 'broken.json', { type: 'application/json' });
-    const input = document.getElementById('importDataFile') as HTMLInputElement;
-    await user.upload(input, file);
+    vi.mocked(dataTransfer.importTextFile).mockResolvedValueOnce('{invalid json');
+    await user.click(document.getElementById('importDataBtn') as HTMLButtonElement);
 
     await waitFor(() => {
       const raw = window.localStorage.getItem('smoking_tracker_react_state');
@@ -187,24 +179,12 @@ describe('SettingsPage', () => {
 
   test('データエクスポートでBlob URL作成と解放が実行される', async () => {
     const user = userEvent.setup();
-    const createObjectURL = vi.fn(() => 'blob:mock-url');
-    const revokeObjectURL = vi.fn();
-    const originalCreate = URL.createObjectURL;
-    const originalRevoke = URL.revokeObjectURL;
-    URL.createObjectURL = createObjectURL;
-    URL.revokeObjectURL = revokeObjectURL;
-    const clickSpy = vi.spyOn(window.HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    vi.mocked(dataTransfer.exportTextFile).mockResolvedValueOnce();
 
     renderApp({ path: '/settings' });
     await user.click(document.getElementById('exportDataBtn') as HTMLButtonElement);
 
-    expect(createObjectURL).toHaveBeenCalledTimes(1);
-    expect(clickSpy).toHaveBeenCalledTimes(1);
-    expect(revokeObjectURL).toHaveBeenCalledWith('blob:mock-url');
-
-    clickSpy.mockRestore();
-    URL.createObjectURL = originalCreate;
-    URL.revokeObjectURL = originalRevoke;
+    expect(dataTransfer.exportTextFile).toHaveBeenCalledTimes(1);
   });
 
   test('開発モードではプレミアム切り替えトグルが表示される', async () => {

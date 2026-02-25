@@ -1,15 +1,11 @@
-import type { ChangeEvent, RefObject } from 'react';
-
 type Props = {
-  fileRef: RefObject<HTMLInputElement | null>;
   message: string;
   onExport: () => void;
-  onImportClick: () => void;
-  onImportChange: (e: ChangeEvent<HTMLInputElement>) => void | Promise<void>;
+  onImport: () => void | Promise<void>;
   onReset: () => void;
 };
 
-export function DataManagementCard({ fileRef, message, onExport, onImportClick, onImportChange, onReset }: Props) {
+export function DataManagementCard({ message, onExport, onImport, onReset }: Props) {
   return (
     <section className="settings-card">
       <h3 className="settings-section-title">データ管理</h3>
@@ -17,10 +13,9 @@ export function DataManagementCard({ fileRef, message, onExport, onImportClick, 
         <button id="exportDataBtn" type="button" className="settings-secondary-btn" onClick={onExport}>
           データをエクスポート
         </button>
-        <button id="importDataBtn" type="button" className="settings-secondary-btn" onClick={onImportClick}>
+        <button id="importDataBtn" type="button" className="settings-secondary-btn" onClick={onImport}>
           データをインポート
         </button>
-        <input ref={fileRef} id="importDataFile" type="file" accept="application/json,.json" hidden onChange={onImportChange} />
       </div>
       <button className="settings-danger-btn" onClick={onReset}>
         全データをリセット
