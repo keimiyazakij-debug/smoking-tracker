@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react';
+import { storage } from '../platform/storage';
 
 export function useLocalStorage<T>(key: string, initialValue: T) {
   const [value, setValue] = useState<T>(() => {
     try {
-      const raw = window.localStorage.getItem(key);
+      const raw = storage.getItem(key);
       if (!raw) return initialValue;
       return JSON.parse(raw) as T;
     } catch {
@@ -15,7 +16,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     (next: T) => {
       setValue(next);
       try {
-        window.localStorage.setItem(key, JSON.stringify(next));
+        storage.setItem(key, JSON.stringify(next));
       } catch {
         // noop
       }

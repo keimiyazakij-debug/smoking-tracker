@@ -6,6 +6,7 @@ import { TargetSettingsCard } from '../components/settings/TargetSettingsCard';
 import { SleepSettingsCard } from '../components/settings/SleepSettingsCard';
 import { PremiumSettingsCard } from '../components/settings/PremiumSettingsCard';
 import { DataManagementCard } from '../components/settings/DataManagementCard';
+import { storage } from '../platform/storage';
 
 export function isDevModeEnabled(host: string, devModeFlag: string | null): boolean {
   return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host.includes('debug.github.io') || devModeFlag === 'true';
@@ -18,7 +19,7 @@ export function SettingsPage() {
   const [message, setMessage] = useState('');
   const isDevMode = useMemo(() => {
     const host = window.location.hostname;
-    return isDevModeEnabled(host, window.localStorage.getItem('dev_mode'));
+    return isDevModeEnabled(host, storage.getItem('dev_mode'));
   }, []);
 
   const parseObj = <T,>(value: unknown): T | null => {

@@ -4,6 +4,7 @@ import { getDateKey, isDateLocked, parseDateKey } from '../domain/date';
 import { useLogsContext } from '../state/logs/LogsContext';
 import { useSettingsContext } from '../state/settings/SettingsContext';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { storage } from '../platform/storage';
 import { CalendarHeader } from '../components/calendar/CalendarHeader';
 import { CalendarGrid } from '../components/calendar/CalendarGrid';
 import { CalendarDetailPanel } from '../components/calendar/CalendarDetailPanel';
@@ -93,13 +94,13 @@ export function CalendarPage() {
   useEffect(() => {
     let cancelled = false;
     const key = `${HOLIDAY_CACHE_PREFIX}${calendarYear}`;
-    const fromCache = window.localStorage.getItem(key);
+    const fromCache = storage.getItem(key);
     if (fromCache) {
       try {
         const parsed = JSON.parse(fromCache) as Holiday[];
         if (!cancelled) setHolidays(Array.isArray(parsed) ? parsed : []);
       } catch {
-        window.localStorage.removeItem(key);
+        storage.removeItem(key);
       }
     } else {
       setHolidays([]);
@@ -115,7 +116,7 @@ export function CalendarPage() {
               .filter((x) => typeof x?.date === 'string')
               .map((x) => ({ date: x.date, localName: String(x.localName || ''), name: String(x.name || '') }))
           : [];
-        window.localStorage.setItem(key, JSON.stringify(normalized));
+        storage.setItem(key, JSON.stringify(normalized));
         if (!cancelled) setHolidays(normalized);
       } catch {
         // noop: offline/blocked environment

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLogsContext } from '../state/logs/LogsContext';
+import { storage } from '../platform/storage';
 
 type BadgeDef = {
   id: string;
@@ -67,7 +68,7 @@ export function GameBadgesPage() {
   const navigate = useNavigate();
   const earned = useMemo(() => {
     try {
-      const raw = window.localStorage.getItem('badgeDone');
+      const raw = storage.getItem('badgeDone');
       if (!raw) return {} as Record<string, { earnedAt?: string }>;
       return JSON.parse(raw) as Record<string, { earnedAt?: string }>;
     } catch {
