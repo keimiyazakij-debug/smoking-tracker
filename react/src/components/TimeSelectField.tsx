@@ -52,8 +52,8 @@ export function TimeSelectField({ id, value, onChange }: TimeSelectFieldProps) {
           </option>
         ))}
       </select>
-      <button id={id} type="button" className="text-link settings-time-clear" onClick={() => onChange(null)}>
-        クリア
+      <button id={id} type="button" className="settings-time-clear" aria-label="時刻をクリア" onClick={() => onChange(null)}>
+        ✕
       </button>
     </div>
   );

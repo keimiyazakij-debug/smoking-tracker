@@ -69,7 +69,17 @@
 }
 
 .settings-time-clear {
-  min-width: 52px;
+  border: 1px solid var(--danger);
+  background: transparent;
+  color: var(--danger);
+  font-size: var(--text-caption);
+  border-radius: var(--radius-small);
+  min-height: 32px;
+  min-width: 32px;
+  width: 32px;
+  padding: 0;
+  line-height: 1;
+  cursor: pointer;
 }
 
 #settings .setting-input {
