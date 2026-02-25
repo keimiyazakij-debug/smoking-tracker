@@ -155,4 +155,25 @@ describe('MainPage', () => {
     expect(document.getElementById('todayLongestDisplay')?.textContent || '').not.toBe('');
     expect(document.getElementById('mainMessageBlock')?.textContent || '').toBe('');
   });
+
+  test('無料版では60日より前のログを自己ベスト計算に含めない', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-02-25T12:00:00'));
+
+    renderApp({
+      path: '/main',
+      persisted: {
+        logs: {
+          '2025-12-26': ['2025-12-26T04:00:00.000Z', '2025-12-26T04:22:00.000Z'],
+          '2026-02-25': ['2026-02-25T08:00:00.000Z', '2026-02-25T10:00:00.000Z'],
+        },
+      },
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(0);
+    });
+
+    expect(document.getElementById('bestIntervalDisplay')?.textContent).toBe('2時間00分');
+  });
 });

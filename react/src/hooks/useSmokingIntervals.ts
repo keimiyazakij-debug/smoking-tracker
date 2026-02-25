@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getDateKey } from '../domain/date';
+import { FREE_LIMIT_DAYS, getDateKey } from '../domain/date';
 import { getAwakeInterval } from './useAwakeInterval';
 import type { Logs, Settings } from '../types/app';
 
@@ -25,6 +25,13 @@ function getSortedSmokeDates(logs: Logs): Date[] {
   });
   out.sort((a, b) => a.getTime() - b.getTime());
   return out;
+}
+
+export function filterLogsForPlan(smokes: Date[], now: Date, isPremium: boolean): Date[] {
+  if (isPremium) return smokes;
+  const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  cutoff.setDate(cutoff.getDate() - FREE_LIMIT_DAYS);
+  return smokes.filter((d) => d >= cutoff);
 }
 
 function getBestFromHistory(smokes: Date[], settings: Settings): number {
@@ -58,7 +65,7 @@ export function formatHoursMinutes(minutes: number): string {
   return `${hours}時間${String(mins).padStart(2, '0')}分`;
 }
 
-export function useSmokingIntervals(logs: Logs, settings: Settings): SmokingIntervalState {
+export function useSmokingIntervals(logs: Logs, settings: Settings, isPremium: boolean): SmokingIntervalState {
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [bestUpdate, setBestUpdate] = useState<BestUpdateState | null>(null);
   const [message, setMessage] = useState('');
@@ -73,14 +80,14 @@ export function useSmokingIntervals(logs: Logs, settings: Settings): SmokingInte
   }, []);
 
   const computed = useMemo(() => {
-    const smokes = getSortedSmokeDates(logs);
+    const smokes = filterLogsForPlan(getSortedSmokeDates(logs), now, isPremium);
     const lastSmoke = smokes[smokes.length - 1] ?? null;
     const currentMinutes = lastSmoke ? getAwakeInterval(lastSmoke, now, settings.sleepStart ?? null, settings.sleepEnd ?? null) : 0;
     const historicalBestMinutes = getBestFromHistory(smokes, settings);
     const todayLongestMinutes = getTodayLongest(smokes, now, settings);
     const bestMinutes = Math.max(historicalBestMinutes, currentMinutes);
     return { currentMinutes, historicalBestMinutes, todayLongestMinutes, bestMinutes };
-  }, [logs, settings, now]);
+  }, [logs, settings, now, isPremium]);
 
   useEffect(() => {
     if (bestUpdate && bestUpdate.dateKey !== todayKey) {

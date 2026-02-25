@@ -17,7 +17,7 @@ export function MainPage() {
   const todayKey = getDateKey(new Date());
   const todayCount = getTodayCount(logsState.logs, todayKey);
   const yesterdayCount = getYesterdayCount(logsState.logs, todayKey);
-  const smokingIntervals = useSmokingIntervals(logsState.logs, settingsState.settings);
+  const smokingIntervals = useSmokingIntervals(logsState.logs, settingsState.settings, settingsState.isPremium);
   const [smokeHelp, setSmokeHelp] = useState('');
 
   const diffText = useMemo(() => {

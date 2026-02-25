@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import { waitFor } from '@testing-library/react';
+import { isDevModeEnabled } from '../../../src/pages/SettingsPage';
 import { renderApp } from '../../helpers/renderApp';
 
 describe('SettingsPage', () => {
@@ -218,5 +219,9 @@ describe('SettingsPage', () => {
       const parsed = raw ? JSON.parse(raw) : null;
       expect(parsed?.isPremium).toBe(true);
     });
+  });
+
+  test('debug.github.io を含むホストは開発モード判定になる', () => {
+    expect(isDevModeEnabled('keimiyazakij-debug.github.io', null)).toBe(true);
   });
 });

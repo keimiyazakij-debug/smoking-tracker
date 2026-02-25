@@ -376,7 +376,7 @@
   border: 1px solid #d8d8d8;
   border-radius: var(--radius-small);
   padding: 10px;
-  font-size: var(--text-caption);
+  font-size: var(--text-body);
   line-height: 1.2;
   color: var(--text-primary);
   background: #fff;
