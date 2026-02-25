@@ -34,7 +34,7 @@ export function StatsPage() {
         best={stats.summary.max}
         currentAvgText={
           stats.summary.showPrev
-            ? `前期間比較: ${stats.summary.diff && stats.summary.diff >= 0 ? '+' : ''}${stats.summary.diff ?? 0}本${stats.summary.percent ? ` (${stats.summary.percent}%)` : ''}`
+            ? `前期間比較: ${stats.summary.diff && stats.summary.diff >= 0 ? '+' : ''}${stats.summary.diff ?? 0}本`
             : '全期間'
         }
         maxText={stats.summary.maxDate ? `最大: ${stats.summary.max}本（${stats.summary.maxDate}）` : ''}
@@ -53,7 +53,6 @@ export function StatsPage() {
       />
 
       <div className="card stats-chart-card">
-        <div id="stats-total-highlight" className="stats-total-highlight">{stats.label}：<strong>{stats.summary.total}本</strong></div>
         <StatsBaseDateNavigator
           label={stats.label}
           disabled={!stats.showNavigation}

@@ -57,11 +57,10 @@ describe('StatsPage', () => {
 
     expect(document.getElementById('stats-title')?.textContent).toBe('時間帯別本数（平均）');
     expect(document.getElementById('stats-label')?.textContent).toBe(ym.replace('-', '/'));
-    expect(document.getElementById('stats-total-highlight')?.textContent).toContain('：');
     expect(document.getElementById('stats-chart-1')).not.toBeNull();
   });
 
-  test('weekでは前期間比較の差分と割合が表示される', () => {
+  test('weekでは前期間比較の差分のみ表示される', () => {
     const now = new Date();
     const start = new Date(now);
     start.setDate(start.getDate() - start.getDay());
@@ -81,10 +80,10 @@ describe('StatsPage', () => {
 
     const text = document.getElementById('stats-current-avg')?.textContent ?? '';
     expect(text).toContain('前期間比較: +1本');
-    expect(text).toContain('(100.0%)');
+    expect(text).not.toContain('%');
   });
 
-  test('weekで前期間ゼロの場合は割合表示が付かない', () => {
+  test('weekで前期間ゼロの場合も割合表示は付かない', () => {
     const now = new Date();
     const start = new Date(now);
     start.setDate(start.getDate() - start.getDay());
