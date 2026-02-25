@@ -6,15 +6,15 @@
   /* page padding: 16px */
   padding: var(--space-page); 
   margin-bottom: 0;
-  height: calc(100dvh - var(--header-height, 0px) - var(--nav-height, 56px));
   min-height: calc(100dvh - var(--header-height, 0px) - var(--nav-height, 56px));
-  overflow-y: auto;
+  padding-bottom: calc(var(--nav-height, 56px) + var(--space-page) + env(safe-area-inset-bottom, 0px));
+  overflow: visible;
   overflow-x: hidden;
   background-image: url("/backimage.JPG");
   background-repeat: no-repeat;
   background-position: center top;
   background-size: cover;
-  background-attachment: fixed;
+  background-attachment: scroll;
 }
 
 .active { 

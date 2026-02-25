@@ -5,12 +5,9 @@
 #calendar {
   /* 横余白は維持し、縦方向は見切れ防止のためコンパクト化 */
   padding: var(--spacing-tight) var(--space-page);
-  /* Chrome でも下部タブ分を常に除外する固定計算 */
-  height: calc(100dvh - var(--nav-height, 50px) - var(--header-height, 0px));
-  min-height: calc(100dvh - var(--nav-height, 50px) - var(--header-height, 0px));
   box-sizing: border-box;
   margin-bottom: 0;
-  overflow-y: auto;
+  overflow-y: visible;
   overflow-x: hidden;
 }
 

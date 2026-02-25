@@ -58,8 +58,9 @@ body {
   padding:0; 
   background: var(--color-background);
   color: var(--color-text-primary);
-  height: 100dvh;
-  overflow: hidden;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 header { 
