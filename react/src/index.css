@@ -130,7 +130,7 @@
   /* iOS: 固定高さ + 内部スクロールを無効化 */
   .tab {
     height: auto !important;
-    min-height: 0 !important;
+    min-height: calc(100dvh - var(--header-height, 0px) - var(--nav-height, 56px)) !important;
     overflow: visible !important;
 
     /* 下部ナビが fixed のため隠れ防止 */
@@ -143,7 +143,7 @@
   /* iOS: カレンダーだけ戻らない問題の根本（#calendar の内部スクロール固定を無効化） */
   #calendar {
     height: auto !important;
-    min-height: 0 !important;
+    min-height: calc(100dvh - var(--header-height, 0px) - var(--nav-height, 56px)) !important;
     overflow: visible !important;
     padding-bottom: calc(var(--nav-height, 56px) + var(--spacing-page, 16px));
   }
