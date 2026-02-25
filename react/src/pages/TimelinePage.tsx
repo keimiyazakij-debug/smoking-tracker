@@ -4,9 +4,8 @@ import { useLogsContext } from '../state/logs/LogsContext';
 import { useSettingsContext } from '../state/settings/SettingsContext';
 import { useUIContext } from '../state/ui/UIContext';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { TimelineEditModal, type EditState } from '../components/timeline/TimelineEditModal';
-import { TimelineHeader } from '../components/timeline/TimelineHeader';
-import { TimelineGrid } from '../components/timeline/TimelineGrid';
+import { type EditState } from '../components/timeline/TimelineEditModal';
+import { TimelinePageView } from './timeline/TimelinePageView';
 
 function toHHMM(ts: string): string | null {
   const d = new Date(ts);
@@ -181,68 +180,60 @@ export function TimelinePage() {
     logsDispatch({ type: 'SET_LOGS', logs: nextLogs });
   };
 
+  const handlePrev = () => {
+    if (isPrevLocked) return;
+    const d = parseDateKey(dateKey);
+    d.setDate(d.getDate() - 1);
+    const nextKey = getDateKey(d);
+    setDateKey(nextKey);
+    const next = new URLSearchParams(location.search);
+    next.set('date', nextKey);
+    navigate(`/timeline?${next.toString()}`, { replace: true });
+  };
+
+  const handleNext = () => {
+    const d = parseDateKey(dateKey);
+    d.setDate(d.getDate() + 1);
+    const nextKey = getDateKey(d);
+    if (nextKey > todayKey) return;
+    setDateKey(nextKey);
+    const next = new URLSearchParams(location.search);
+    next.set('date', nextKey);
+    navigate(`/timeline?${next.toString()}`, { replace: true });
+  };
+
+  const handleBack = () => navigate(timelineSource === 'calendar' ? `/calendar?date=${timelineSourceDateKey || dateKey}` : '/main');
+
+  const handleClose = () => {
+    setError('');
+    setEdit(null);
+    uiDispatch({ type: 'CLOSE_TIMELINE_MODAL' });
+  };
+
   return (
-    <div id="timeline" className="tab active">
-      <TimelineHeader
-        dateKey={dateKey}
-        total={total}
-        hasLogsEntry={hasLogsEntry}
-        isPrevLocked={isPrevLocked}
-        isNextHidden={dateKey >= todayKey}
-        source={timelineSource}
-        sourceDateKey={timelineSourceDateKey}
-        onPrev={() => {
-          if (isPrevLocked) return;
-          const d = parseDateKey(dateKey);
-          d.setDate(d.getDate() - 1);
-          const nextKey = getDateKey(d);
-          setDateKey(nextKey);
-          const next = new URLSearchParams(location.search);
-          next.set('date', nextKey);
-          navigate(`/timeline?${next.toString()}`, { replace: true });
-        }}
-        onNext={() => {
-          const d = parseDateKey(dateKey);
-          d.setDate(d.getDate() + 1);
-          const nextKey = getDateKey(d);
-          if (nextKey > todayKey) return;
-          setDateKey(nextKey);
-          const next = new URLSearchParams(location.search);
-          next.set('date', nextKey);
-          navigate(`/timeline?${next.toString()}`, { replace: true });
-        }}
-        onBack={() => navigate(timelineSource === 'calendar' ? `/calendar?date=${timelineSourceDateKey || dateKey}` : '/main')}
-        onDeleteAll={deleteAllForCurrentDate}
-      />
-
-      <div className="card timeline-card">
-        <h2 className="timeline-page-title">時間帯別本数</h2>
-        <div className="timeline-legend" aria-hidden="true">
-          <span className="legend-label">少</span>
-          <span className="legend-chip legend-0" />
-          <span className="legend-chip legend-1" />
-          <span className="legend-chip legend-2" />
-          <span className="legend-chip legend-3" />
-          <span className="legend-label">多</span>
-        </div>
-        <TimelineGrid map={map} onEditHour={openEdit} />
-      </div>
-
-      <TimelineEditModal
-        edit={edit}
-        todayKey={todayKey}
-        error={error}
-        onChangeDate={(d) => edit && setEdit({ ...edit, dateKey: d })}
-        onChangeTime={updateTime}
-        onAddTime={addTime}
-        onRemoveTime={removeTime}
-        onSave={saveEdit}
-        onClose={() => {
-          setError('');
-          setEdit(null);
-          uiDispatch({ type: 'CLOSE_TIMELINE_MODAL' });
-        }}
-      />
-    </div>
+    <TimelinePageView
+      dateKey={dateKey}
+      total={total}
+      hasLogsEntry={hasLogsEntry}
+      isPrevLocked={isPrevLocked}
+      isNextHidden={dateKey >= todayKey}
+      source={timelineSource}
+      sourceDateKey={timelineSourceDateKey}
+      map={map}
+      edit={edit}
+      todayKey={todayKey}
+      error={error}
+      onPrev={handlePrev}
+      onNext={handleNext}
+      onBack={handleBack}
+      onDeleteAll={deleteAllForCurrentDate}
+      onEditHour={openEdit}
+      onChangeDate={(d) => edit && setEdit({ ...edit, dateKey: d })}
+      onChangeTime={updateTime}
+      onAddTime={addTime}
+      onRemoveTime={removeTime}
+      onSave={saveEdit}
+      onClose={handleClose}
+    />
   );
 }

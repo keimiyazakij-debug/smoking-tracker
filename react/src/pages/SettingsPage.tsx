@@ -1,13 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useLogsContext } from '../state/logs/LogsContext';
 import { useSettingsContext } from '../state/settings/SettingsContext';
-import { SettingsHeader } from '../components/settings/SettingsHeader';
-import { TargetSettingsCard } from '../components/settings/TargetSettingsCard';
-import { SleepSettingsCard } from '../components/settings/SleepSettingsCard';
-import { PremiumSettingsCard } from '../components/settings/PremiumSettingsCard';
-import { DataManagementCard } from '../components/settings/DataManagementCard';
 import { exportTextFile, importTextFile, isFilePickCancelled } from '../platform/dataTransfer';
 import { storage } from '../platform/storage';
+import { SettingsPageView } from './settings/SettingsPageView';
 
 export function isDevModeEnabled(host: string, devModeFlag: string | null): boolean {
   return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host.includes('debug.github.io') || devModeFlag === 'true';
@@ -142,29 +138,19 @@ export function SettingsPage() {
   };
 
   return (
-    <div id="settings" className="tab active">
-      <SettingsHeader title="設定" />
-      <PremiumSettingsCard isPremium={settingsState.isPremium} onTogglePremium={(v) => settingsDispatch({ type: 'SET_PREMIUM', isPremium: v })} />
-      <TargetSettingsCard dailyTarget={settingsState.settings.dailyTarget} onChangeTarget={(value) => settingsDispatch({ type: 'SET_DAILY_TARGET', dailyTarget: value })} />
-      <SleepSettingsCard
-        sleepStart={settingsState.settings.sleepStart ?? null}
-        sleepEnd={settingsState.settings.sleepEnd ?? null}
-        onChangeSleep={(sleepStart, sleepEnd) => settingsDispatch({ type: 'SET_SLEEP_HOURS', sleepStart, sleepEnd })}
-      />
-      <DataManagementCard
-        message={message}
-        onExport={handleExport}
-        onImport={handleImport}
-        onReset={handleReset}
-      />
-      {isDevMode ? (
-        <PremiumSettingsCard
-          isPremium={settingsState.isPremium}
-          onTogglePremium={(v) => settingsDispatch({ type: 'SET_PREMIUM', isPremium: v })}
-          showPlan={false}
-          showDebug
-        />
-      ) : null}
-    </div>
+    <SettingsPageView
+      isPremium={settingsState.isPremium}
+      dailyTarget={settingsState.settings.dailyTarget}
+      sleepStart={settingsState.settings.sleepStart ?? null}
+      sleepEnd={settingsState.settings.sleepEnd ?? null}
+      message={message}
+      isDevMode={isDevMode}
+      onTogglePremium={(value) => settingsDispatch({ type: 'SET_PREMIUM', isPremium: value })}
+      onChangeTarget={(value) => settingsDispatch({ type: 'SET_DAILY_TARGET', dailyTarget: value })}
+      onChangeSleep={(sleepStart, sleepEnd) => settingsDispatch({ type: 'SET_SLEEP_HOURS', sleepStart, sleepEnd })}
+      onExport={handleExport}
+      onImport={handleImport}
+      onReset={handleReset}
+    />
   );
 }

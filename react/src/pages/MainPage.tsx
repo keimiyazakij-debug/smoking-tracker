@@ -5,10 +5,7 @@ import { getDateKey, parseDateKey } from '../domain/date';
 import { useSmokingIntervals } from '../hooks/useSmokingIntervals';
 import { useLogsContext } from '../state/logs/LogsContext';
 import { useSettingsContext } from '../state/settings/SettingsContext';
-import { SmokingIntervalCard } from '../components/main/SmokingIntervalCard';
-import { TodayStatusCard } from '../components/main/TodayStatusCard';
-import { SmokeActionCard } from '../components/main/SmokeActionCard';
-import { HistoryCTA } from '../components/main/HistoryCTA';
+import { MainPageView } from './main/MainPageView';
 
 export function MainPage() {
   const { state: logsState, dispatch: logsDispatch } = useLogsContext();
@@ -34,43 +31,38 @@ export function MainPage() {
   const yesterdayKey = getYesterdayKey(todayKey);
   const showYesterdaySuccessBtn = logsState.logs[yesterdayKey] === undefined;
 
+  const handleAdd = () => {
+    logsDispatch({ type: 'ADD_SMOKE' });
+    setSmokeHelp(buildSmokeMessage(todayCount + 1, target));
+  };
+
+  const handleUndo = () => logsDispatch({ type: 'UNDO_LAST_SMOKE' });
+
+  const handleMarkYesterdaySuccess = () => {
+    const d = parseDateKey(todayKey);
+    d.setDate(d.getDate() - 1);
+    logsDispatch({ type: 'MARK_SUCCESS', dateKey: getDateKey(d) });
+  };
+
+  const handleOpenTimeline = () => navigate(`/timeline?date=${todayKey}&from=home&sourceDate=${todayKey}`);
+
   return (
-    <div id="main" className="tab active">
-      <div className="main-layout">
-        <SmokingIntervalCard
-          currentMinutes={smokingIntervals.currentMinutes}
-          bestMinutes={smokingIntervals.bestMinutes}
-          todayLongestMinutes={smokingIntervals.todayLongestMinutes}
-          message={smokingIntervals.message}
-        />
-
-        <TodayStatusCard
-          todayKey={todayKey}
-          todayCount={todayCount}
-          target={target}
-          diffText={diffText}
-          progress={progress}
-        />
-
-        <SmokeActionCard
-          todayCount={todayCount}
-          target={target}
-          smokeHelp={smokeHelp}
-          showYesterdaySuccessBtn={showYesterdaySuccessBtn}
-          onAdd={() => {
-            logsDispatch({ type: 'ADD_SMOKE' });
-            setSmokeHelp(buildSmokeMessage(todayCount + 1, target));
-          }}
-          onUndo={() => logsDispatch({ type: 'UNDO_LAST_SMOKE' })}
-          onMarkYesterdaySuccess={() => {
-            const d = parseDateKey(todayKey);
-            d.setDate(d.getDate() - 1);
-            logsDispatch({ type: 'MARK_SUCCESS', dateKey: getDateKey(d) });
-          }}
-        />
-
-        <HistoryCTA onOpenTimeline={() => navigate(`/timeline?date=${todayKey}&from=home&sourceDate=${todayKey}`)} />
-      </div>
-    </div>
+    <MainPageView
+      todayKey={todayKey}
+      todayCount={todayCount}
+      target={target}
+      diffText={diffText}
+      progress={progress}
+      smokeHelp={smokeHelp}
+      showYesterdaySuccessBtn={showYesterdaySuccessBtn}
+      currentMinutes={smokingIntervals.currentMinutes}
+      bestMinutes={smokingIntervals.bestMinutes}
+      todayLongestMinutes={smokingIntervals.todayLongestMinutes}
+      message={smokingIntervals.message}
+      onAdd={handleAdd}
+      onUndo={handleUndo}
+      onMarkYesterdaySuccess={handleMarkYesterdaySuccess}
+      onOpenTimeline={handleOpenTimeline}
+    />
   );
 }

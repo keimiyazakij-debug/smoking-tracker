@@ -5,9 +5,7 @@ import { useLogsContext } from '../state/logs/LogsContext';
 import { useSettingsContext } from '../state/settings/SettingsContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { storage } from '../platform/storage';
-import { CalendarHeader } from '../components/calendar/CalendarHeader';
-import { CalendarGrid } from '../components/calendar/CalendarGrid';
-import { CalendarDetailPanel } from '../components/calendar/CalendarDetailPanel';
+import { CalendarPageView } from './calendar/CalendarPageView';
 const HOLIDAY_CACHE_PREFIX = 'holidays_';
 const HOLIDAY_API_BASE = 'https://date.nager.at/api/v3/PublicHolidays';
 
@@ -173,49 +171,50 @@ export function CalendarPage() {
     setCalendarSelectedDateKey(getDateKey(new Date(d.getFullYear(), d.getMonth(), 1)));
   };
 
+  const handleCancelEdit = () => {
+    setMemoEditingDateKey(null);
+    setMemoDraft('');
+  };
+
+  const handleMarkSuccess = () => {
+    if (!detailDateKey) return;
+    logsDispatch({ type: 'MARK_SUCCESS', dateKey: detailDateKey });
+  };
+
+  const handleOpenTimeline = () => {
+    if (!detailDateKey) return;
+    navigate(`/timeline?date=${detailDateKey}&from=calendar&sourceDate=${detailDateKey}`);
+  };
+
   return (
-    <div id="calendar" className="tab active">
-      <CalendarHeader year={calendarYear} month={calendarMonth} onPrev={goPrevMonth} onNext={goNextMonth} />
-
-      <div className="card calendar-card">
-        <CalendarGrid
-          cells={cells}
-          selectedDateKey={calendarSelectedDateKey}
-          todayKey={todayKey}
-          holidayMap={holidayMap}
-          memos={logsState.memos}
-          logs={logsState.logs}
-          dailyTarget={settingsState.settings.dailyTarget}
-          isPremium={settingsState.isPremium}
-          onSelect={setCalendarSelectedDateKey}
-        />
-      </div>
-
-      <CalendarDetailPanel
-        detailCell={detailCell}
-        detailDateKey={detailDateKey}
-        isLocked={isDetailLocked}
-        showConfirmBtn={showConfirmBtn}
-        memoText={memoText}
-        statusLine={statusLine}
-        isEditing={isEditingMemo}
-        memoDraft={memoDraft}
-        onEdit={beginMemoEdit}
-        onChangeMemo={setMemoDraft}
-        onSaveMemo={saveMemo}
-        onCancelEdit={() => {
-          setMemoEditingDateKey(null);
-          setMemoDraft('');
-        }}
-        onMarkSuccess={() => {
-          if (!detailDateKey) return;
-          logsDispatch({ type: 'MARK_SUCCESS', dateKey: detailDateKey });
-        }}
-        onOpenTimeline={() => {
-          if (!detailDateKey) return;
-          navigate(`/timeline?date=${detailDateKey}&from=calendar&sourceDate=${detailDateKey}`);
-        }}
-      />
-    </div>
+    <CalendarPageView
+      year={calendarYear}
+      month={calendarMonth}
+      cells={cells}
+      selectedDateKey={calendarSelectedDateKey}
+      todayKey={todayKey}
+      holidayMap={holidayMap}
+      memos={logsState.memos}
+      logs={logsState.logs}
+      dailyTarget={settingsState.settings.dailyTarget}
+      isPremium={settingsState.isPremium}
+      detailCell={detailCell}
+      detailDateKey={detailDateKey}
+      isDetailLocked={isDetailLocked}
+      showConfirmBtn={showConfirmBtn}
+      memoText={memoText}
+      statusLine={statusLine}
+      isEditingMemo={isEditingMemo}
+      memoDraft={memoDraft}
+      onPrevMonth={goPrevMonth}
+      onNextMonth={goNextMonth}
+      onSelectDate={setCalendarSelectedDateKey}
+      onEditMemo={beginMemoEdit}
+      onChangeMemo={setMemoDraft}
+      onSaveMemo={saveMemo}
+      onCancelEdit={handleCancelEdit}
+      onMarkSuccess={handleMarkSuccess}
+      onOpenTimeline={handleOpenTimeline}
+    />
   );
 }
