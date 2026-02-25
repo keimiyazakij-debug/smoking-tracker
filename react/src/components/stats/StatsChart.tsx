@@ -1,8 +1,17 @@
 import { useEffect, useMemo, useRef } from 'react';
 import Chart from 'chart.js/auto';
 
+export type StatsChartSeries = {
+  name: string;
+  values: number[];
+};
+
 type Props = {
-  data: any;
+  labels: string[];
+  series: StatsChartSeries[];
+  yMax: number;
+  scrollable?: boolean;
+  unit?: string;
 };
 
 function getMaxTicksLimit(total: number): number {
@@ -11,13 +20,13 @@ function getMaxTicksLimit(total: number): number {
   return 10;
 }
 
-export function StatsChart({ data }: Props) {
+export function StatsChart({ labels, series, yMax, scrollable = false, unit }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const chartRef = useRef<Chart<'bar', number[], string> | null>(null);
-  const chartDataKey = useMemo(
-    () => `${data.chart.labels.join('|')}__${data.chart.values.join('|')}__${data.chart.yMax}__${data.chart.scrollable}`,
-    [data.chart.labels, data.chart.values, data.chart.yMax, data.chart.scrollable],
-  );
+  const chartDataKey = useMemo(() => {
+    const seriesKey = series.map((s) => `${s.name}:${s.values.join('|')}`).join('__');
+    return `${labels.join('|')}__${seriesKey}__${yMax}__${scrollable}__${unit ?? ''}`;
+  }, [labels, series, yMax, scrollable, unit]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -32,8 +41,8 @@ export function StatsChart({ data }: Props) {
     if (!ctx) return;
 
     const wrap = canvas.parentElement;
-    const width = data.chart.scrollable
-      ? Math.max(640, data.chart.labels.length * 52)
+    const width = scrollable
+      ? Math.max(640, labels.length * 52)
       : Math.max(320, wrap?.clientWidth || 0);
 
     canvas.width = width;
@@ -43,16 +52,15 @@ export function StatsChart({ data }: Props) {
     chartRef.current = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: data.chart.labels,
-        datasets: [
-          {
-            data: data.chart.values,
-            backgroundColor: '#0066FF',
-            borderColor: '#0066FF',
-            borderWidth: 1,
-            borderRadius: 6,
-          },
-        ],
+        labels,
+        datasets: series.map((s) => ({
+          label: unit ? `${s.name} (${unit})` : s.name,
+          data: s.values,
+          backgroundColor: '#0066FF',
+          borderColor: '#0066FF',
+          borderWidth: 1,
+          borderRadius: 6,
+        })),
       },
       options: {
         animation: false,
@@ -67,14 +75,14 @@ export function StatsChart({ data }: Props) {
             border: { display: false },
             ticks: {
               autoSkip: true,
-              maxTicksLimit: getMaxTicksLimit(data.chart.labels.length),
+              maxTicksLimit: getMaxTicksLimit(labels.length),
               color: '#6E6E6E',
               font: { size: 11 },
             },
           },
           y: {
             beginAtZero: true,
-            max: data.chart.yMax,
+            max: yMax,
             position: 'left',
             ticks: {
               precision: 1,
@@ -95,11 +103,11 @@ export function StatsChart({ data }: Props) {
       chartRef.current?.destroy();
       chartRef.current = null;
     };
-  }, [chartDataKey, data.chart.labels.length, data.chart.scrollable, data.chart.yMax]);
+  }, [chartDataKey, labels.length, scrollable, yMax, labels, series, unit]);
 
   return (
     <div id="stats-chart-1-section" className="stats-chart-section" style={{ display: 'block' }}>
-      <div id="stats-chart-1-wrap" className={`stats-chart-wrap ${data.chart.scrollable ? 'is-scroll' : ''}`}>
+      <div id="stats-chart-1-wrap" className={`stats-chart-wrap ${scrollable ? 'is-scroll' : ''}`}>
         <canvas id="stats-chart-1" ref={canvasRef} />
       </div>
     </div>

@@ -57,7 +57,13 @@ export function StatsPageView({
 
       <div className="card stats-chart-card">
         <StatsBaseDateNavigator label={stats.label} disabled={!stats.showNavigation} onPrev={onPrev} onNext={onNext} titleNode={<StatsHeader title={stats.title} />} />
-        <StatsChart data={stats} />
+        <StatsChart
+          labels={stats.chart.labels}
+          series={[{ name: stats.title, values: stats.chart.values }]}
+          yMax={stats.chart.yMax}
+          scrollable={stats.chart.scrollable}
+          unit="本"
+        />
       </div>
     </div>
   );
