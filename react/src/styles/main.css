@@ -82,8 +82,8 @@
 .main-layout {
   display: flex;
   flex-direction: column;
-  /* section gap: 24px */
-  gap: var(--space-section);
+  /* main cards: tighten vertical spacing */
+  gap:  var(--space-tight);
 }
 
 .interval-card {
@@ -107,7 +107,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 
 .interval-row-main {
@@ -154,10 +154,11 @@
 }
 
 .interval-message-block {
-  min-height: 48px;
+  min-height: 24px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   font-size: var(--text-caption);
+  line-height: 1.25;
   color: var(--color-text-secondary);
 }
 

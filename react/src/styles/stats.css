@@ -16,16 +16,16 @@
   margin-bottom: var(--space-section);
 }
 .stats-controls-card {
-  margin: 0 0 var(--space-section);
+  margin: 0 0 12px;
 }
 .stats-controls-card .stats-section {
-  margin-bottom: var(--spacing-tight);
+  margin-bottom: 6px;
 }
 .stats-controls-card .stats-section:last-child {
   margin-bottom: 0;
 }
 .stats-chart-card {
-  margin: 0 0 var(--space-section);
+  margin: 0 0 12px;
 }
 
 .stats-label {
@@ -61,6 +61,7 @@
 #stats {
   font-size: var(--text-caption);
   padding: var(--space-page);
+  line-height: 1.3;
   overflow-y: auto;
 }
 
@@ -147,7 +148,8 @@
 .stats-total-highlight {
   font-size: var(--text-h1);
   color: var(--text-primary);
-  margin-bottom: var(--spacing-tight);
+  margin-bottom: 6px;
+  line-height: 1.2;
 }
 
 .stats-total-highlight strong {
@@ -188,14 +190,16 @@
   border: 1px solid #E5E5E5;
 }
 .stats-free-notice {
-  margin: 0 0 var(--space-tight);
+  margin: 0 0 6px;
   font-size: var(--text-caption);
   color: var(--text-secondary);
+  line-height: 1.2;
 }
 
 .stats-summary-item {
   font-size: var(--text-caption);
   color: var(--text-secondary);
+  line-height: 1.2;
 }
 
 /* 現在期間の値を強く表示 */
@@ -238,19 +242,24 @@
 
 @media (max-width: 520px) {
   .stats-row {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
     gap: 6px;
+  }
+
+  .stats-label {
+    min-width: auto;
+    white-space: nowrap;
   }
 
   .stats-range-buttons,
   .stats-graph-buttons {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 
   #stats #graph-daily,
   #stats #graph-hourly,
   #stats #graph-weekday {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
   }
 }

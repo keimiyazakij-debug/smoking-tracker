@@ -202,6 +202,10 @@ export function CalendarPage() {
         onEdit={beginMemoEdit}
         onChangeMemo={setMemoDraft}
         onSaveMemo={saveMemo}
+        onCancelEdit={() => {
+          setMemoEditingDateKey(null);
+          setMemoDraft('');
+        }}
         onMarkSuccess={() => {
           if (!detailDateKey) return;
           logsDispatch({ type: 'MARK_SUCCESS', dateKey: detailDateKey });

@@ -2,13 +2,13 @@
 /* 設定画面 UI (Design System v1.0) */
 /* ============================== */
 #settings {
-  padding: var(--space-page);
+  padding: 12px var(--space-page);
 }
 
 .settings-page-title {
   /* ページタイトル */
-  margin: 0 0 var(--space-section);
-  font-size: var(--text-h1);
+  margin: 0 0 12px;
+  font-size: var(--text-body);
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -17,20 +17,20 @@
   /* セクションカード */
   background: var(--card-bg);
   border-radius: var(--radius-card);
-  padding: var(--space-card);
-  margin-bottom: var(--space-section);
+  padding: 12px;
+  margin-bottom: 12px;
 }
 
 .settings-section-title {
-  margin: 0 0 var(--spacing-card);
-  font-size: var(--text-body);
+  margin: 0 0 10px;
+  font-size: var(--text-caption);
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .settings-item {
-  min-height: 48px;
-  padding: 0 var(--space-page);
+  min-height: 40px;
+  padding: 0 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -42,14 +42,14 @@
 }
 
 .settings-item-label {
-  font-size: var(--text-body);
+  font-size: var(--text-caption);
   color: var(--text-primary);
 }
 
 .settings-item-help {
-  font-size: var(--text-caption);
+  font-size: var(--text-micro);
   color: var(--text-secondary);
-  margin: var(--spacing-tight) 0 0;
+  margin: 6px 0 0;
 }
 
 .settings-item-input {
@@ -75,12 +75,12 @@
 #settings .setting-input {
   /* 数値入力統一 */
   width: 96px;
-  min-height: 40px;
+  min-height: 34px;
   border: 1px solid var(--text-secondary);
   border-radius: var(--radius-small);
-  font-size: var(--text-body);
+  font-size: var(--text-caption);
   color: var(--text-primary);
-  padding: 8px;
+  padding: 6px 8px;
   box-sizing: border-box;
   background: var(--background);
 }
@@ -147,20 +147,20 @@
 .settings-item-plan {
   min-height: auto;
   align-items: flex-start;
-  padding-top: var(--spacing-tight);
-  padding-bottom: var(--spacing-tight);
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
 
 .settings-data-actions {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--spacing-tight);
-  margin-top: var(--spacing-card);
+  gap: 6px;
+  margin-top: 10px;
 }
 
 #settings .settings-secondary-btn {
   width: 100%;
-  min-height: 44px;
+  min-height: 38px;
 }
 
 .settings-plan-info {
@@ -172,19 +172,19 @@
 
 #settings .settings-danger-btn {
   /* 危険操作を明確化 */
-  margin-top: var(--spacing-card);
+  margin-top: 10px;
   width: 100%;
-  min-height: 48px;
+  min-height: 40px;
   border: 1px solid var(--danger);
   border-radius: var(--radius-card);
   background: transparent;
   color: var(--danger);
-  font-size: var(--text-body);
+  font-size: var(--text-caption);
   font-weight: 600;
 }
 
 .settings-note {
-  margin: var(--spacing-tight) 0 0;
+  margin: 6px 0 0;
   font-size: var(--text-caption);
   color: var(--text-secondary);
 }
@@ -199,7 +199,7 @@
 
 /* 開発モード専用デバッグカード */
 .settings-debug-card {
-  margin-top: var(--space-section);
+  margin-top: 12px;
 }
 
 .settings-item-debug {

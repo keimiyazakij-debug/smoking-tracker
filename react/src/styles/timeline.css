@@ -5,19 +5,19 @@
 /* タイムライン表示 */
 #timeline {
   /* タブ画面として表示: ナビは常時表示 */
-  padding: var(--space-page) var(--space-page) var(--space-page);
+  padding: var(--space-page) var(--space-page) calc(var(--space-page) + env(safe-area-inset-bottom, 0px));
   margin-bottom: 0;
-  height: calc(100svh - var(--header-height, 0px) - var(--nav-height, 56px));
-  min-height: calc(100svh - var(--header-height, 0px) - var(--nav-height, 56px));
+  height: calc(100dvh - var(--header-height, 0px) - var(--nav-height, 56px) - env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh - var(--header-height, 0px) - var(--nav-height, 56px) - env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-@supports not (height: 100svh) {
+@supports not (height: 100dvh) {
   #timeline {
-    height: calc(100dvh - var(--header-height, 0px) - var(--nav-height, 56px));
-    min-height: calc(100dvh - var(--header-height, 0px) - var(--nav-height, 56px));
+    height: calc(100svh - var(--header-height, 0px) - var(--nav-height, 56px));
+    min-height: calc(100svh - var(--header-height, 0px) - var(--nav-height, 56px));
   }
 }
 
