@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import { waitFor } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { isDevModeEnabled } from '../../../src/pages/SettingsPage';
+import App from '../../../src/App';
 import { renderApp } from '../../helpers/renderApp';
 import * as dataTransfer from '../../../src/platform/dataTransfer';
 
@@ -82,6 +83,69 @@ describe('SettingsPage', () => {
     expect(document.querySelector('.settings-note')?.textContent).toContain('インポートが完了しました');
   });
 
+  test('schemaVersion付きJSONをインポートできる', async () => {
+    const user = userEvent.setup();
+    renderApp({
+      path: '/settings',
+      persisted: { logs: {} },
+    });
+
+    vi.mocked(dataTransfer.importTextFile).mockResolvedValueOnce(
+      JSON.stringify({
+        schemaVersion: 1,
+        exportedAt: '2026-02-25T00:00:00.000Z',
+        data: {
+          logs: { '2026-02-05': ['2026-02-05T09:00:00'] },
+          settings: { dailyTarget: 9, calendarEvaluation: 'target', sleepStart: '23:00', sleepEnd: '06:30' },
+          memos: { '2026-02-05': 'new memo' },
+          entitlement: 'premium',
+          purchaseState: 'active',
+        },
+      }),
+    );
+    await user.click(document.getElementById('importDataBtn') as HTMLButtonElement);
+
+    await waitFor(() => {
+      const raw = window.localStorage.getItem('smoking_tracker_react_state');
+      const parsed = raw ? JSON.parse(raw) : null;
+      expect(parsed?.logs).toEqual({ '2026-02-05': ['2026-02-05T09:00:00'] });
+      expect(parsed?.settings?.dailyTarget).toBe(9);
+      expect(parsed?.settings?.sleepStart).toBe('23:00');
+      expect(parsed?.settings?.sleepEnd).toBe('06:30');
+      expect(parsed?.memos?.['2026-02-05']).toBe('new memo');
+      expect(parsed?.entitlement).toBe('premium');
+      expect(parsed?.purchaseState).toBe('active');
+    });
+  });
+
+  test('旧形式JSON（schemaVersionなし）でもインポートできる', async () => {
+    const user = userEvent.setup();
+    renderApp({
+      path: '/settings',
+      persisted: { logs: {} },
+    });
+
+    vi.mocked(dataTransfer.importTextFile).mockResolvedValueOnce(
+      JSON.stringify({
+        logs: { '2026-02-07': ['2026-02-07T08:00:00'] },
+        settings: { dailyTarget: 11, calendarEvaluation: 'target', sleepStart: '23:30', sleepEnd: '07:00' },
+        memos: { '2026-02-07': 'legacy format' },
+        isPremium: false,
+      }),
+    );
+    await user.click(document.getElementById('importDataBtn') as HTMLButtonElement);
+
+    await waitFor(() => {
+      const raw = window.localStorage.getItem('smoking_tracker_react_state');
+      const parsed = raw ? JSON.parse(raw) : null;
+      expect(parsed?.logs).toEqual({ '2026-02-07': ['2026-02-07T08:00:00'] });
+      expect(parsed?.settings?.dailyTarget).toBe(11);
+      expect(parsed?.memos?.['2026-02-07']).toBe('legacy format');
+      expect(parsed?.entitlement).toBe('free');
+      expect(parsed?.purchaseState).toBe('unknown');
+    });
+  });
+
   test('旧形式バックアップ（dailyLogs）でもインポートできる', async () => {
     const user = userEvent.setup();
     renderApp({
@@ -156,6 +220,39 @@ describe('SettingsPage', () => {
     });
   });
 
+  test('schemaVersionが不正な場合はインポート失敗になる', async () => {
+    const user = userEvent.setup();
+    const baseLogs = {
+      '2026-02-08': ['2026-02-08T10:00:00'],
+    };
+
+    renderApp({
+      path: '/settings',
+      persisted: {
+        logs: baseLogs,
+      },
+    });
+
+    vi.mocked(dataTransfer.importTextFile).mockResolvedValueOnce(
+      JSON.stringify({
+        schemaVersion: '1',
+        exportedAt: '2026-02-25T00:00:00.000Z',
+        data: {
+          logs: { '2026-02-09': ['2026-02-09T10:00:00'] },
+          settings: { dailyTarget: 10, calendarEvaluation: 'target' },
+        },
+      }),
+    );
+    await user.click(document.getElementById('importDataBtn') as HTMLButtonElement);
+
+    await waitFor(() => {
+      const raw = window.localStorage.getItem('smoking_tracker_react_state');
+      const parsed = raw ? JSON.parse(raw) : null;
+      expect(parsed?.logs).toEqual(baseLogs);
+    });
+    expect(document.querySelector('.settings-note')?.textContent).toContain('ファイル形式が正しくありません。');
+  });
+
   test('全データをリセットでログが空になる', async () => {
     const user = userEvent.setup();
     renderApp({
@@ -177,7 +274,7 @@ describe('SettingsPage', () => {
     expect(document.querySelector('.settings-note')?.textContent).toContain('全データをリセットしました');
   });
 
-  test('データエクスポートでBlob URL作成と解放が実行される', async () => {
+  test('データエクスポートでschemaVersion付きJSONを出力する', async () => {
     const user = userEvent.setup();
     vi.mocked(dataTransfer.exportTextFile).mockResolvedValueOnce();
 
@@ -185,6 +282,16 @@ describe('SettingsPage', () => {
     await user.click(document.getElementById('exportDataBtn') as HTMLButtonElement);
 
     expect(dataTransfer.exportTextFile).toHaveBeenCalledTimes(1);
+    const [, jsonText] = vi.mocked(dataTransfer.exportTextFile).mock.calls[0] as [string, string];
+    const parsed = JSON.parse(jsonText);
+    expect(parsed?.schemaVersion).toBe(1);
+    expect(typeof parsed?.exportedAt).toBe('string');
+    expect(parsed?.data).toBeTruthy();
+    expect(parsed?.data?.logs).toBeTruthy();
+    expect(parsed?.data?.settings).toBeTruthy();
+    expect(parsed?.data?.isPremium).toBeUndefined();
+    expect(parsed?.data?.entitlement === 'free' || parsed?.data?.entitlement === 'premium').toBe(true);
+    expect(parsed?.data?.purchaseState).toBe('unknown');
   });
 
   test('開発モードではプレミアム切り替えトグルが表示される', async () => {
@@ -197,7 +304,31 @@ describe('SettingsPage', () => {
     await waitFor(() => {
       const raw = window.localStorage.getItem('smoking_tracker_react_state');
       const parsed = raw ? JSON.parse(raw) : null;
-      expect(parsed?.isPremium).toBe(true);
+      expect(parsed?.entitlement).toBe('premium');
+    });
+  });
+
+  test('localStorage旧形式isPremiumを起動時にentitlementへ移行する', async () => {
+    window.localStorage.setItem(
+      'smoking_tracker_react_state',
+      JSON.stringify({
+        logs: {},
+        settings: { dailyTarget: 10, calendarEvaluation: 'target' },
+        memos: {},
+        isPremium: true,
+      }),
+    );
+
+    window.history.pushState({}, '', '/');
+    window.location.hash = '#/settings';
+    render(<App />);
+
+    await waitFor(() => {
+      const raw = window.localStorage.getItem('smoking_tracker_react_state');
+      const parsed = raw ? JSON.parse(raw) : null;
+      expect(parsed?.isPremium).toBeUndefined();
+      expect(parsed?.entitlement).toBe('premium');
+      expect(parsed?.purchaseState).toBe('unknown');
     });
   });
 

@@ -133,14 +133,6 @@ h3 {
   pointer-events: auto;
 }
 
-.daily-challenge-link {
-  text-align: center;
-}
-
-.daily-challenge-link.spaced {
-  margin-top: 24px;
-}
-
 .history-actions {
   display: flex;
   flex-direction: column;
@@ -205,10 +197,6 @@ button:active {
 .text-link,
 #closeEditBtn,
 #addTimeTagBtn,
-#dcBack,
-#badgeBackBtn,
-#dcPrev,
-#dcNext,
 #stats-prev,
 #stats-next,
 #range-week,
@@ -293,7 +281,6 @@ nav button.is-active {
 }
 
 /* settings / stats layout spacing */
-#gameBadges h2,
 #history h2 {
   margin: 0 0 var(--spacing-tight);
 }

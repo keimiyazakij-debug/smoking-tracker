@@ -2,6 +2,8 @@ export type Logs = Record<string, string[]>;
 export type DailyMemos = Record<string, string>;
 export type RangeType = 'week' | 'month' | 'all';
 export type GraphType = 'primary' | 'hourly' | 'weekday';
+export type Entitlement = 'free' | 'premium';
+export type PurchaseState = 'unknown' | 'active' | 'inactive';
 
 export type Settings = {
   dailyTarget: number;
@@ -14,7 +16,14 @@ export type PersistedState = {
   logs: Logs;
   settings: Settings;
   memos: DailyMemos;
-  isPremium: boolean;
+  entitlement: Entitlement;
+  purchaseState?: PurchaseState;
+};
+
+export type ExportFileV1 = {
+  schemaVersion: number;
+  exportedAt: string;
+  data: PersistedState;
 };
 
 export type AppState = PersistedState;
@@ -27,4 +36,5 @@ export type AppAction =
   | { type: 'SET_SLEEP_HOURS'; sleepStart: string | null; sleepEnd: string | null }
   | { type: 'SET_LOGS'; logs: Logs }
   | { type: 'SET_MEMO'; dateKey: string; memo: string }
-  | { type: 'SET_PREMIUM'; isPremium: boolean };
+  | { type: 'SET_PREMIUM'; isPremium: boolean }
+  | { type: 'SET_ENTITLEMENT'; entitlement: Entitlement };

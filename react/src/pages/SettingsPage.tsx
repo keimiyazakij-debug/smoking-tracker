@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
+import type { Entitlement, ExportFileV1, PersistedState, PurchaseState, Settings } from '../types/app';
 import { useLogsContext } from '../state/logs/LogsContext';
 import { useSettingsContext } from '../state/settings/SettingsContext';
+import { isPremium as isPremiumSelector, resolveEntitlement, resolvePurchaseState } from '../state/settings/settingsSelectors';
 import { exportTextFile, importTextFile, isFilePickCancelled } from '../platform/dataTransfer';
 import { storage } from '../platform/storage';
 import { SettingsPageView } from './settings/SettingsPageView';
@@ -9,9 +11,18 @@ export function isDevModeEnabled(host: string, devModeFlag: string | null): bool
   return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host.includes('debug.github.io') || devModeFlag === 'true';
 }
 
+function isEntitlement(value: unknown): value is Entitlement {
+  return value === 'premium' || value === 'free';
+}
+
+function isPurchaseState(value: unknown): value is PurchaseState {
+  return value === 'active' || value === 'inactive' || value === 'unknown';
+}
+
 export function SettingsPage() {
   const { state: logsState, dispatch: logsDispatch } = useLogsContext();
   const { state: settingsState, dispatch: settingsDispatch } = useSettingsContext();
+  const isPremium = isPremiumSelector(settingsState);
   const [message, setMessage] = useState('');
   const isDevMode = useMemo(() => {
     const host = window.location.hostname;
@@ -32,64 +43,107 @@ export function SettingsPage() {
     return null;
   };
 
+  const getImportSource = (raw: unknown): Record<string, unknown> | null => {
+    const obj = parseObj<Record<string, unknown>>(raw);
+    if (!obj) return null;
+
+    if (Object.prototype.hasOwnProperty.call(obj, 'schemaVersion')) {
+      if (typeof obj.schemaVersion !== 'number') return null;
+      const dataObj = parseObj<Record<string, unknown>>(obj.data);
+      if (!dataObj) return null;
+      const hasLogs = !!parseObj<Record<string, string[]>>(dataObj.logs);
+      const hasSettings = !!parseObj<Settings>(dataObj.settings);
+      if (!hasLogs || !hasSettings) return null;
+      return dataObj;
+    }
+
+    return obj;
+  };
+
   const normalizeImport = (
     raw: unknown,
   ): {
     logs?: Record<string, string[]>;
     settings?: { dailyTarget?: number; calendarEvaluation?: 'target'; sleepStart?: string | null; sleepEnd?: string | null };
     memos?: Record<string, string>;
-    isPremium?: boolean;
+    entitlement?: Entitlement;
+    purchaseState?: PurchaseState;
   } | null => {
-    const obj = parseObj<Record<string, unknown>>(raw);
-    if (!obj) return null;
+    const source = getImportSource(raw);
+    if (!source) return null;
     const directState = {
-      logs: parseObj<Record<string, string[]>>(obj.logs),
-      settings: parseObj<{ dailyTarget?: number; calendarEvaluation?: 'target'; sleepStart?: string | null; sleepEnd?: string | null }>(obj.settings),
-      memos: parseObj<Record<string, string>>(obj.memos),
-      isPremium: typeof obj.isPremium === 'boolean' ? obj.isPremium : undefined,
+      logs: parseObj<Record<string, string[]>>(source.logs),
+      settings: parseObj<{ dailyTarget?: number; calendarEvaluation?: 'target'; sleepStart?: string | null; sleepEnd?: string | null }>(source.settings),
+      memos: parseObj<Record<string, string>>(source.memos),
+      entitlement: isEntitlement(source.entitlement) ? source.entitlement : undefined,
+      purchaseState: isPurchaseState(source.purchaseState) ? source.purchaseState : undefined,
+      isPremium: typeof source.isPremium === 'boolean' ? source.isPremium : undefined,
     };
 
     const nestedStateObj = parseObj<{
       logs?: Record<string, string[]>;
       settings?: { dailyTarget?: number; calendarEvaluation?: 'target'; sleepStart?: string | null; sleepEnd?: string | null };
       memos?: Record<string, string>;
+      entitlement?: Entitlement;
+      purchaseState?: PurchaseState;
       isPremium?: boolean;
-    }>(obj.smoking_tracker_react_state);
+    }>(source.smoking_tracker_react_state);
     const nestedState = nestedStateObj
         ? {
           logs: parseObj<Record<string, string[]>>(nestedStateObj.logs),
           settings: parseObj<{ dailyTarget?: number; calendarEvaluation?: 'target'; sleepStart?: string | null; sleepEnd?: string | null }>(nestedStateObj.settings),
           memos: parseObj<Record<string, string>>(nestedStateObj.memos),
+          entitlement: isEntitlement(nestedStateObj.entitlement) ? nestedStateObj.entitlement : undefined,
+          purchaseState: isPurchaseState(nestedStateObj.purchaseState) ? nestedStateObj.purchaseState : undefined,
           isPremium: typeof nestedStateObj.isPremium === 'boolean' ? nestedStateObj.isPremium : undefined,
         }
       : null;
 
-    const legacyLogs = parseObj<Record<string, string[]>>(obj.dailyLogs);
-    const legacySettings = parseObj<{ dailyTarget?: number; calendarEvaluation?: 'target'; sleepStart?: string | null; sleepEnd?: string | null }>(obj.settings);
-    const legacyMemos = parseObj<Record<string, string>>(obj.memos);
+    const legacyLogs = parseObj<Record<string, string[]>>(source.dailyLogs);
+    const legacySettings = parseObj<{ dailyTarget?: number; calendarEvaluation?: 'target'; sleepStart?: string | null; sleepEnd?: string | null }>(source.settings);
+    const legacyMemos = parseObj<Record<string, string>>(source.memos);
     const legacyPremium =
-      typeof obj.debug_isPremium === 'string' ? obj.debug_isPremium === 'true' : typeof obj.isPremium === 'boolean' ? obj.isPremium : undefined;
+      typeof source.debug_isPremium === 'string' ? source.debug_isPremium === 'true' : typeof source.isPremium === 'boolean' ? source.isPremium : undefined;
 
     const merged = {
       logs: directState.logs || nestedState?.logs || legacyLogs || undefined,
       settings: directState.settings || nestedState?.settings || legacySettings || undefined,
       memos: directState.memos || nestedState?.memos || legacyMemos || undefined,
-      isPremium:
-        directState.isPremium !== undefined
-          ? directState.isPremium
-          : nestedState?.isPremium !== undefined
-            ? nestedState.isPremium
-            : legacyPremium,
+      entitlement: resolveEntitlement({
+        entitlement: directState.entitlement ?? nestedState?.entitlement,
+        isPremium:
+          directState.isPremium !== undefined
+            ? directState.isPremium
+            : nestedState?.isPremium !== undefined
+              ? nestedState.isPremium
+              : legacyPremium,
+      }),
+      purchaseState: resolvePurchaseState({
+        purchaseState: directState.purchaseState ?? nestedState?.purchaseState,
+      }),
     };
 
-    if (!merged.logs && !merged.settings && !merged.memos && merged.isPremium === undefined) return null;
+    if (!merged.logs && !merged.settings && !merged.memos) return null;
     return merged;
   };
 
   const handleExport = async () => {
+    const exportData: PersistedState = {
+      logs: logsState.logs,
+      settings: settingsState.settings,
+      memos: logsState.memos,
+      entitlement: settingsState.entitlement,
+      purchaseState: settingsState.purchaseState,
+    };
+    const payload: ExportFileV1 = {
+      schemaVersion: 1,
+      exportedAt: new Date().toISOString(),
+      data: exportData,
+    };
+
     await exportTextFile(
       `smoking-tracker-backup-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}.json`,
-      JSON.stringify({ logs: logsState.logs, settings: settingsState.settings, memos: logsState.memos }, null, 2),
+      JSON.stringify(payload, null, 2),
     );
   };
 
@@ -116,9 +170,8 @@ export function SettingsPage() {
           sleepEnd: parsed.settings.sleepEnd ?? null,
         });
       }
-      if (typeof parsed.isPremium === 'boolean') {
-        settingsDispatch({ type: 'SET_PREMIUM', isPremium: parsed.isPremium });
-      }
+      settingsDispatch({ type: 'SET_ENTITLEMENT', entitlement: parsed.entitlement ?? 'free' });
+      settingsDispatch({ type: 'SET_PURCHASE_STATE', purchaseState: parsed.purchaseState ?? 'unknown' });
       if (parsed.memos) {
         Object.keys(logsState.memos).forEach((k) => logsDispatch({ type: 'SET_MEMO', dateKey: k, memo: '' }));
         Object.entries(parsed.memos).forEach(([k, v]) => logsDispatch({ type: 'SET_MEMO', dateKey: k, memo: v }));
@@ -139,13 +192,13 @@ export function SettingsPage() {
 
   return (
     <SettingsPageView
-      isPremium={settingsState.isPremium}
+      isPremium={isPremium}
       dailyTarget={settingsState.settings.dailyTarget}
       sleepStart={settingsState.settings.sleepStart ?? null}
       sleepEnd={settingsState.settings.sleepEnd ?? null}
       message={message}
       isDevMode={isDevMode}
-      onTogglePremium={(value) => settingsDispatch({ type: 'SET_PREMIUM', isPremium: value })}
+      onTogglePremium={(value) => settingsDispatch({ type: 'SET_ENTITLEMENT', entitlement: value ? 'premium' : 'free' })}
       onChangeTarget={(value) => settingsDispatch({ type: 'SET_DAILY_TARGET', dailyTarget: value })}
       onChangeSleep={(sleepStart, sleepEnd) => settingsDispatch({ type: 'SET_SLEEP_HOURS', sleepStart, sleepEnd })}
       onExport={handleExport}

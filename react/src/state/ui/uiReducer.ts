@@ -1,4 +1,4 @@
-export type UIActiveTab = '/main' | '/calendar' | '/timeline' | '/game' | '/stats' | '/settings';
+export type UIActiveTab = '/main' | '/calendar' | '/timeline' | '/interval' | '/stats' | '/settings';
 
 export type UIState = {
   isTimelineModalOpen: boolean;

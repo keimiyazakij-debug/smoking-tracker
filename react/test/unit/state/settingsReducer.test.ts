@@ -22,6 +22,12 @@ describe('state/settings/settingsReducer', () => {
   test('SET_PREMIUM は値を置き換える', () => {
     const state = makeState();
     const next = settingsReducer(state, { type: 'SET_PREMIUM', isPremium: true });
-    expect(next.isPremium).toBe(true);
+    expect(next.entitlement).toBe('premium');
+  });
+
+  test('SET_ENTITLEMENT は値を置き換える', () => {
+    const state = makeState();
+    const next = settingsReducer(state, { type: 'SET_ENTITLEMENT', entitlement: 'premium' });
+    expect(next.entitlement).toBe('premium');
   });
 });

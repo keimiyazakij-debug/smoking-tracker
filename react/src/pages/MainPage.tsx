@@ -5,16 +5,18 @@ import { getDateKey, parseDateKey } from '../domain/date';
 import { useSmokingIntervals } from '../hooks/useSmokingIntervals';
 import { useLogsContext } from '../state/logs/LogsContext';
 import { useSettingsContext } from '../state/settings/SettingsContext';
+import { isPremium as isPremiumSelector } from '../state/settings/settingsSelectors';
 import { MainPageView } from './main/MainPageView';
 
 export function MainPage() {
   const { state: logsState, dispatch: logsDispatch } = useLogsContext();
   const { state: settingsState } = useSettingsContext();
+  const isPremium = isPremiumSelector(settingsState);
   const navigate = useNavigate();
   const todayKey = getDateKey(new Date());
   const todayCount = getTodayCount(logsState.logs, todayKey);
   const yesterdayCount = getYesterdayCount(logsState.logs, todayKey);
-  const smokingIntervals = useSmokingIntervals(logsState.logs, settingsState.settings, settingsState.isPremium);
+  const smokingIntervals = useSmokingIntervals(logsState.logs, settingsState.settings, isPremium);
   const [smokeHelp, setSmokeHelp] = useState('');
 
   const diffText = useMemo(() => {
@@ -58,7 +60,9 @@ export function MainPage() {
       currentMinutes={smokingIntervals.currentMinutes}
       bestMinutes={smokingIntervals.bestMinutes}
       todayLongestMinutes={smokingIntervals.todayLongestMinutes}
-      message={smokingIntervals.message}
+      nextTarget={smokingIntervals.nextTarget}
+      isInitialState={smokingIntervals.isInitialState}
+      achievements={smokingIntervals.achievements}
       onAdd={handleAdd}
       onUndo={handleUndo}
       onMarkYesterdaySuccess={handleMarkYesterdaySuccess}

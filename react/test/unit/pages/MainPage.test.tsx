@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { act, screen } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from '../../helpers/renderApp';
 
@@ -63,7 +63,7 @@ describe('MainPage', () => {
     expect(document.getElementById('yesterdaySuccessWrap')?.getAttribute('style')).toContain('display: none');
   });
 
-  test('喫煙間隔カードを表示し、自己ベストまで60分以内でメッセージを表示する', () => {
+  test('喫煙間隔カードを表示し、次の目標1行を表示する', () => {
     const now = new Date();
     now.setSeconds(0, 0);
     const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -80,14 +80,14 @@ describe('MainPage', () => {
     });
 
     expect(document.getElementById('bestIntervalDisplay')?.textContent).toContain('2時間');
-    expect(document.getElementById('mainMessageBlock')?.textContent || '').toMatch(/あと\d+分で自己ベスト/);
+    expect(screen.getByText(/(あと\d+:\d{2}で.+（\d+:\d{2}）更新|自己ベスト更新中！)/)).toBeInTheDocument();
     expect(document.getElementById('avg7Display')).toBeNull();
     expect(document.getElementById('since')).toBeNull();
   });
 
-  test('自己ベスト更新時は更新メッセージを表示する', async () => {
+  test('自己ベスト更新時は成果ティッカーに★自己ベスト更新を表示する', async () => {
     vi.useFakeTimers();
-    const now = new Date('2026-02-24T12:10:00');
+    const now = new Date('2026-02-24T23:00:00');
     vi.setSystemTime(now);
     const todayKey = '2026-02-24';
 
@@ -95,7 +95,8 @@ describe('MainPage', () => {
       path: '/main',
       persisted: {
         logs: {
-          [todayKey]: ['2026-02-24T08:00:00.000', '2026-02-24T10:00:00.000'],
+          '2026-02-23': ['2026-02-23T12:00:00.000'],
+          [todayKey]: ['2026-02-24T00:10:00.000', '2026-02-24T01:00:00.000'],
         },
       },
     });
@@ -103,13 +104,13 @@ describe('MainPage', () => {
     await act(async () => {
       vi.advanceTimersByTime(0);
     });
-    expect(document.getElementById('mainMessageBlock')?.textContent || '').toContain('自己ベストを');
-    expect(document.getElementById('mainMessageBlock')?.textContent || '').toContain('更新しました');
+    const achievementButton = screen.getByRole('button', { name: '今日の成果を表示' });
+    expect(achievementButton.textContent || '').toContain('★ 自己ベスト更新');
   });
 
-  test('自己ベスト更新メッセージは当日中に1分更新しても維持される', async () => {
+  test('自己ベスト更新成果は当日中の更新後も一覧に残る', async () => {
     vi.useFakeTimers();
-    const now = new Date('2026-02-24T12:10:00');
+    const now = new Date('2026-02-24T23:00:00');
     vi.setSystemTime(now);
     const todayKey = '2026-02-24';
 
@@ -117,7 +118,8 @@ describe('MainPage', () => {
       path: '/main',
       persisted: {
         logs: {
-          [todayKey]: ['2026-02-24T08:00:00.000', '2026-02-24T10:00:00.000'],
+          '2026-02-23': ['2026-02-23T12:00:00.000'],
+          [todayKey]: ['2026-02-24T00:10:00.000', '2026-02-24T01:00:00.000'],
         },
       },
     });
@@ -125,16 +127,26 @@ describe('MainPage', () => {
     await act(async () => {
       vi.advanceTimersByTime(0);
     });
-    expect(document.getElementById('mainMessageBlock')?.textContent || '').toContain('自己ベストを');
+    await act(async () => {
+      screen.getByRole('button', { name: '今日の成果を表示' }).click();
+    });
+    let dialog = screen.getByRole('dialog', { name: '今日の成果' });
+    expect(within(dialog).getByText('★ 自己ベスト更新')).toBeInTheDocument();
+    await act(async () => {
+      within(dialog).getByRole('button', { name: '閉じる' }).click();
+    });
 
     await act(async () => {
       vi.advanceTimersByTime(2 * 60 * 1000);
     });
-    expect(document.getElementById('mainMessageBlock')?.textContent || '').toContain('自己ベストを');
-    expect(document.getElementById('mainMessageBlock')?.textContent || '').toContain('更新しました');
+    await act(async () => {
+      screen.getByRole('button', { name: '今日の成果を表示' }).click();
+    });
+    dialog = screen.getByRole('dialog', { name: '今日の成果' });
+    expect(within(dialog).getByText('★ 自己ベスト更新')).toBeInTheDocument();
   });
 
-  test('今日の最長があっても自己ベスト条件に該当しない場合は通知しない', async () => {
+  test('成果条件に該当しない日は成果ティッカーを表示しない', async () => {
     vi.useFakeTimers();
     const now = new Date('2026-02-24T12:00:00');
     vi.setSystemTime(now);
@@ -143,8 +155,23 @@ describe('MainPage', () => {
       path: '/main',
       persisted: {
         logs: {
-          '2026-02-23': ['2026-02-23T00:00:00.000', '2026-02-23T05:00:00.000'],
-          '2026-02-24': ['2026-02-24T08:00:00.000', '2026-02-24T10:20:00.000'],
+          '2026-01-20': ['2026-01-20T00:00:00.000', '2026-01-20T05:00:00.000'],
+          '2026-02-18': ['2026-02-18T00:00:00.000', '2026-02-18T04:00:00.000'],
+          '2026-02-23': ['2026-02-23T00:00:00.000', '2026-02-23T03:00:00.000'],
+          '2026-02-24': [
+            '2026-02-24T00:05:00.000',
+            '2026-02-24T01:05:00.000',
+            '2026-02-24T02:05:00.000',
+            '2026-02-24T03:05:00.000',
+            '2026-02-24T04:05:00.000',
+            '2026-02-24T05:05:00.000',
+            '2026-02-24T06:05:00.000',
+            '2026-02-24T07:05:00.000',
+            '2026-02-24T08:05:00.000',
+            '2026-02-24T09:05:00.000',
+            '2026-02-24T10:05:00.000',
+            '2026-02-24T11:05:00.000',
+          ],
         },
       },
     });
@@ -153,7 +180,7 @@ describe('MainPage', () => {
       vi.advanceTimersByTime(0);
     });
     expect(document.getElementById('todayLongestDisplay')?.textContent || '').not.toBe('');
-    expect(document.getElementById('mainMessageBlock')?.textContent || '').toBe('');
+    expect(screen.queryByRole('button', { name: '今日の成果を表示' })).toBeNull();
   });
 
   test('無料版では60日より前のログを自己ベスト計算に含めない', async () => {
@@ -175,5 +202,124 @@ describe('MainPage', () => {
     });
 
     expect(document.getElementById('bestIntervalDisplay')?.textContent).toBe('2時間00分');
+  });
+
+  test('記録ゼロでは成果ログなし・初期メッセージを表示する', () => {
+    renderApp({ path: '/main' });
+    expect(screen.queryByRole('button', { name: '今日の成果を表示' })).toBeNull();
+    expect(screen.getByText('記録を始めましょう')).toBeInTheDocument();
+  });
+
+  test('初回記録日は更新イベントを表示しない', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-02-24T02:20:00'));
+
+    renderApp({
+      path: '/main',
+      persisted: {
+        logs: {
+          '2026-02-24': ['2026-02-24T00:10:00.000', '2026-02-24T02:10:00.000'],
+        },
+      },
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(0);
+    });
+
+    expect(screen.queryByRole('button', { name: '今日の成果を表示' })).toBeNull();
+  });
+
+  test('今週初日の記録では今週最高更新を出さない', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-02-22T02:20:00'));
+
+    renderApp({
+      path: '/main',
+      persisted: {
+        logs: {
+          '2026-02-15': ['2026-02-15T00:10:00.000', '2026-02-15T04:10:00.000'],
+          '2026-01-20': ['2026-01-20T00:10:00.000', '2026-01-20T04:10:00.000'],
+          '2026-02-22': ['2026-02-22T00:10:00.000', '2026-02-22T02:10:00.000'],
+        },
+      },
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(0);
+    });
+
+    expect(screen.queryByRole('button', { name: '今日の成果を表示' })).toBeNull();
+  });
+
+  test('先週データが無い場合は先週更新イベントを出さない', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-02-24T02:20:00'));
+
+    renderApp({
+      path: '/main',
+      persisted: {
+        logs: {
+          '2026-02-23': ['2026-02-23T00:10:00.000', '2026-02-23T04:10:00.000'],
+          '2026-01-20': ['2026-01-20T00:10:00.000', '2026-01-20T04:10:00.000'],
+          '2026-02-24': ['2026-02-24T00:10:00.000', '2026-02-24T02:10:00.000'],
+        },
+      },
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(0);
+    });
+
+    expect(screen.queryByRole('button', { name: '今日の成果を表示' })).toBeNull();
+  });
+
+  test('先月データが無い場合は先月更新イベントを出さない', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-02-24T02:20:00'));
+
+    renderApp({
+      path: '/main',
+      persisted: {
+        logs: {
+          '2026-02-17': ['2026-02-17T00:10:00.000', '2026-02-17T04:10:00.000'],
+          '2026-02-23': ['2026-02-23T00:10:00.000', '2026-02-23T04:10:00.000'],
+          '2026-02-24': ['2026-02-24T00:10:00.000', '2026-02-24T02:10:00.000'],
+        },
+      },
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(0);
+    });
+
+    expect(screen.queryByRole('button', { name: '今日の成果を表示' })).toBeNull();
+  });
+
+  test('比較対象が存在して条件を超えたときだけ成果イベントを出す', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-02-24T23:00:00'));
+
+    renderApp({
+      path: '/main',
+      persisted: {
+        logs: {
+          '2026-02-17': ['2026-02-17T12:00:00.000'],
+          '2026-02-23': ['2026-02-23T23:30:00.000'],
+          '2026-02-24': ['2026-02-24T00:10:00.000', '2026-02-24T01:00:00.000'],
+        },
+      },
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(0);
+    });
+
+    const ticker = screen.getByRole('button', { name: '今日の成果を表示' });
+    await act(async () => {
+      ticker.click();
+    });
+    const dialog = screen.getByRole('dialog', { name: '今日の成果' });
+    expect(within(dialog).getByText('▲ 先週最高を更新')).toBeInTheDocument();
   });
 });

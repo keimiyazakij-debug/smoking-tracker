@@ -161,8 +161,7 @@
   font-weight: 700;
 }
 
-.interval-message-block {
-  min-height: 1.2em;
+.interval-next-target {
   display: flex;
   align-items: center;
   font-size: 14px;
@@ -171,6 +170,117 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.interval-achievement-ticker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 1.25em;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.interval-achievement-ticker-placeholder {
+  opacity: 0.72;
+}
+
+.interval-achievement-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: ticker-fade 320ms ease-out;
+}
+
+.interval-achievement-hint {
+  color: #9aa7bf;
+  flex: 0 0 auto;
+}
+
+@keyframes ticker-fade {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.achievements-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: stretch;
+  background: rgba(16, 22, 36, 0.36);
+  z-index: 90;
+  padding: 0 12px calc(56px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+}
+
+.achievements-sheet {
+  width: 100%;
+  border-radius: 16px 16px 0 0;
+  background: #fff;
+  border: 1px solid #e7ebf3;
+  box-shadow: 0 -8px 28px rgba(12, 24, 46, 0.16);
+  padding: 12px;
+}
+
+.achievements-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.achievements-sheet-title {
+  margin: 0;
+  font-size: 15px;
+}
+
+.achievements-sheet-close {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  padding: 4px;
+}
+
+.achievements-sheet-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.achievements-sheet-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.achievements-sheet-item-label {
+  color: var(--color-text-primary);
+}
+
+.achievements-sheet-item-time {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  flex: 0 0 auto;
 }
 
 .weekly-summary {
@@ -399,14 +509,6 @@
 #progress.progress-green { background: var(--color-primary); }
 #progress.progress-yellow { background: #f5b400; }
 #progress.progress-red { background: var(--color-danger); }
-
-.daily-challenge-link {
-  text-align: center;
-}
-
-.daily-challenge-link.spaced {
-  margin-top: 24px;
-}
 
 .history-actions {
   display: flex;

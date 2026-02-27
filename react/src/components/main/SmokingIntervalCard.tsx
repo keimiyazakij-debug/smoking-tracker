@@ -1,13 +1,22 @@
+import { useState } from 'react';
+import type { Achievement, Target } from '../../hooks/useSmokingIntervals';
 import { formatHoursMinutes } from '../../hooks/useSmokingIntervals';
+import { AchievementsSheet } from './AchievementsSheet';
+import { DailyAchievementsTicker } from './DailyAchievementsTicker';
+import { NextTargetLine } from './NextTargetLine';
 
 type Props = {
   currentMinutes: number;
   bestMinutes: number;
   todayLongestMinutes: number;
-  message: string;
+  nextTarget: Target | null;
+  isInitialState: boolean;
+  achievements: Achievement[];
 };
 
-export function SmokingIntervalCard({ currentMinutes, bestMinutes, todayLongestMinutes, message }: Props) {
+export function SmokingIntervalCard({ currentMinutes, bestMinutes, todayLongestMinutes, nextTarget, isInitialState, achievements }: Props) {
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
   return (
     <section className="card interval-card">
       <h2 className="interval-title">喫煙間隔</h2>
@@ -25,9 +34,9 @@ export function SmokingIntervalCard({ currentMinutes, bestMinutes, todayLongestM
         <span className="interval-label">今日の最長</span>
         <span id="todayLongestDisplay" className="interval-value interval-value-today">{formatHoursMinutes(todayLongestMinutes)}</span>
       </div>
-      <div id="mainMessageBlock" className="interval-message-block" aria-live="polite">
-        {message}
-      </div>
+      <NextTargetLine target={nextTarget} isInitialState={isInitialState} />
+      <DailyAchievementsTicker achievements={achievements} onOpenSheet={() => setIsSheetOpen(true)} />
+      <AchievementsSheet open={isSheetOpen} achievements={achievements} onClose={() => setIsSheetOpen(false)} />
     </section>
   );
 }

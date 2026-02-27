@@ -2,6 +2,7 @@ import { HistoryCTA } from '../../components/main/HistoryCTA';
 import { SmokeActionCard } from '../../components/main/SmokeActionCard';
 import { SmokingIntervalCard } from '../../components/main/SmokingIntervalCard';
 import { TodayStatusCard } from '../../components/main/TodayStatusCard';
+import type { Achievement, Target } from '../../hooks/useSmokingIntervals';
 
 type DiffText = {
   text: string;
@@ -19,7 +20,9 @@ type Props = {
   currentMinutes: number;
   bestMinutes: number;
   todayLongestMinutes: number;
-  message: string;
+  nextTarget: Target | null;
+  isInitialState: boolean;
+  achievements: Achievement[];
   onAdd: () => void;
   onUndo: () => void;
   onMarkYesterdaySuccess: () => void;
@@ -37,7 +40,9 @@ export function MainPageView({
   currentMinutes,
   bestMinutes,
   todayLongestMinutes,
-  message,
+  nextTarget,
+  isInitialState,
+  achievements,
   onAdd,
   onUndo,
   onMarkYesterdaySuccess,
@@ -46,7 +51,14 @@ export function MainPageView({
   return (
     <div id="main" className="tab active">
       <div className="main-layout">
-        <SmokingIntervalCard currentMinutes={currentMinutes} bestMinutes={bestMinutes} todayLongestMinutes={todayLongestMinutes} message={message} />
+        <SmokingIntervalCard
+          currentMinutes={currentMinutes}
+          bestMinutes={bestMinutes}
+          todayLongestMinutes={todayLongestMinutes}
+          nextTarget={nextTarget}
+          isInitialState={isInitialState}
+          achievements={achievements}
+        />
 
         <TodayStatusCard todayKey={todayKey} todayCount={todayCount} target={target} diffText={diffText} progress={progress} />
 

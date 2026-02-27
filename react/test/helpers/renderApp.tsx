@@ -6,7 +6,8 @@ const defaultPersisted: PersistedState = {
   logs: {},
   settings: { dailyTarget: 10, calendarEvaluation: 'target' },
   memos: {},
-  isPremium: false,
+  entitlement: 'free',
+  purchaseState: 'unknown',
 };
 
 export function renderApp(options?: { path?: string; persisted?: Partial<PersistedState> }) {

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { getDateKey, isDateLocked, parseDateKey } from '../domain/date';
 import { useLogsContext } from '../state/logs/LogsContext';
 import { useSettingsContext } from '../state/settings/SettingsContext';
+import { isPremium as isPremiumSelector } from '../state/settings/settingsSelectors';
 import { useUIContext } from '../state/ui/UIContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { type EditState } from '../components/timeline/TimelineEditModal';
@@ -25,6 +26,7 @@ function toIsoAt(dateKey: string, hhmm: string): string | null {
 export function TimelinePage() {
   const { state: logsState, dispatch: logsDispatch } = useLogsContext();
   const { state: settingsState } = useSettingsContext();
+  const isPremium = isPremiumSelector(settingsState);
   const { dispatch: uiDispatch } = useUIContext();
   const location = useLocation();
   const navigate = useNavigate();
@@ -71,7 +73,7 @@ export function TimelinePage() {
   const prevDate = parseDateKey(dateKey);
   prevDate.setDate(prevDate.getDate() - 1);
   const prevKey = getDateKey(prevDate);
-  const isPrevLocked = isDateLocked(prevKey, settingsState.isPremium);
+  const isPrevLocked = isDateLocked(prevKey, isPremium);
 
   const openEdit = (hour: number) => {
     const source = logsState.logs[dateKey] || [];

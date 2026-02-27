@@ -1,0 +1,146 @@
+#interval {
+  padding: var(--space-page);
+  overflow-y: auto;
+}
+
+.interval-summary-card {
+  margin: 0 0 12px;
+}
+
+.interval-summary-grid {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.interval-summary-main {
+  min-width: 0;
+}
+
+.interval-summary-title {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.interval-summary-value {
+  margin-top: 4px;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+
+.interval-summary-sub {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.interval-summary-side {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 auto;
+  min-width: 96px;
+}
+
+.interval-summary-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+}
+
+.interval-summary-metric-label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.interval-summary-metric-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.interval-controls-card {
+  margin: 0 0 10px;
+}
+
+.interval-range-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.interval-range-buttons button {
+  min-height: 36px;
+  font-size: 13px;
+  padding: 0 12px;
+}
+
+.interval-range-buttons button.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.interval-free-notice {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.interval-chart-card {
+  margin: 0 0 12px;
+}
+
+.interval-period-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 0 8px;
+}
+
+.interval-period-nav button {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.interval-next-placeholder {
+  display: inline-block;
+  width: 34px;
+}
+
+#interval-period-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.interval-chart-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.interval-chart-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.interval-chart-wrap canvas {
+  height: 260px;
+}
+
+@media (max-width: 420px) {
+  .interval-summary-grid {
+    gap: 8px;
+  }
+
+  .interval-summary-side {
+    min-width: 82px;
+  }
+}

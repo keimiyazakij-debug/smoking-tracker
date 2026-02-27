@@ -4,7 +4,7 @@ import { MainPage } from './pages/MainPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { TimelinePage } from './pages/TimelinePage';
 import { StatsPage } from './pages/StatsPage';
-import { GameBadgesPage, GameChallengePage, GamePage } from './pages/GamePage';
+import { IntervalPage } from './pages/IntervalPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AppProviders } from './state/AppProviders';
 import { HashRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom';
@@ -27,9 +27,7 @@ function AppRoutes() {
         <Route path="/main" element={<MainPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/timeline" element={<TimelinePage />} />
-        <Route path="/game" element={<GamePage />} />
-        <Route path="/game/challenge" element={<GameChallengePage />} />
-        <Route path="/game/badges" element={<GameBadgesPage />} />
+        <Route path="/interval" element={<IntervalPage />} />
         <Route path="/stats" element={<StatsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>

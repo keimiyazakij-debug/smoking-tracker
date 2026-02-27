@@ -7,7 +7,7 @@ const tabs: Array<{ path: UIActiveTab; icon: string }> = [
   { path: '/main', icon: '⌂' },
   { path: '/calendar', icon: '📅' },
   { path: '/timeline', icon: '🕒' },
-  { path: '/game', icon: '🎮' },
+  { path: '/interval', icon: '📈' },
   { path: '/stats', icon: '📊' },
   { path: '/settings', icon: '⚙' },
 ];

@@ -3,6 +3,7 @@ import { buildCalendarCells } from '../domain/calendar';
 import { getDateKey, isDateLocked, parseDateKey } from '../domain/date';
 import { useLogsContext } from '../state/logs/LogsContext';
 import { useSettingsContext } from '../state/settings/SettingsContext';
+import { isPremium as isPremiumSelector } from '../state/settings/settingsSelectors';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { storage } from '../platform/storage';
 import { CalendarPageView } from './calendar/CalendarPageView';
@@ -18,6 +19,7 @@ type Holiday = {
 export function CalendarPage() {
   const { state: logsState, dispatch: logsDispatch } = useLogsContext();
   const { state: settingsState } = useSettingsContext();
+  const isPremium = isPremiumSelector(settingsState);
   const location = useLocation();
   const navigate = useNavigate();
   const [memoEditingDateKey, setMemoEditingDateKey] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export function CalendarPage() {
   const fallbackSelected = cells.find((c) => c.inMonth && c.day === 1) ?? null;
   const detailCell = selected ?? fallbackSelected;
   const detailDateKey = detailCell?.dateKey ?? null;
-  const isDetailLocked = detailDateKey ? isDateLocked(detailDateKey, settingsState.isPremium) : false;
+  const isDetailLocked = detailDateKey ? isDateLocked(detailDateKey, isPremium) : false;
   const hasLogsEntry = detailDateKey ? Object.prototype.hasOwnProperty.call(logsState.logs, detailDateKey) : false;
   const showConfirmBtn = !!detailDateKey && !isDetailLocked && !hasLogsEntry && detailDateKey < todayKey;
   const memoText = detailDateKey ? (logsState.memos[detailDateKey] || '') : '';
@@ -197,7 +199,7 @@ export function CalendarPage() {
       memos={logsState.memos}
       logs={logsState.logs}
       dailyTarget={settingsState.settings.dailyTarget}
-      isPremium={settingsState.isPremium}
+      isPremium={isPremium}
       detailCell={detailCell}
       detailDateKey={detailDateKey}
       isDetailLocked={isDetailLocked}

@@ -1,10 +1,9 @@
 @import './styles/common.css';
 @import './styles/main.css';
+@import './styles/interval.css';
 @import './styles/calendar.css';
 @import './styles/timeline.css';
 @import './styles/edit.css';
-@import './styles/badges.css';
-@import './styles/daily-task.css';
 @import './styles/stats.css';
 @import './styles/settings.css';
 @import './styles/premium.css';
